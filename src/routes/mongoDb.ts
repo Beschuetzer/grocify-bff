@@ -35,29 +35,35 @@ router.get("/mockCreation", async (req, res) => {
 router.post("/password", async (req, res) => {
   const { username, password } = req.body;
   console.log({ username, password });
+  const start = performance.now();
   bcrypt.hash(password, BCRYPT_SALT_ROUND, function (err, hash) {
+    const end = performance.now();
+    const diff = end - start;
     if (err) {
       res.status(500).send({ err });
       return;
     }
 
-    console.log({ hash });
-    res.send({ hash });
+    console.log({ diff, hash });
+    res.send({ diff, hash });
   });
 });
 
 router.post("/passwordCompare", async (req, res) => {
-    const { hash, password } = req.body;
-    console.log({ hash, password });
-    bcrypt.compare(password, hash, function (err, result) {
-      if (err) {
-        res.status(500).send({ err });
-        return;
-      }
-  
-      console.log({ result });
-      res.send({ result });
-    });
+  const { hash, password } = req.body;
+  console.log({ hash, password });
+  const start = performance.now();
+  bcrypt.compare(password, hash, function (err, result) {
+    const end = performance.now();
+    const diff = end - start;
+    if (err) {
+      res.status(500).send({ err });
+      return;
+    }
+
+    console.log({ diff, result });
+    res.send({ diff, result });
   });
+});
 
 export default router;
