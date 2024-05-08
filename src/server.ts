@@ -11,6 +11,10 @@ mongoose.connect(mongoDbURL)
   .then(() => console.log(`Connected to ${dbName} collection in MongoDB!`))
   .catch((error) => console.log(error.message));
 
+//express config
+app.use(express.json()); 
+
+//routes
 app.use(mongoDbRoutes)
 
 app.listen(config.server.port, () => {
