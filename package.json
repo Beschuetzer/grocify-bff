@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node build/app.js",
-    "start:dev": "nodemon build/app.js",
+    "start:dev": "npx esrun src/app.ts",
     "postinstall": "tsc"
   },
   "author": "Adam Major",
@@ -16,10 +16,13 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mongoose": "^8.3.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/mongoose": "^5.11.97",
+    "@digitak/esrun": "^3.2.26",
     "typescript": "^5.4.5"
   }
 }
