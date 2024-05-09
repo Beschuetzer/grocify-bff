@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const itemSchema = new mongoose.Schema({
+    /**
+    *This a UUID v5 that the front end creates
+    **/
+    _id: String,
     addedDate: Number,
     /**
      *This is in milliseconds

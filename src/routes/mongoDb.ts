@@ -66,4 +66,12 @@ router.post("/passwordCompare", async (req, res) => {
   });
 });
 
+router.post("/saveItem", async (req, res) => {
+    const { item } = req.body;
+    console.log({ item });
+    const createdItem = new Item(item);
+      const result = await createdItem.save();
+      res.send({result});
+  });
+
 export default router;
