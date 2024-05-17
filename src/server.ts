@@ -2,6 +2,7 @@ import express from 'express';
 import { config } from './config';
 import mongoose from 'mongoose';
 import mongoDbRoutes from './routes/mongoDb'
+import testRoutes from './routes/testing'
 
 const app = express();
 const dbName = "grocify";
@@ -15,6 +16,7 @@ mongoose.connect(mongoDbURL)
 app.use(express.json()); 
 
 //routes
+app.use(testRoutes)
 app.use(mongoDbRoutes)
 
 app.listen(config.server.port, () => {
