@@ -5,3 +5,9 @@ export type ErrorMessage = {
         }
     }
 }
+
+export type User = {
+    email: string;
+    hashedPassword: string;
+    hasPaid: boolean;
+}

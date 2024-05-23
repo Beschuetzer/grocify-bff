@@ -1,8 +1,9 @@
 import { BCRYPT_SALT_ROUND } from "../constants";
 import bcrypt from "bcrypt";
 import { User } from "../schema/user";
-import { ErrorMessage } from "../types";
+import { ErrorMessage, User as UserType } from "../types";
 import { Response } from "express";
+import { REGISTERED_USERS_CACHE } from "../cache";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -28,6 +29,28 @@ export function comparePasswords(password: string, hash: string, onDecryption: (
     if (err) throw err;
     onDecryption(err, same);
   });
+}
+
+export async function getAndThenCacheUser(email: string) {
+  const userFound = REGISTERED_USERS_CACHE.get(email);
+  if (!!userFound) {
+    return userFound
+  } 
+  const fetchedUser = await findUser(email)
+  if (fetchedUser.email === email) {
+    REGISTERED_USERS_CACHE.set(email, fetchedUser);
+  }
+  return fetchedUser;
+}
+
+export function getErrorMessage(msg: string) {
+  return {
+    error: {
+      errorResponse: {
+        errmsg: msg,
+      }
+    }
+  } as ErrorMessage
 }
 
 export function handleError(res: Response, error: unknown) {
