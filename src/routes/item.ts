@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAndThenCacheUser,
   findUser as getUserOrThrow,
   handleError,
 } from "../helpers";
@@ -12,7 +13,7 @@ const router = express.Router({
 router.post("/item", async (req, res) => {
   const { item, email } = req.body;
   try {
-    await getUserOrThrow(email);
+    const user = await getAndThenCacheUser(email);
     const createdItem = new Item({ ...item, email });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();

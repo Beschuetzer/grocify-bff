@@ -31,6 +31,9 @@ export function comparePasswords(password: string, hash: string, onDecryption: (
   });
 }
 
+/**
+*This could potentially throw if there's a duplicate key for example
+**/
 export async function getAndThenCacheUser(email: string) {
   const userFound = REGISTERED_USERS_CACHE.get(email);
   if (!!userFound) {
