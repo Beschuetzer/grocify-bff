@@ -1,6 +1,6 @@
 ## MVP
-- add isAuthenticated middleware
-- finish /user put request
+- use isAuthenticated in each /user route that is needs (test too)
+- finish /user put request (have to pass id in order to be able to change the email too)
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password
 - add endpoint that gets all of the items the user can access based on username and password inputs (any items without a password )

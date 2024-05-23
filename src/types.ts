@@ -1,16 +1,17 @@
 import mongoose from "mongoose"
 
 export type ErrorMessage = {
-    error: {
-        errorResponse: {
-            errmsg: string
-        }
+    errorResponse: {
+        errmsg: string
     }
 }
 
+/**
+*Need to update User schema if changes made here
+**/
 export type User = {
     email: string;
-    hashedPassword: string;
+    password: string;
     hasPaid: boolean;
 }
 export type UserDocument = mongoose.Document & User

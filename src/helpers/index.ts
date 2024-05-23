@@ -1,4 +1,4 @@
-import { BCRYPT_SALT_ROUND } from "../constants";
+import { BCRYPT_SALT_ROUND, ERROR_MSG_NOT_AUTHORIZED } from "../constants";
 import bcrypt from "bcrypt";
 import { User } from "../schema/user";
 import { ErrorMessage, UserDocument } from "../types";
@@ -49,11 +49,9 @@ export async function getAndThenCacheUser(email: string) {
 
 export function getErrorMessage(msg: string) {
   return {
-    error: {
       errorResponse: {
         errmsg: msg,
       }
-    }
   } as ErrorMessage
 }
 
@@ -61,11 +59,7 @@ export async function getItemOrThrow(id: string) {
   const user = await Item.findById(id);
   
   if (!user) {
-    throw {error: {
-      errorResponse: {
-        errmsg: `No user with id of '${id}' found.`
-      }
-    }} as ErrorMessage;
+    throw getErrorMessage(`No user with id of '${id}' found.`);
   }
 
   return user;
@@ -75,18 +69,22 @@ export async function getUserOrThrow(email: string) {
   const user = await User.findOne({email}) as UserDocument;
   
   if (!user) {
-    throw {error: {
-      errorResponse: {
-        errmsg: `No user with email of '${email}' found`
-      }
-    }} as ErrorMessage;
+    throw getErrorMessage(`No user with email of '${email}' found`);
   }
 
   return user;
 }
 
-export function handleError(res: Response, error: unknown) {
-  res.status(500).send({error})
+export function handleError(res: Response, error: unknown, statusCode = 500) {
+  let statusCodeToUse = statusCode;
+  console.log({error});
+  
+  const message = (error as Error)?.message || (error as ErrorMessage)?.errorResponse?.errmsg;
+
+  if (message === ERROR_MSG_NOT_AUTHORIZED || message === ERROR_MSG_NOT_AUTHORIZED) {
+    statusCodeToUse = 401;
+  }
+  res.status(statusCodeToUse).send(error)
 }
 
 export function hashPassword(password: string, onEncryption: (err?: Error, hash?: string) => void) {
