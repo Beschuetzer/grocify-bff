@@ -14,6 +14,7 @@ router.post("/item", async (req, res) => {
   try {
     await getUserOrThrow(email);
     const createdItem = new Item({ ...item, email });
+    createdItem._id = item._id;
     const savedItem = await createdItem.save();
     res.send({
       savedItem,

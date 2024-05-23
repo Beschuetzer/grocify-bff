@@ -20,6 +20,7 @@ router.post("/user", async (req, res) => {
     }
 
     const createdUser = new User({ email, password: hash, hasPaid: false });
+    createdUser._id = email;
     try {
       const savedUser = await createdUser.save();
       res.send({
