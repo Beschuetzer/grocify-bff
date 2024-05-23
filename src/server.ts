@@ -1,7 +1,8 @@
 import express from 'express';
 import { config } from './config';
 import mongoose from 'mongoose';
-import mongoDbRoutes from './routes/mongoDb'
+import itemRoutes from './routes/item'
+import userRoutes from './routes/user'
 import testRoutes from './routes/testing'
 
 const app = express();
@@ -17,7 +18,8 @@ app.use(express.json());
 
 //routes
 app.use(testRoutes)
-app.use(mongoDbRoutes)
+app.use(itemRoutes)
+app.use(userRoutes)
 
 app.listen(config.server.port, () => {
   console.log(`App running on port ${config.server.port}`);

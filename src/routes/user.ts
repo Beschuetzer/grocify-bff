@@ -1,6 +1,3 @@
-/**
- *These are the routes around interacting with the mongodb database
- **/
 import express from "express";
 import {
   comparePasswords,
@@ -8,25 +5,10 @@ import {
   hashPassword,
   handleError,
 } from "../helpers";
-import { Item } from "../schema";
 import { User } from "../schema/user";
 
 const router = express.Router({
   mergeParams: true,
-});
-
-router.post("/item", async (req, res) => {
-  const { item, email } = req.body;
-  try {
-    await getUserOrThrow(email);
-    const createdItem = new Item({ ...item, email });
-    const savedItem = await createdItem.save();
-    res.send({
-      savedItem,
-    });
-  } catch (error) {
-    handleError(res, error);
-  }
 });
 
 router.post("/user", async (req, res) => {
@@ -59,6 +41,17 @@ router.post("/user/isPasswordSame", async (req, res) => {
     });
   } catch (error) {
     handleError(res, error);
+  }
+});
+
+router.get("/user/checkIfEmailUsed/:email", async (req, res) => {
+  const { email } = req.params;
+  try {
+    const user = await getUserOrThrow(email);
+    console.log({ email, user });
+    res.send(true);
+  } catch (error) {
+    res.send(false);
   }
 });
 
