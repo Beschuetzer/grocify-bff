@@ -1,3 +1,5 @@
+import mongoose from "mongoose"
+
 export type ErrorMessage = {
     error: {
         errorResponse: {
@@ -11,3 +13,4 @@ export type User = {
     hashedPassword: string;
     hasPaid: boolean;
 }
+export type UserDocument = mongoose.Document & User

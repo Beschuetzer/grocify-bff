@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getAndThenCacheUser,
-  findUser as getUserOrThrow,
+  getItemOrThrow,
   handleError,
 } from "../helpers";
 import { Item } from "../schema";
@@ -10,10 +10,35 @@ const router = express.Router({
   mergeParams: true,
 });
 
+router.get("/item/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const foundItem = await getItemOrThrow(id);
+    res.send({
+      foundItem,
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+router.put("/item/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    // const foundItem = await getItemOrThrow(id);
+    res.send({
+      foundItem,
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+
 router.post("/item", async (req, res) => {
   const { item, email } = req.body;
   try {
-    const user = await getAndThenCacheUser(email);
+    await getAndThenCacheUser(email);
     const createdItem = new Item({ ...item, email });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
@@ -24,6 +49,5 @@ router.post("/item", async (req, res) => {
     handleError(res, error);
   }
 });
-
 
 export default router;

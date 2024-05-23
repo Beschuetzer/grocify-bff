@@ -1,9 +1,10 @@
 import { BCRYPT_SALT_ROUND } from "../constants";
 import bcrypt from "bcrypt";
 import { User } from "../schema/user";
-import { ErrorMessage, User as UserType } from "../types";
+import { ErrorMessage, UserDocument } from "../types";
 import { Response } from "express";
 import { REGISTERED_USERS_CACHE } from "../cache";
+import { Item } from "../schema";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -32,14 +33,14 @@ export function comparePasswords(password: string, hash: string, onDecryption: (
 }
 
 /**
-*This could potentially throw if there's a duplicate key for example
+*This will throw if the call to {@link getUserOrThrow} throws
 **/
 export async function getAndThenCacheUser(email: string) {
   const userFound = REGISTERED_USERS_CACHE.get(email);
   if (!!userFound) {
-    return userFound
+    return userFound;
   } 
-  const fetchedUser = await findUser(email)
+  const fetchedUser = await getUserOrThrow(email)
   if (fetchedUser.email === email) {
     REGISTERED_USERS_CACHE.set(email, fetchedUser);
   }
@@ -56,6 +57,34 @@ export function getErrorMessage(msg: string) {
   } as ErrorMessage
 }
 
+export async function getItemOrThrow(id: string) {
+  const user = await Item.findById(id);
+  
+  if (!user) {
+    throw {error: {
+      errorResponse: {
+        errmsg: `No user with id of '${id}' found.`
+      }
+    }} as ErrorMessage;
+  }
+
+  return user;
+}
+
+export async function getUserOrThrow(email: string) {
+  const user = await User.findOne({email}) as UserDocument;
+  
+  if (!user) {
+    throw {error: {
+      errorResponse: {
+        errmsg: `No user with email of '${email}' found`
+      }
+    }} as ErrorMessage;
+  }
+
+  return user;
+}
+
 export function handleError(res: Response, error: unknown) {
   res.status(500).send({error})
 }
@@ -65,18 +94,4 @@ export function hashPassword(password: string, onEncryption: (err?: Error, hash?
     if (err) throw err;
     onEncryption(err, hash);
   });
-}
-
-export async function findUser(email: string) {
-  const user = await User.findOne({email})
-  
-  if (!user) {
-    throw {error: {
-      errorResponse: {
-        errmsg: `No user with email of ${email} found`
-      }
-    }} as ErrorMessage;
-  }
-
-  return user;
 }

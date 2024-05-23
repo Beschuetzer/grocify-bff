@@ -1,8 +1,7 @@
 import TTLCache from "@isaacs/ttlcache";
-import { User } from "./types";
-import { Document } from "mongoose";
+import { UserDocument } from "./types";
 
-export const REGISTERED_USERS_CACHE = new TTLCache<string, Document>({
+export const REGISTERED_USERS_CACHE = new TTLCache<string, UserDocument>({
     max: 1000,
     ttl: Infinity
 });

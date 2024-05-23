@@ -1,16 +1,15 @@
 import express from "express";
 import {
   comparePasswords,
-  findUser as getUserOrThrow,
   hashPassword,
   handleError,
   getAndThenCacheUser,
   getErrorMessage,
+  getUserOrThrow,
 } from "../helpers";
 import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
-import { User as UserType } from "../types";
-import mongoose from "mongoose";
+
 
 const router = express.Router({
   mergeParams: true,
@@ -44,7 +43,6 @@ router.get("/user/:email", async (req, res) => {
 });
 
 router.delete("/user/:email", async (req, res) => {
-  //todo: invalidate cache entry
   const { email } = req.params;
   try {
     const deletedUser = await User.deleteOne({ email });
@@ -58,26 +56,36 @@ router.delete("/user/:email", async (req, res) => {
   }
 });
 
-router.put("/user", async (req, res) => {
-  const { email, password, hasPaid } = req.body;
-  hashPassword(password, async (err, hash) => {
-    try {
-        if (!hash) {
-            res.status(500).send(getErrorMessage(`Unable to hash password for '${email}'.`))
-        }
+// router.put("/user/:currentPasswordHash", async (req, res) => {
+//   const userToUpdate = req.body;
+//   const currentPassword = req.params;
+//   const { email, password, hasPaid } = req.body;
 
-        const user = await getAndThenCacheUser(email) as UserType & mongoose.Document;
-        user.email = email;
-        user.hashedPassword = hash as string;
-        user.hasPaid = hasPaid;
-        const savedUser = await user.save();
-        USERS_CACHE.set(email, savedUser);
-        res.send(savedUser)
-    } catch (error) {
-      handleError(res, error);
-    }
-  });
-});
+//   try {
+//     const user = await getAndThenCacheUser(email);
+
+//     comparePasswords(currentPassword, user.password);
+//     hashPassword(password, async (err, hash) => {
+//       try {
+//         if (err || !hash) {
+//           res
+//             .status(500)
+//             .send(getErrorMessage(`Unable to update user with '${email}'.`));
+//         }
+//         const updatedUser = await User.updateOne({ email }, userToUpdate);
+//         console.log({ updatedUser });
+//         if (updatedUser.modifiedCount > 1) {
+//           USERS_CACHE.delete(email);
+//         }
+//         res.send(updatedUser);
+//       } catch (error) {
+//         handleError(res, error);
+//       }
+//     });
+//   } catch (error) {
+//     handleError(res, error);
+//   }
+// });
 
 router.post("/user/isPasswordSame", async (req, res) => {
   const { email, password } = req.body;
