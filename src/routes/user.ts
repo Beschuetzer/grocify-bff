@@ -35,7 +35,7 @@ router.post("/user", async (req: Request, res: Response) => {
 
 router.get("/user/:id", async (req: Request, res: Response) => {
   try {
-    const { email: id } = req.params;
+    const { id } = req.params;
     const user = await getAndThenCacheUser(id);
     res.send(user);
   } catch (error) {
@@ -90,7 +90,7 @@ router.put("/user", async (req: Request, res: Response) => {
         );
         console.log({ updatedUser });
         if (updatedUser.modifiedCount > 0) {
-          USERS_CACHE.delete(email);
+          USERS_CACHE.delete(_id);
         }
         res.send(updatedUser);
       } catch (error) {

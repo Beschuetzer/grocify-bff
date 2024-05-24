@@ -67,11 +67,11 @@ export async function getItemOrThrow(id: string) {
   return user;
 }
 
-export async function getUserOrThrow(email: string) {
-  const user = await User.findOne({email}) as UserDocument;
+export async function getUserOrThrow(id: string) {
+  const user = await User.findById(id) as UserDocument;
   
   if (!user) {
-    throw getErrorMessage(`No user with email of '${email}' found`);
+    throw getErrorMessage(`No user with id of '${id}' found`);
   }
 
   return user;
