@@ -7,15 +7,18 @@ import {
 } from "../helpers";
 import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
-import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { UserAccount, UserDocument } from "../types";
+import { checkIsAuthorized as throwIfNotAuthorized } from "../middlware/isAuthenticated";
+import { CurrentPassword, UserAccount, UserDocument } from "../types";
 
 const router = express.Router({
   mergeParams: true,
 });
 
 router.post("/user", async (req: Request, res: Response) => {
-  const { email, password } = req.body as Pick<UserAccount, "email" | 'password'>;
+  const { email, password } = req.body as Pick<
+    UserAccount,
+    "email" | "password"
+  >;
 
   hashPassword(password, async function (err, hash) {
     try {
@@ -30,10 +33,10 @@ router.post("/user", async (req: Request, res: Response) => {
   });
 });
 
-router.get("/user/:email", async (req: Request, res: Response) => {
+router.get("/user/:id", async (req: Request, res: Response) => {
   try {
-    const { email } = req.params; 
-    const user = await getAndThenCacheUser(email);
+    const { email: id } = req.params;
+    const user = await getAndThenCacheUser(id);
     res.send(user);
   } catch (error) {
     handleError(res, error);
@@ -41,15 +44,17 @@ router.get("/user/:email", async (req: Request, res: Response) => {
 });
 
 router.delete("/user", async (req: Request, res: Response) => {
-  const { password, email } = req.body as Pick<UserAccount, "email" | 'password'>;;
+  const { password, _id } = req.body as Pick<
+    UserAccount,
+    "_id" | "password"
+  >;
 
   try {
-    const user = await getAndThenCacheUser(email);
-    console.log({ password, email, user });
-    await checkIsAuthorized(password, user.password);
-    const deletedUser = await User.deleteOne({ email });
+    const user = await getAndThenCacheUser(_id);
+    await throwIfNotAuthorized(password, user.password);
+    const deletedUser = await User.deleteOne({ _id });
     if (deletedUser.deletedCount > 0) {
-      USERS_CACHE.delete(email);
+      USERS_CACHE.delete(_id);
     }
     console.log({ deletedUser });
     res.send(deletedUser);
@@ -60,28 +65,31 @@ router.delete("/user", async (req: Request, res: Response) => {
 
 router.put("/user", async (req: Request, res: Response) => {
   const userToUpdate = req.body as UserDocument;
-  const { _id, email, password, hasPaid } = req.body as UserAccount;
+  const { _id, email, password, hasPaid, currentPassword } =
+    req.body as UserAccount & CurrentPassword;
 
   try {
-    const user = await getAndThenCacheUser(email);
-    const isPasswordSame = await checkIsAuthorized(password, user.password);
-    console.log({ isPasswordSame });
-    hashPassword(password, async (err, hash) => {
+    const user = await getAndThenCacheUser(_id);
+    await throwIfNotAuthorized(currentPassword, user.password);
+    hashPassword(password || currentPassword, async (err, hash) => {
       try {
         if (err || !hash) {
           res
             .status(500)
-            .send(getErrorMessage(`Unable to update user with '${email}'.`));
+            .send(getErrorMessage(`Unable to update user with id of '${_id}'.`));
         }
+
+        console.log({ userToUpdate, user, hash });
+
         const updatedUser = await User.updateOne(
-          { email },
+          { _id },
           {
             ...userToUpdate,
-            password: isPasswordSame ? userToUpdate.password : hash,
+            password: hash,
           }
         );
         console.log({ updatedUser });
-        if (updatedUser.modifiedCount > 1) {
+        if (updatedUser.modifiedCount > 0) {
           USERS_CACHE.delete(email);
         }
         res.send(updatedUser);
@@ -94,14 +102,19 @@ router.put("/user", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/user/isEmailAvailable", async (req: Request, res: Response) => {
-  const { email } = req.body as Pick<UserAccount, "email">;
-  try {
-    const user = await User.findOne({ email });
-    res.send(user?.email == email);
-  } catch (error) {
-    handleError(res, error);
+router.get(
+  "/user/isEmailAvailable/:email",
+  async (req: Request, res: Response) => {
+    const { email } = req.params as Pick<UserAccount, "email">;
+    try {
+      const user = await User.findOne({ email });
+      console.log({ user });
+
+      res.send(user?.email !== email);
+    } catch (error) {
+      handleError(res, error);
+    }
   }
-});
+);
 
 export default router;

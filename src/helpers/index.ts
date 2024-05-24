@@ -35,14 +35,16 @@ export function comparePasswords(password: string, hash: string, onDecryption: (
 /**
 *This will throw if the call to {@link getUserOrThrow} throws
 **/
-export async function getAndThenCacheUser(email: string) {
-  const userFound = REGISTERED_USERS_CACHE.get(email);
+export async function getAndThenCacheUser(id: string) {
+  const userFound = REGISTERED_USERS_CACHE.get(id);
+  console.log({id, userFound});
+  
   if (!!userFound) {
     return userFound;
   } 
-  const fetchedUser = await getUserOrThrow(email)
-  if (fetchedUser.email === email) {
-    REGISTERED_USERS_CACHE.set(email, fetchedUser);
+  const fetchedUser = await getUserOrThrow(id)
+  if (fetchedUser._id === id) {
+    REGISTERED_USERS_CACHE.set(id, fetchedUser);
   }
   return fetchedUser;
 }

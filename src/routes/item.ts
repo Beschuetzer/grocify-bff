@@ -36,10 +36,10 @@ router.put("/item/:id", async (req: Request, res: Response) => {
 
 
 router.post("/item", async (req: Request, res: Response) => {
-  const { item, email } = req.body;
+  const { item, userId } = req.body;
   try {
-    await getAndThenCacheUser(email);
-    const createdItem = new Item({ ...item, email });
+    await getAndThenCacheUser(userId);
+    const createdItem = new Item({ ...item, userId });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
     res.send({

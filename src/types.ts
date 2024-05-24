@@ -1,5 +1,9 @@
 import mongoose from "mongoose"
 
+export type CurrentPassword = {
+    currentPassword: string;
+}
+
 export type ErrorMessage = {
     errorResponse: {
         errmsg: string
@@ -13,6 +17,6 @@ export type UserAccount = {
     email: string;
     password: string;
     hasPaid: boolean;
-    _id?: string;
+    _id: string;
 }
 export type UserDocument = mongoose.Document & UserAccount
