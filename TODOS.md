@@ -1,5 +1,5 @@
 ## MVP
-- figure out why can save multiple users with the same password
+- users routes are tested working but need to add and test item routes
 - use isAuthenticated in each /user route that is needs (test all the routes again)
 - finish /user put request (have to pass id in order to be able to change the email too)
 - update the frontend service to match the new routes for user and item
