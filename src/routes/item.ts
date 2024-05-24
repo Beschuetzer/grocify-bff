@@ -22,10 +22,11 @@ router.get("/item/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.put("/item/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
+//todo: finish this
+router.put("/item/", async (req: Request, res: Response) => {
+  const { _id, item } = req.body;
   try {
-    const foundItem = await getItemOrThrow(id);
+    const foundItem = await getItemOrThrow(_id);
     res.send({
       foundItem,
     });

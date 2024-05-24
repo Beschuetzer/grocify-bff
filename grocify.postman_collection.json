@@ -1,0 +1,376 @@
+{
+	"info": {
+		"_postman_id": "cd3b66cd-3d79-4284-ab8a-a4c644068f2d",
+		"name": "grocify",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14418289",
+		"_collection_link": "https://lively-comet-477342.postman.co/workspace/nxBridge~693c9375-622a-44bf-992d-236c27ca3a29/collection/14418289-cd3b66cd-3d79-4284-ab8a-a4c644068f2d?action=share&source=collection_link&creator=14418289"
+	},
+	"item": [
+		{
+			"name": "Check is Email Available",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user/isEmailAvailable/adam.j.major@gmail.com",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user",
+						"isEmailAvailable",
+						"adam.j.major@gmail.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Item",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"  // Ensure that min is less than or equal to max\r",
+							"  if (min > max) {\r",
+							"    throw new Error('Min must be less than or equal to max');\r",
+							"  }\r",
+							"\r",
+							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"  const randomInt = min + Math.floor(Math.random() * max);\r",
+							"  return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"item\": {\r",
+							"        \"name\": \"name\",\r",
+							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [ \"image1\" ],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+							"        \"_id\": generateGUID()\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"item\": {\r\n        \"name\": \"name\",\r\n        \"upc\": \"000000000011\",\r\n        \"addedDate\": 10000000000,\r\n        \"frequency\": 1,\r\n        \"unit\": \"month\",\r\n        \"images\": [ \"image1\" ],\r\n        \"imageToUseIndex\": 0,\r\n        \"fullScreenImage\": \"image1\",\r\n        \"lastUpdatedDate\": 100000,\r\n        \"_id\": \"518a3a20-4c3b-41493-1449-382b986916az\"\r\n    },\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/item",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Item",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"item\": {\r\n        \"name\": \"name\",\r\n        \"upc\": \"000000000001\",\r\n        \"addedDate\": 10000000000,\r\n        \"frequency\": 1,\r\n        \"unit\": \"month\",\r\n        \"images\": [ \"image1\" ],\r\n        \"imageToUseIndex\": 0,\r\n        \"fullScreenImage\": \"image1\",\r\n        \"lastUpdatedDate\": 100000,\r\n        \"_id\": \"518fba10-4c3b-41423-1649-382b986916az\"\r\n    },\r\n    \"email\": \"adam.j.major@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/item/518fba10-4c3b-4842-8649-182b986916aaz",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"item",
+						"518fba10-4c3b-4842-8649-182b986916aaz"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var extractedValue = jsonData.savedUser._id; // Replace 'fieldName' with the actual field name\r",
+							"console.log({pm, environment: pm.environment})\r",
+							"pm.globals.set(\"userId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user/{{userId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User.hasPaid",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"hasPaid\": true,\r\n    \"password\": \"{{userPassword}}\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User.email",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"hasPaid\": false,\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@yahoo.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User.password",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"password\": \"password23\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update All User Fields",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"password\": \"password25\",\r\n    \"currentPassword\": \"password\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"_id\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4200/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4200",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
