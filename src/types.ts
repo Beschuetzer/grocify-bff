@@ -9,9 +9,10 @@ export type ErrorMessage = {
 /**
 *Need to update User schema if changes made here
 **/
-export type User = {
+export type UserAccount = {
     email: string;
     password: string;
     hasPaid: boolean;
+    _id?: string;
 }
-export type UserDocument = mongoose.Document & User
+export type UserDocument = mongoose.Document & UserAccount

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import {
   getAndThenCacheUser,
   getItemOrThrow,
@@ -10,7 +10,7 @@ const router = express.Router({
   mergeParams: true,
 });
 
-router.get("/item/:id", async (req, res) => {
+router.get("/item/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const foundItem = await getItemOrThrow(id);
@@ -22,10 +22,10 @@ router.get("/item/:id", async (req, res) => {
   }
 });
 
-router.put("/item/:id", async (req, res) => {
+router.put("/item/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    // const foundItem = await getItemOrThrow(id);
+    const foundItem = await getItemOrThrow(id);
     res.send({
       foundItem,
     });
@@ -35,7 +35,7 @@ router.put("/item/:id", async (req, res) => {
 });
 
 
-router.post("/item", async (req, res) => {
+router.post("/item", async (req: Request, res: Response) => {
   const { item, email } = req.body;
   try {
     await getAndThenCacheUser(email);

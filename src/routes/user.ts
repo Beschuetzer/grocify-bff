@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import {
   hashPassword,
   handleError,
@@ -8,14 +8,14 @@ import {
 import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { UserDocument } from "../types";
+import { UserAccount, UserDocument } from "../types";
 
 const router = express.Router({
   mergeParams: true,
 });
 
-router.post("/user", async (req, res) => {
-  const { email, password } = req.body;
+router.post("/user", async (req: Request, res: Response) => {
+  const { email, password } = req.body as Pick<UserAccount, "email" | 'password'>;
 
   hashPassword(password, async function (err, hash) {
     try {
@@ -30,9 +30,9 @@ router.post("/user", async (req, res) => {
   });
 });
 
-router.get("/user/:email", async (req, res) => {
+router.get("/user/:email", async (req: Request, res: Response) => {
   try {
-    const { email } = req.params;
+    const { email } = req.params; 
     const user = await getAndThenCacheUser(email);
     res.send(user);
   } catch (error) {
@@ -40,8 +40,8 @@ router.get("/user/:email", async (req, res) => {
   }
 });
 
-router.delete("/user", async (req, res) => {
-  const { password, email } = req.body;
+router.delete("/user", async (req: Request, res: Response) => {
+  const { password, email } = req.body as Pick<UserAccount, "email" | 'password'>;;
 
   try {
     const user = await getAndThenCacheUser(email);
@@ -58,9 +58,9 @@ router.delete("/user", async (req, res) => {
   }
 });
 
-router.put("/user", async (req, res) => {
+router.put("/user", async (req: Request, res: Response) => {
   const userToUpdate = req.body as UserDocument;
-  const { _id, email, password, hasPaid } = req.body;
+  const { _id, email, password, hasPaid } = req.body as UserAccount;
 
   try {
     const user = await getAndThenCacheUser(email);
@@ -94,8 +94,8 @@ router.put("/user", async (req, res) => {
   }
 });
 
-router.post("/user/isEmailAvailable", async (req, res) => {
-  const { email } = req.body;
+router.post("/user/isEmailAvailable", async (req: Request, res: Response) => {
+  const { email } = req.body as Pick<UserAccount, "email">;
   try {
     const user = await User.findOne({ email });
     res.send(user?.email == email);
