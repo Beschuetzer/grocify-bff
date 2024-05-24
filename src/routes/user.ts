@@ -79,8 +79,6 @@ router.put("/user", async (req: Request, res: Response) => {
             .send(getErrorMessage(`Unable to update user with id of '${_id}'.`));
         }
 
-        console.log({ userToUpdate, user, hash });
-
         const updatedUser = await User.updateOne(
           { _id },
           {
@@ -88,7 +86,6 @@ router.put("/user", async (req: Request, res: Response) => {
             password: hash,
           }
         );
-        console.log({ updatedUser });
         if (updatedUser.modifiedCount > 0) {
           USERS_CACHE.delete(_id);
         }
@@ -108,8 +105,6 @@ router.get(
     const { email } = req.params as Pick<UserAccount, "email">;
     try {
       const user = await User.findOne({ email });
-      console.log({ user });
-
       res.send(user?.email !== email);
     } catch (error) {
       handleError(res, error);
