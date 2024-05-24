@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const itemSchema = new mongoose.Schema({
     /**
@@ -17,6 +17,7 @@ const itemSchema = new mongoose.Schema({
     name: String,
     unit: String,
     upc: String,
+    userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
 export const Item = mongoose.model("Item", itemSchema);
