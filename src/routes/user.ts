@@ -23,7 +23,8 @@ router.post("/user", async (req: Request, res: Response) => {
   hashPassword(password, async function (err, hash) {
     try {
       const createdUser = new User({ email, password: hash, hasPaid: false });
-      const savedUser = await createdUser.save();
+      const savedUser = await createdUser.save() as UserDocument;
+      USERS_CACHE.set(savedUser._id.toString(), savedUser);
       res.send({
         savedUser,
       });
@@ -52,11 +53,10 @@ router.delete("/user", async (req: Request, res: Response) => {
   try {
     const user = await getAndThenCacheUser(_id);
     await checkIsAuthorized(password, user?.password);
-    const deletedUser = await User.deleteOne({ _id });
-    if (deletedUser.deletedCount > 0) {
+    const deletedUser = await User.findByIdAndDelete(_id);
+    if (!!deletedUser) {
       USERS_CACHE.delete(_id);
     }
-    console.log({ deletedUser });
     res.send(deletedUser);
   } catch (error) {
     handleError(res, error);
