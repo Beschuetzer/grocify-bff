@@ -7,22 +7,16 @@ import {
 } from "../helpers";
 import { Item } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { EMPTY_STRING } from "../constants";
 
 const router = express.Router({
   mergeParams: true,
 });
 
 router.get("/item/:id", async (req: Request, res: Response) => {
-  const { id, password } = req.params;
+  const { id } = req.params;
   try {
     const foundItem = await getItemOrThrow(id);
-    const user = await getAndThenCacheUser(foundItem?.userId?.toString() || EMPTY_STRING);
-    await checkIsAuthorized(password, user.password);
-    res.send({
-      item: foundItem,
-      user,
-    });
+    res.send(foundItem);
   } catch (error) {
     handleError(res, error);
   }
@@ -51,7 +45,6 @@ router.put("/item/", async (req: Request, res: Response) => {
   }
 });
 
-
 router.post("/item", async (req: Request, res: Response) => {
   const { item, userId, password } = req.body;
   try {
@@ -63,6 +56,22 @@ router.post("/item", async (req: Request, res: Response) => {
     res.send({
       savedItem,
     });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+router.delete("/item/", async (req: Request, res: Response) => {
+  const { _id, password } = req.body;
+  try {
+    const foundItem = await getItemOrThrow(_id);
+    console.log({ foundItem });
+    const user = await getAndThenCacheUser(foundItem?.userId?.toString());
+    console.log({ user });
+    await checkIsAuthorized(password, user?.password);
+
+    const deletedItem = await Item.findOneAndDelete({_id})
+    res.send(deletedItem);
   } catch (error) {
     handleError(res, error);
   }

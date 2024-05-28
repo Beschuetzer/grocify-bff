@@ -35,7 +35,11 @@ export function comparePasswords(password: string, hash: string, onDecryption: (
 /**
 *This will throw if the call to {@link getUserOrThrow} throws
 **/
-export async function getAndThenCacheUser(id: string) {
+export async function getAndThenCacheUser(id?: string) {
+  if (!id) {
+    return null;
+  }
+
   const userFound = REGISTERED_USERS_CACHE.get(id);
   
   if (!!userFound) {
@@ -60,7 +64,7 @@ export async function getItemOrThrow(id: string) {
   const user = await Item.findById(id);
   
   if (!user) {
-    throw getErrorMessage(`No user with id of '${id}' found.`);
+    throw getErrorMessage(`No item with id of '${id}' found.`);
   }
 
   return user;
