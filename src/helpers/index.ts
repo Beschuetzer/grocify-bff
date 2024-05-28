@@ -66,6 +66,15 @@ export async function getItemOrThrow(id: string) {
   return user;
 }
 
+export async function getUserItems(userId: string) {
+  if (!userId) {
+    throw new Error('No userId given in getUserItems().')
+  }
+  
+  const items = await Item.find({ userId });
+  return items;
+}
+
 export async function getUserOrThrow(id: string) {
   const user = await User.findById(id) as UserDocument;
   

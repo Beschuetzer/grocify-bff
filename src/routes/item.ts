@@ -2,22 +2,37 @@ import express, { Request, Response } from "express";
 import {
   getAndThenCacheUser,
   getItemOrThrow,
+  getUserItems,
   handleError,
 } from "../helpers";
 import { Item } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
+import { EMPTY_STRING } from "../constants";
 
 const router = express.Router({
   mergeParams: true,
 });
 
 router.get("/item/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id, password } = req.params;
   try {
     const foundItem = await getItemOrThrow(id);
+    const user = await getAndThenCacheUser(foundItem?.userId?.toString() || EMPTY_STRING);
+    await checkIsAuthorized(password, user.password);
     res.send({
-      foundItem,
+      item: foundItem,
+      user,
     });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+router.get("/item/user/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const items = await getUserItems(id);
+    res.send(items);
   } catch (error) {
     handleError(res, error);
   }
