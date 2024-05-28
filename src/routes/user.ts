@@ -7,7 +7,7 @@ import {
 } from "../helpers";
 import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
-import { checkIsAuthorized as throwIfNotAuthorized } from "../middlware/isAuthenticated";
+import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { CurrentPassword, UserAccount, UserDocument } from "../types";
 
 const router = express.Router({
@@ -51,7 +51,7 @@ router.delete("/user", async (req: Request, res: Response) => {
 
   try {
     const user = await getAndThenCacheUser(_id);
-    await throwIfNotAuthorized(password, user?.password);
+    await checkIsAuthorized(password, user?.password);
     const deletedUser = await User.deleteOne({ _id });
     if (deletedUser.deletedCount > 0) {
       USERS_CACHE.delete(_id);
@@ -70,7 +70,7 @@ router.put("/user", async (req: Request, res: Response) => {
 
   try {
     const user = await getAndThenCacheUser(_id);
-    await throwIfNotAuthorized(currentPassword, user?.password);
+    await checkIsAuthorized(currentPassword, user?.password);
     hashPassword(password || currentPassword, async (err, hash) => {
       try {
         if (err || !hash) {

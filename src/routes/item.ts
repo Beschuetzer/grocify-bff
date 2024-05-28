@@ -7,6 +7,7 @@ import {
 } from "../helpers";
 import { Item } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
+import { ItemDocument } from "../types";
 
 const router = express.Router({
   mergeParams: true,
@@ -32,14 +33,20 @@ router.get("/item/user/:id", async (req: Request, res: Response) => {
   }
 });
 
-//todo: finish this
 router.put("/item/", async (req: Request, res: Response) => {
-  const { _id, item } = req.body;
+  const { item, password, userId } =
+    req.body as ItemDocument;
+
   try {
-    const foundItem = await getItemOrThrow(_id);
-    res.send({
-      foundItem,
-    });
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    const updatedItem = await Item.findOneAndUpdate(
+      { _id: item._id },
+      item
+    );
+    console.log({updatedItem});
+    
+    res.send(updatedItem);
   } catch (error) {
     handleError(res, error);
   }
@@ -65,11 +72,8 @@ router.delete("/item/", async (req: Request, res: Response) => {
   const { _id, password } = req.body;
   try {
     const foundItem = await getItemOrThrow(_id);
-    console.log({ foundItem });
     const user = await getAndThenCacheUser(foundItem?.userId?.toString());
-    console.log({ user });
     await checkIsAuthorized(password, user?.password);
-
     const deletedItem = await Item.findOneAndDelete({_id})
     res.send(deletedItem);
   } catch (error) {
