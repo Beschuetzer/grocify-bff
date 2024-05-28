@@ -37,7 +37,6 @@ export function comparePasswords(password: string, hash: string, onDecryption: (
 **/
 export async function getAndThenCacheUser(id: string) {
   const userFound = REGISTERED_USERS_CACHE.get(id);
-  console.log({id, userFound});
   
   if (!!userFound) {
     return userFound;

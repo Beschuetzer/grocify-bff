@@ -5,6 +5,7 @@ import {
   handleError,
 } from "../helpers";
 import { Item } from "../schema";
+import { checkIsAuthorized } from "../middlware/isAuthenticated";
 
 const router = express.Router({
   mergeParams: true,
@@ -37,9 +38,10 @@ router.put("/item/", async (req: Request, res: Response) => {
 
 
 router.post("/item", async (req: Request, res: Response) => {
-  const { item, userId } = req.body;
+  const { item, userId, password } = req.body;
   try {
-    await getAndThenCacheUser(userId);
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user.password);
     const createdItem = new Item({ ...item, userId });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
