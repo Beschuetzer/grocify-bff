@@ -49,7 +49,7 @@ router.post("/item", async (req: Request, res: Response) => {
   const { item, userId, password } = req.body;
   try {
     const user = await getAndThenCacheUser(userId);
-    await checkIsAuthorized(password, user.password);
+    await checkIsAuthorized(password, user?.password);
     const createdItem = new Item({ ...item, userId });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
