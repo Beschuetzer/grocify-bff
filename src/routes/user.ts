@@ -51,7 +51,7 @@ router.delete("/user", async (req: Request, res: Response) => {
 
   try {
     const user = await getAndThenCacheUser(_id);
-    await throwIfNotAuthorized(password, user.password);
+    await throwIfNotAuthorized(password, user?.password);
     const deletedUser = await User.deleteOne({ _id });
     if (deletedUser.deletedCount > 0) {
       USERS_CACHE.delete(_id);
@@ -70,7 +70,7 @@ router.put("/user", async (req: Request, res: Response) => {
 
   try {
     const user = await getAndThenCacheUser(_id);
-    await throwIfNotAuthorized(currentPassword, user.password);
+    await throwIfNotAuthorized(currentPassword, user?.password);
     hashPassword(password || currentPassword, async (err, hash) => {
       try {
         if (err || !hash) {
