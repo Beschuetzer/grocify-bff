@@ -104,6 +104,7 @@ router.get(
     const { email } = req.params as Pick<UserAccount, "email">;
     try {
       const user = await User.findOne({ email: { $regex: new RegExp(email, 'i')}});
+      console.log({user, email});
       res.send(user?.email.toLowerCase() !== email.toLowerCase());
     } catch (error) {
       handleError(res, error);
