@@ -8,7 +8,7 @@
 	},
 	"item": [
 		{
-			"name": "Check is Email Available",
+			"name": "Check  Email Availablility (false)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -25,23 +25,108 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user/isEmailAvailable/adam.j.major@gmail.com",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user/isEmailAvailable/{{userEmail}}",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user",
 						"isEmailAvailable",
-						"adam.j.major@gmail.com"
+						"{{userEmail}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Save Item",
+			"name": "Check  Email Availablility (false different case)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Fetch the global variable\r",
+							"const userEmail = pm.globals.get(\"userEmail\");\r",
+							"\r",
+							"// Check if the global variable exists\r",
+							"if (userEmail !== undefined) {\r",
+							"    // Convert the value to upper case\r",
+							"    const upperCaseValue = userEmail.toUpperCase();\r",
+							"\r",
+							"    // Set the upper case value to another variable\r",
+							"    pm.environment.set(\"upperCaseEmail\", upperCaseValue);\r",
+							"} else {\r",
+							"    console.error(\"Global variable 'myGlobalVariable' is not defined.\");\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/user/isEmailAvailable/{{userEmailUppercase}}",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"user",
+						"isEmailAvailable",
+						"{{userEmailUppercase}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check  Email Availablility (true)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/user/isEmailAvailable/test@test.com",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"user",
+						"isEmailAvailable",
+						"test@test.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Item (Valid User)",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -96,6 +181,20 @@
 						"type": "text/javascript",
 						"packages": {}
 					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+							"console.log({pm, environment: pm.environment})\r",
+							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
 				}
 			],
 			"request": {
@@ -103,7 +202,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"item\": {\r\n        \"name\": \"name\",\r\n        \"upc\": \"000000000011\",\r\n        \"addedDate\": 10000000000,\r\n        \"frequency\": 1,\r\n        \"unit\": \"month\",\r\n        \"images\": [ \"image1\" ],\r\n        \"imageToUseIndex\": 0,\r\n        \"fullScreenImage\": \"image1\",\r\n        \"lastUpdatedDate\": 100000,\r\n        \"_id\": \"518a3a20-4c3b-41493-1449-382b986916az\"\r\n    },\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -111,12 +210,246 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/item",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/item",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Item (Invalid User)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"  // Ensure that min is less than or equal to max\r",
+							"  if (min > max) {\r",
+							"    throw new Error('Min must be less than or equal to max');\r",
+							"  }\r",
+							"\r",
+							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"  const randomInt = min + Math.floor(Math.random() * max);\r",
+							"  return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"item\": {\r",
+							"        \"name\": \"name\",\r",
+							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [ \"image1\" ],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+							"        \"_id\": generateGUID()\r",
+							"    },\r",
+							"    \"userId\": \"{{invalidUserId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+							"console.log({pm, environment: pm.environment})\r",
+							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update item",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"  // Ensure that min is less than or equal to max\r",
+							"  if (min > max) {\r",
+							"    throw new Error('Min must be less than or equal to max');\r",
+							"  }\r",
+							"\r",
+							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"  const randomInt = min + Math.floor(Math.random() * max);\r",
+							"  return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"item\": {\r",
+							"        \"name\": \"updatedName\",\r",
+							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [ \"image1\" ],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+							"        \"_id\": \"{{itemId}}\"\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Item",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"_id\": \"{{itemId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
 					"path": [
 						"item"
 					]
@@ -134,7 +467,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"item\": {\r\n        \"name\": \"name\",\r\n        \"upc\": \"000000000001\",\r\n        \"addedDate\": 10000000000,\r\n        \"frequency\": 1,\r\n        \"unit\": \"month\",\r\n        \"images\": [ \"image1\" ],\r\n        \"imageToUseIndex\": 0,\r\n        \"fullScreenImage\": \"image1\",\r\n        \"lastUpdatedDate\": 100000,\r\n        \"_id\": \"518fba10-4c3b-41423-1649-382b986916az\"\r\n    },\r\n    \"email\": \"adam.j.major@gmail.com\"\r\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -142,15 +475,44 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/item/518fba10-4c3b-4842-8649-182b986916aaz",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/item/{{itemId}}",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"item",
-						"518fba10-4c3b-4842-8649-182b986916aaz"
+						"{{itemId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Items",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item/user/{{userId}}",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item",
+						"user",
+						"{{userId}}"
 					]
 				}
 			},
@@ -164,9 +526,21 @@
 					"script": {
 						"exec": [
 							"var jsonData = pm.response.json();\r",
-							"var extractedValue = jsonData.savedUser._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"userId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							"var upperCaseEmail = jsonData.email.toUpperCase();\r",
+							"console.log({pm, environment: pm.environment, upperCaseEmail})\r",
+							"pm.globals.set(\"userId\", jsonData._id); // Set the variable 'variableName' with the extracted value\r",
+							"pm.globals.set(\"userEmail\", jsonData.email); // Set the variable 'variableName' with the extracted value\r",
+							"pm.globals.set(\"userEmailUppercase\", upperCaseEmail); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
 							""
 						],
 						"type": "text/javascript",
@@ -187,12 +561,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user"
 					]
@@ -218,12 +590,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user/{{userId}}",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user/{{userId}}",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user",
 						"{{userId}}"
@@ -247,12 +617,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user"
 					]
@@ -275,12 +643,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user"
 					]
@@ -290,12 +656,40 @@
 		},
 		{
 			"name": "Update User.password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var body = JSON.parse(pm.request.body.raw);\r",
+							"console.log({body})\r",
+							"if (!!body.password) {\r",
+							"    console.log('saving new password')\r",
+							"    pm.globals.set(\"userPassword\", body.password); // Set the variable 'variableName' with the extracted value\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"password23\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+					"raw": "{\r\n    \"password\": \"{{userPassword}}23\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -303,12 +697,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user"
 					]
@@ -331,12 +723,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user"
 					]
@@ -346,6 +736,18 @@
 		},
 		{
 			"name": "Delete User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.globals.set('userPassword', 'password')"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "DELETE",
 				"header": [],
@@ -359,12 +761,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4200/user",
-					"protocol": "http",
+					"raw": "{{groficyBaseUrl\n}}/user",
 					"host": [
-						"localhost"
+						"{{groficyBaseUrl\n}}"
 					],
-					"port": "4200",
 					"path": [
 						"user"
 					]
