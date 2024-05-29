@@ -91,14 +91,19 @@ export async function getUserOrThrow(id: string) {
 
 export function handleError(res: Response, error: unknown, statusCode = 500) {
   let statusCodeToUse = statusCode;
-  console.log({error});
+  let errorToUse = error;
+  let message = (error as ErrorMessage)?.errorResponse?.errmsg
+  console.log({errorMsg: (error as any)?.message, message});
   
-  const message = (error as Error)?.message || (error as ErrorMessage)?.errorResponse?.errmsg;
+  if ((error as Error)?.message) {
+    message = (error as Error)?.message;
+    errorToUse = getErrorMessage(message);
+  }
 
-  if (message === ERROR_MSG_NOT_AUTHORIZED || message === ERROR_MSG_NOT_AUTHORIZED) {
+  if (message === ERROR_MSG_NOT_AUTHORIZED) {
     statusCodeToUse = 401;
   }
-  res.status(statusCodeToUse).send(error)
+  res.status(statusCodeToUse).send(errorToUse)
 }
 
 export function hashPassword(password: string, onEncryption: (err?: Error, hash?: string) => void) {

@@ -9,12 +9,13 @@ import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { CurrentPassword, UserAccount, UserDocument } from "../types";
+import { USER_PATH } from "./constants";
 
 const router = express.Router({
   mergeParams: true,
 });
 
-router.post("/user", async (req: Request, res: Response) => {
+router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
   const { email, password } = req.body as Pick<
     UserAccount,
     "email" | "password"
@@ -32,7 +33,7 @@ router.post("/user", async (req: Request, res: Response) => {
   });
 });
 
-router.get("/user/:id", async (req: Request, res: Response) => {
+router.get(`${USER_PATH}/:id`, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const user = await getAndThenCacheUser(id);
@@ -42,7 +43,7 @@ router.get("/user/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/user", async (req: Request, res: Response) => {
+router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
   const { password, _id } = req.body as Pick<
     UserAccount,
     "_id" | "password"
@@ -61,7 +62,7 @@ router.delete("/user", async (req: Request, res: Response) => {
   }
 });
 
-router.put("/user", async (req: Request, res: Response) => {
+router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
   const userToUpdate = req.body as UserDocument;
   const { _id, password, currentPassword } =
     req.body as UserAccount & CurrentPassword;
@@ -98,7 +99,7 @@ router.put("/user", async (req: Request, res: Response) => {
 });
 
 router.get(
-  "/user/isEmailAvailable/:email",
+  `${USER_PATH}/isEmailAvailable/:email`,
   async (req: Request, res: Response) => {
     const { email } = req.params as Pick<UserAccount, "email">;
     try {

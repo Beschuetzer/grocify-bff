@@ -8,12 +8,13 @@ import {
 import { Item } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { ItemDocument } from "../types";
+import { ITEM_PATH } from "./constants";
 
 const router = express.Router({
   mergeParams: true,
 });
 
-router.get("/item/:id", async (req: Request, res: Response) => {
+router.get(`${ITEM_PATH}/:id`, async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const foundItem = await getItemOrThrow(id);
@@ -23,7 +24,7 @@ router.get("/item/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/item/user/:id", async (req: Request, res: Response) => {
+router.get(`${ITEM_PATH}/user/:id`, async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const items = await getUserItems(id);
@@ -33,7 +34,7 @@ router.get("/item/user/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.put("/item/", async (req: Request, res: Response) => {
+router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { item, password, userId } =
     req.body as ItemDocument;
 
@@ -44,6 +45,9 @@ router.put("/item/", async (req: Request, res: Response) => {
       { _id: item._id },
       item
     );
+    if (!updatedItem) {
+      throw new Error(`No item with id of '${item._id}'.`)
+    }
     console.log({updatedItem});
     
     res.send(updatedItem);
@@ -52,7 +56,7 @@ router.put("/item/", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/item", async (req: Request, res: Response) => {
+router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { item, userId, password } = req.body;
   try {
     const user = await getAndThenCacheUser(userId);
@@ -66,7 +70,7 @@ router.post("/item", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/item/", async (req: Request, res: Response) => {
+router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { _id, password } = req.body;
   try {
     const foundItem = await getItemOrThrow(_id);
