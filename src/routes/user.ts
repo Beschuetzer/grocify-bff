@@ -25,10 +25,7 @@ router.post("/user", async (req: Request, res: Response) => {
       const createdUser = new User({ email, password: hash, hasPaid: false });
       const savedUser = await createdUser.save() as UserDocument;
       USERS_CACHE.set(savedUser._id.toString(), savedUser);
-      res.send({
-        savedUser,
-        hasPaid: false,
-      });
+      res.send(savedUser);
     } catch (error) {
       handleError(res, error);
     }
@@ -66,7 +63,7 @@ router.delete("/user", async (req: Request, res: Response) => {
 
 router.put("/user", async (req: Request, res: Response) => {
   const userToUpdate = req.body as UserDocument;
-  const { _id, email, password, hasPaid, currentPassword } =
+  const { _id, password, currentPassword } =
     req.body as UserAccount & CurrentPassword;
 
   try {

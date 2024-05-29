@@ -60,9 +60,7 @@ router.post("/item", async (req: Request, res: Response) => {
     const createdItem = new Item({ ...item, userId });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
-    res.send({
-      savedItem,
-    });
+    res.send(savedItem);
   } catch (error) {
     handleError(res, error);
   }
