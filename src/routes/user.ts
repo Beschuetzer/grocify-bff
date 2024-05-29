@@ -103,8 +103,8 @@ router.get(
   async (req: Request, res: Response) => {
     const { email } = req.params as Pick<UserAccount, "email">;
     try {
-      const user = await User.findOne({ email });
-      res.send(user?.email !== email);
+      const user = await User.findOne({ email: { $regex: new RegExp(email, 'i')}});
+      res.send(user?.email.toLowerCase() !== email.toLowerCase());
     } catch (error) {
       handleError(res, error);
     }
