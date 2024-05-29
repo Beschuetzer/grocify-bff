@@ -27,6 +27,7 @@ router.post("/user", async (req: Request, res: Response) => {
       USERS_CACHE.set(savedUser._id.toString(), savedUser);
       res.send({
         savedUser,
+        hasPaid: false,
       });
     } catch (error) {
       handleError(res, error);
