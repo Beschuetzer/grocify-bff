@@ -9,7 +9,7 @@ import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { CurrentPassword, UserAccount, UserDocument } from "../types";
-import { USER_PATH } from "./constants";
+import { PASSWORD_SCHEMA, USER_PATH } from "./constants";
 
 const router = express.Router({
   mergeParams: true,
@@ -21,16 +21,21 @@ router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
     "email" | "password"
   >;
 
-  hashPassword(password, async function (err, hash) {
-    try {
-      const createdUser = new User({ email, password: hash, hasPaid: false });
-      const savedUser = await createdUser.save() as UserDocument;
-      USERS_CACHE.set(savedUser._id.toString(), savedUser);
-      res.send(savedUser);
-    } catch (error) {
-      handleError(res, error);
-    }
-  });
+  try {
+    PASSWORD_SCHEMA.parse(password);
+    hashPassword(password, async function (err, hash) {
+      try {
+        const createdUser = new User({ email, password: hash, hasPaid: false });
+        const savedUser = (await createdUser.save()) as UserDocument;
+        USERS_CACHE.set(savedUser._id.toString(), savedUser);
+        res.send(savedUser);
+      } catch (error) {
+        handleError(res, error);
+      }
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
 });
 
 router.get(`${USER_PATH}/:id`, async (req: Request, res: Response) => {
@@ -44,10 +49,7 @@ router.get(`${USER_PATH}/:id`, async (req: Request, res: Response) => {
 });
 
 router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
-  const { password, _id } = req.body as Pick<
-    UserAccount,
-    "_id" | "password"
-  >;
+  const { password, _id } = req.body as Pick<UserAccount, "_id" | "password">;
 
   try {
     const user = await getAndThenCacheUser(_id);
@@ -64,8 +66,8 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
 
 router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
   const userToUpdate = req.body as UserDocument;
-  const { _id, password, currentPassword } =
-    req.body as UserAccount & CurrentPassword;
+  const { _id, password, currentPassword } = req.body as UserAccount &
+    CurrentPassword;
 
   try {
     const user = await getAndThenCacheUser(_id);
@@ -75,7 +77,9 @@ router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
         if (err || !hash) {
           res
             .status(500)
-            .send(getErrorMessage(`Unable to update user with id of '${_id}'.`));
+            .send(
+              getErrorMessage(`Unable to update user with id of '${_id}'.`)
+            );
         }
 
         const updatedUser = await User.updateOne(
@@ -103,8 +107,10 @@ router.get(
   async (req: Request, res: Response) => {
     const { email } = req.params as Pick<UserAccount, "email">;
     try {
-      const user = await User.findOne({ email: { $regex: new RegExp(email, 'i')}});
-      console.log({user, email});
+      const user = await User.findOne({
+        email: { $regex: new RegExp(email, "i") },
+      });
+      console.log({ user, email });
       res.send(user?.email.toLowerCase() !== email.toLowerCase());
     } catch (error) {
       handleError(res, error);
