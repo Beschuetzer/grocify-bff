@@ -741,7 +741,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.globals.set('userPassword', 'password')"
+							"pm.globals.set('userPassword', pm.globals.get('originalPassword'))"
 						],
 						"type": "text/javascript",
 						"packages": {}
