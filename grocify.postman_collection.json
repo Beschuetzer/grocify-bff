@@ -553,7 +553,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@gmail.com\"\r\n}",
+					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": {{userEmail}}\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
