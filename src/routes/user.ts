@@ -4,6 +4,7 @@ import {
   handleError,
   getAndThenCacheUser,
   getErrorMessage,
+  validateMatchesSchema,
 } from "../helpers";
 import { User } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
@@ -24,7 +25,7 @@ router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
   try {
     const sanitizedEmail = email.trim().toLowerCase();
     const sanitizedPassword = password.trim();
-    PASSWORD_SCHEMA.parse(sanitizedPassword);
+    validateMatchesSchema(PASSWORD_SCHEMA, sanitizedPassword)
     hashPassword(sanitizedPassword, async function (err, hash) {
       try {
         const createdUser = new User({ email: sanitizedEmail, password: hash, hasPaid: false });

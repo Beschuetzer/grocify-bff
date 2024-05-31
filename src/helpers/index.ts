@@ -5,6 +5,7 @@ import { ErrorMessage, UserDocument } from "../types";
 import { Response } from "express";
 import { REGISTERED_USERS_CACHE } from "../cache";
 import { Item } from "../schema";
+import { ZodEffects } from "zod";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -111,6 +112,19 @@ export function hashPassword(password: string, onEncryption: (err?: Error, hash?
     if (err) throw err;
     onEncryption(err, hash);
   });
+}
+
+export function validateMatchesSchema<T>(schema: ZodEffects<any>, item: T) {
+  const {success, error} = schema.safeParse(item);
+
+  if (!success) {
+    let errorMsg = "Something went wrong parsing the schema"
+    if (typeof error === 'object') {
+      const errorToUse = error.errors.find(err => err.code.match(/custom/i)) || error.errors[0]
+      errorMsg = errorToUse.message;
+    }
+    throw new Error(errorMsg)
+  }
 }
 
 export async function wait(ms: number) {
