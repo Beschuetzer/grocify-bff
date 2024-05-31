@@ -83,10 +83,10 @@ export type StoreSpecificValueUpdater = Partial<{
  *Need to update User schema if changes made here
  **/
 export type UserAccount = {
+  _id: string;
+  hasPaid: boolean;
   email: string;
   password: string;
-  hasPaid: boolean;
-  _id: string;
 };
 export type UserDocument = mongoose.Document & UserAccount;
 export type ItemDocument = mongoose.Document & ItemSaved;
