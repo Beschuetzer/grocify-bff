@@ -7,7 +7,7 @@ export type CurrentPassword = {
 
 export type ErrorMessage = {
   errorResponse: {
-    errmsg: string;
+    message: string;
   };
 };
 

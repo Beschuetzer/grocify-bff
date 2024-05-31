@@ -55,7 +55,7 @@ export async function getAndThenCacheUser(id?: string) {
 export function getErrorMessage(msg: string) {
   return {
       errorResponse: {
-        errmsg: msg,
+        message: msg,
       }
   } as ErrorMessage
 }
@@ -92,7 +92,7 @@ export async function getUserOrThrow(id: string) {
 export function handleError(res: Response, error: unknown, statusCode = 500) {
   let statusCodeToUse = statusCode;
   let errorToUse = error;
-  let message = (error as ErrorMessage)?.errorResponse?.errmsg
+  let message = (error as ErrorMessage)?.errorResponse?.message
   console.log({errorMsg: (error as any)?.message, message});
   
   if ((error as Error)?.message) {
@@ -111,4 +111,13 @@ export function hashPassword(password: string, onEncryption: (err?: Error, hash?
     if (err) throw err;
     onEncryption(err, hash);
   });
+}
+
+export async function wait(ms: number) {
+  if (ms <= 0) return null;
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(null);
+    }, ms)
+  })
 }
