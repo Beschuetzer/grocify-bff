@@ -87,6 +87,7 @@ router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
           {
             ...userToUpdate,
             password: hash,
+            hasPaid: user.hasPaid
           }
         );
         if (updatedUser.modifiedCount > 0) {
