@@ -109,11 +109,11 @@ router.get(
   `${USER_PATH}/isEmailAvailable/:email`,
   async (req: Request, res: Response) => {
     const { email } = req.params as Pick<UserAccount, "email">;
+    const trimmedEmail = email.trim();
     try {
       const user = await User.findOne({
-        email: { $regex: new RegExp(email, "i") },
+        email: { $regex: new RegExp(trimmedEmail, "i") },
       });
-      console.log({ user, email });
       res.send(!user);
     } catch (error) {
       handleError(res, error);
