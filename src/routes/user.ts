@@ -22,10 +22,12 @@ router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
   >;
 
   try {
-    PASSWORD_SCHEMA.parse(password);
-    hashPassword(password, async function (err, hash) {
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedPassword = password.trim();
+    PASSWORD_SCHEMA.parse(sanitizedPassword);
+    hashPassword(sanitizedPassword, async function (err, hash) {
       try {
-        const createdUser = new User({ email, password: hash, hasPaid: false });
+        const createdUser = new User({ email: sanitizedEmail, password: hash, hasPaid: false });
         const savedUser = (await createdUser.save()) as UserDocument;
         USERS_CACHE.set(savedUser._id.toString(), savedUser);
         res.send(savedUser);
@@ -112,7 +114,7 @@ router.get(
         email: { $regex: new RegExp(email, "i") },
       });
       console.log({ user, email });
-      res.send(user?.email.toLowerCase() !== email.toLowerCase());
+      res.send(!user);
     } catch (error) {
       handleError(res, error);
     }
