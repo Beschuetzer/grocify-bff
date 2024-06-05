@@ -1,4 +1,6 @@
 ## MVP
+- need to change where the id is created (do on backend)
+- need to find a way to save the store specific values
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password
 - add endpoint that gets all of the items the user can access based on username and password inputs (any items without a password )
