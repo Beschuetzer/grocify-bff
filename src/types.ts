@@ -50,7 +50,8 @@ export type ItemBase = {
 export type Item = Key & ItemBase;
 export type ItemWithStoreSpecificValues = Item & StoreSpecificValues;
 export type ItemSaved = {
-  item: ItemWithStoreSpecificValues;
+  item: Item;
+  storeSpecificValues: StoreSpecificValues;
   password?: string;
   userId?: string;
 };

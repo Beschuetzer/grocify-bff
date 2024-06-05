@@ -7,7 +7,7 @@ import {
 } from "../helpers";
 import { Item } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { ItemDocument } from "../types";
+import { ItemSaved } from "../types";
 import { ITEM_PATH } from "./constants";
 
 const router = express.Router({
@@ -36,7 +36,7 @@ router.get(`${ITEM_PATH}/user/:id`, async (req: Request, res: Response) => {
 
 router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { item, password, userId } =
-    req.body as ItemDocument;
+    req.body as ItemSaved;
 
   console.log({method: "PUT", userId, password, item});
 
@@ -59,7 +59,7 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 });
 
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, userId, password } = req.body;
+  const { item, userId, password } = req.body as ItemSaved;
 
   console.log({method: "POST", userId, password, item});
 
