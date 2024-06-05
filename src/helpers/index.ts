@@ -1,11 +1,12 @@
 import { BCRYPT_SALT_ROUND, ERROR_MSG_NOT_AUTHORIZED } from "../constants";
 import bcrypt from "bcrypt";
-import { User } from "../schema/user";
-import { ErrorMessage, UserDocument } from "../types";
+import { UserSchema } from "../schema/user";
+import { ErrorMessage, StoreSpecificValues, StoreSpecificValuesDocument, UserDocument } from "../types";
 import { Response } from "express";
 import { REGISTERED_USERS_CACHE } from "../cache";
-import { Item } from "../schema";
+import { ItemSchema } from "../schema";
 import { ZodEffects } from "zod";
+import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -62,7 +63,7 @@ export function getErrorMessage(msg: string) {
 }
 
 export async function getItemOrThrow(id: string) {
-  const user = await Item.findById(id);
+  const user = await ItemSchema.findById(id);
   
   if (!user) {
     throw getErrorMessage(`No item with id of '${id}' found.`);
@@ -76,12 +77,12 @@ export async function getUserItems(userId: string) {
     throw new Error('No userId given in getUserItems().')
   }
   
-  const items = await Item.find({ userId });
+  const items = await ItemSchema.find({ userId });
   return items;
 }
 
 export async function getUserOrThrow(id: string) {
-  const user = await User.findById(id) as UserDocument;
+  const user = await UserSchema.findById(id) as UserDocument;
   
   if (!user) {
     throw getErrorMessage(`No user with id of '${id}' found`);
@@ -105,6 +106,29 @@ export function handleError(res: Response, error: unknown, statusCode = 500) {
     statusCodeToUse = 401;
   }
   res.status(statusCodeToUse).send(errorToUse)
+}
+
+/**
+*Saves the storesSpecific values either as a new document or updates the current document if found
+**/
+export async function handleStoreSpecificValues(userId: string, storeSpecificValuesToAdd?: StoreSpecificValues) {
+  console.log({storeSpecificValuesToAdd, userId});
+  if (Object.keys(storeSpecificValuesToAdd || {}).length <= 0) {
+    return;
+  }
+  const existingValues = await StoreSpecificValuesSchema.findOne({ userId }) as StoreSpecificValuesDocument;
+  console.log({existingValues});
+  if (!existingValues) {
+    const createdValues = new StoreSpecificValuesSchema({
+      userId,
+      values: storeSpecificValuesToAdd
+    })
+    await createdValues.save();
+    console.log({createdValues});
+    return;
+  } 
+  
+  console.log("todo: implement logic to update and save values");
 }
 
 export function hashPassword(password: string, onEncryption: (err?: Error, hash?: string) => void) {

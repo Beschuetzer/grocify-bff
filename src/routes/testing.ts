@@ -5,14 +5,14 @@ import {
   hashPassword,
   comparePasswords,
 } from "../helpers";
-import { Item } from "../schema";
+import { ItemSchema } from "../schema";
 
 const router = express.Router({
   mergeParams: true,
 });
 
 router.get("/mockCreation", async (req, res) => {
-  const createdItem = new Item({
+  const createdItem = new ItemSchema({
     addedDate: Date.now() - getRandomInt(1000000, 1000000000),
     frequency: getRandomInt(1, 10),
     unit: "day",

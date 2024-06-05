@@ -20,4 +20,4 @@ const itemSchema = new mongoose.Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
-export const Item = mongoose.model("Item", itemSchema);
+export const ItemSchema = mongoose.model("Item", itemSchema);

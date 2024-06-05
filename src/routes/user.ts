@@ -6,7 +6,7 @@ import {
   getErrorMessage,
   validateMatchesSchema,
 } from "../helpers";
-import { User } from "../schema/user";
+import { UserSchema } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { CurrentPassword, UserAccount, UserDocument } from "../types";
@@ -28,7 +28,7 @@ router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
     validateMatchesSchema(PASSWORD_SCHEMA, sanitizedPassword)
     hashPassword(sanitizedPassword, async function (err, hash) {
       try {
-        const createdUser = new User({ email: sanitizedEmail, password: hash });
+        const createdUser = new UserSchema({ email: sanitizedEmail, password: hash });
         const savedUser = (await createdUser.save()) as UserDocument;
         USERS_CACHE.set(savedUser._id.toString(), savedUser);
         res.send(savedUser);
@@ -57,7 +57,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
   try {
     const user = await getAndThenCacheUser(_id);
     await checkIsAuthorized(password, user?.password);
-    const deletedUser = await User.findByIdAndDelete(_id);
+    const deletedUser = await UserSchema.findByIdAndDelete(_id);
     if (!!deletedUser) {
       USERS_CACHE.delete(_id);
     }
@@ -85,7 +85,7 @@ router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
             );
         }
 
-        const updatedUser = await User.updateOne(
+        const updatedUser = await UserSchema.updateOne(
           { _id },
           {
             ...userToUpdate,
@@ -111,7 +111,7 @@ router.get(
     const { email } = req.params as Pick<UserAccount, "email">;
     const trimmedEmail = email.trim();
     try {
-      const user = await User.findOne({
+      const user = await UserSchema.findOne({
         email: { $regex: new RegExp(trimmedEmail, "i") },
       });
       res.send(!user);

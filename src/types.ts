@@ -49,13 +49,12 @@ export type ItemBase = {
  **/
 export type Item = Key & ItemBase;
 export type ItemWithStoreSpecificValues = Item & StoreSpecificValues;
-export type ItemSaved = {
+export type SaveItemRequest = {
   item: Item;
   storeSpecificValues: StoreSpecificValues;
   password?: string;
   userId?: string;
 };
-
 export enum StoreSpecificValueKey {
   AisleNumber = "aisleNumber",
   ItemId = "itemId",
@@ -76,6 +75,11 @@ export type StoreSpecificValue<T> =
   | { [storeKey: string]: T }
   | null
   | undefined;
+export type StoreSpecificValuesMap = { [key: string]: StoreSpecificValues };
+export type StoreSpecificValuesSchema = {
+  userId: string;
+  values: StoreSpecificValuesMap;
+}
 export type StoreSpecificValueUpdater = Partial<{
   [key in StoreSpecificValueKey]: (currentValue: any) => any;
 }>;
@@ -89,4 +93,5 @@ export type UserAccount = {
   password: string;
 };
 export type UserDocument = mongoose.Document & UserAccount;
-export type ItemDocument = mongoose.Document & ItemSaved;
+export type ItemDocument = mongoose.Document & SaveItemRequest;
+export type StoreSpecificValuesDocument = mongoose.Document & StoreSpecificValuesSchema;

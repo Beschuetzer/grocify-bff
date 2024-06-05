@@ -1,5 +1,5 @@
 ## MVP
-- figure out how to save the store specific items passed to PUT and POST methods for item
+- use frontend logic for updating storeSpecificValues map in handleStoreSpecificValues()
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password
 - add endpoint that gets all of the items the user can access based on username and password inputs (any items without a password )

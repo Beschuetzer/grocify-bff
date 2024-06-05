@@ -4,10 +4,11 @@ import {
   getItemOrThrow,
   getUserItems,
   handleError,
+  handleStoreSpecificValues,
 } from "../helpers";
-import { Item } from "../schema";
+import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { ItemSaved } from "../types";
+import { SaveItemRequest } from "../types";
 import { ITEM_PATH } from "./constants";
 
 const router = express.Router({
@@ -35,15 +36,16 @@ router.get(`${ITEM_PATH}/user/:id`, async (req: Request, res: Response) => {
 });
 
 router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, password, userId } =
-    req.body as ItemSaved;
+  const { item, storeSpecificValues, password, userId } =
+    req.body as SaveItemRequest;
 
   console.log({method: "PUT", userId, password, item});
 
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const updatedItem = await Item.findOneAndUpdate(
+    await handleStoreSpecificValues(user._id, storeSpecificValues);
+    const updatedItem = await ItemSchema.findOneAndUpdate(
       { _id: item._id },
       item
     );
@@ -59,14 +61,15 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 });
 
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, userId, password } = req.body as ItemSaved;
+  const { item, storeSpecificValues, userId, password } = req.body as SaveItemRequest;
 
-  console.log({method: "POST", userId, password, item});
+  console.log({method: "POST", userId, password, item, storeSpecificValues});
 
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const createdItem = new Item({ ...item, userId });
+    const createdItem = new ItemSchema({ ...item, userId });
+    await handleStoreSpecificValues(user._id, storeSpecificValues);
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
     res.send(savedItem);
@@ -81,11 +84,13 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     const foundItem = await getItemOrThrow(_id);
     const user = await getAndThenCacheUser(foundItem?.userId?.toString());
     await checkIsAuthorized(password, user?.password);
-    const deletedItem = await Item.findOneAndDelete({_id})
+    const deletedItem = await ItemSchema.findOneAndDelete({_id})
     res.send(deletedItem);
   } catch (error) {
     handleError(res, error);
   }
 });
+
+
 
 export default router;
