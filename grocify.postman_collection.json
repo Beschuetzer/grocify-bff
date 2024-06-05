@@ -603,32 +603,6 @@
 			"response": []
 		},
 		{
-			"name": "Update User.hasPaid",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"hasPaid\": true,\r\n    \"password\": \"{{userPassword}}\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user",
-					"host": [
-						"{{groficyBaseUrl\n}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Update User.email",
 			"request": {
 				"method": "PUT",
@@ -715,7 +689,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"password25\",\r\n    \"currentPassword\": \"password\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+					"raw": "{\r\n    \"password\": \"password25\",\r\n    \"currentPassword\": \"password\",\r\n    \"email\": \"adam.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

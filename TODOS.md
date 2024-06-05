@@ -8,7 +8,7 @@
     - The frontend would have a way to view data and sync it to the redux store
 
 ## Post MVP
--add stripe integration?
-    --add method for updating hasPaid field for a user account by taking in an _id and some receipt confirmation, which is used to confirm the payment was received.  THen and only then is hasPaid true
+-add stripe integration
+    --make sure a user account can only be created if a payment has been received
 
 -Is it possible to store custom images as strings someone in mongo db or would a bucket be required?

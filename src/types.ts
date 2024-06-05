@@ -84,7 +84,6 @@ export type StoreSpecificValueUpdater = Partial<{
  **/
 export type UserAccount = {
   _id: string;
-  hasPaid: boolean;
   email: string;
   password: string;
 };

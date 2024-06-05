@@ -28,7 +28,7 @@ router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
     validateMatchesSchema(PASSWORD_SCHEMA, sanitizedPassword)
     hashPassword(sanitizedPassword, async function (err, hash) {
       try {
-        const createdUser = new User({ email: sanitizedEmail, password: hash, hasPaid: false });
+        const createdUser = new User({ email: sanitizedEmail, password: hash });
         const savedUser = (await createdUser.save()) as UserDocument;
         USERS_CACHE.set(savedUser._id.toString(), savedUser);
         res.send(savedUser);
@@ -90,7 +90,6 @@ router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
           {
             ...userToUpdate,
             password: hash,
-            hasPaid: user.hasPaid
           }
         );
         if (updatedUser.modifiedCount > 0) {
