@@ -38,6 +38,8 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { item, password, userId } =
     req.body as ItemDocument;
 
+  console.log({method: "PUT", userId, password, item});
+
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
@@ -58,6 +60,9 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { item, userId, password } = req.body;
+
+  console.log({method: "POST", userId, password, item});
+
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
