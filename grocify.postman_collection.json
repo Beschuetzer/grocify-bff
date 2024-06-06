@@ -39,6 +39,33 @@
 			"response": []
 		},
 		{
+			"name": "Login - Success",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": {{userEmail}},\r\n    \"password\": {{userPassword}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/user/login",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Check  Email Availablility (false different case)",
 			"event": [
 				{
@@ -172,7 +199,14 @@
 							"        \"imageToUseIndex\": 0,\r",
 							"        \"fullScreenImage\": \"image1\",\r",
 							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+							"        \"aisle\": {\r",
+							"            \"target\": 123\r",
+							"        },\r",
 							"        \"_id\": generateGUID()\r",
+							"    },\r",
+							"    \"storeSpecificValues\": {\r",
+							"        \"aisle\": \"122\",\r",
+							"        \"test\": \"123\"\r",
 							"    },\r",
 							"    \"userId\": \"{{userId}}\",\r",
 							"    \"password\": \"{{userPassword}}\"\r",
@@ -268,6 +302,9 @@
 							"        \"imageToUseIndex\": 0,\r",
 							"        \"fullScreenImage\": \"image1\",\r",
 							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+							"        \"aisle\": {\r",
+							"            \"target\": 123\r",
+							"        },\r",
 							"        \"_id\": generateGUID()\r",
 							"    },\r",
 							"    \"userId\": \"{{invalidUserId}}\",\r",
