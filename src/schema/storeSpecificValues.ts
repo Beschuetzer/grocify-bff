@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { StoreSpecificValueKey } from "../types";
 
 const storeSpecificValuesSchema = new mongoose.Schema({
-    userId: { type: String, unique: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', unique: true },
     values: {
         [StoreSpecificValueKey.AisleNumber]: Object,
         [StoreSpecificValueKey.IsInCart]: Object,
