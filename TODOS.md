@@ -13,3 +13,6 @@
     --make sure a user account can only be created if a payment has been received
 
 -Is it possible to store custom images as strings someone in mongo db or would a bucket be required?
+
+-security things:
+    --limit the number of times a user can try to login (POST user/login) to 3 times a minute

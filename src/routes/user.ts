@@ -121,4 +121,26 @@ router.get(
   }
 );
 
+router.post(
+  `${USER_PATH}/login`,
+  async (req: Request, res: Response) => {
+    const { email, password } = req.body as Omit<UserAccount, '_id'>
+    console.log({email, password, body: req.body});
+    try {
+      if (!email) throw new Error('No email given');
+      if (!password) throw new Error('No password given');
+      const trimmedEmail = email.trim();
+      const user = await UserSchema.findOne({
+        email: { $regex: new RegExp(trimmedEmail, "i") },
+      });
+      console.log({user});
+      
+      await checkIsAuthorized(password, user?.password);
+      res.send(user);
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
+);
+
 export default router;
