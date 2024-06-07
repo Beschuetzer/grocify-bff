@@ -1,5 +1,7 @@
 ## MVP
-- use frontend logic for updating storeSpecificValues map in handleStoreSpecificValues()
+- figure out handleStoreSpecificValues():
+    -- grabbing current values and trying to update doesn't appear to work
+    -- may need to have frontend pass the entire store specific values map each time and update that way?
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password
 - add endpoint that gets all of the items the user can access based on username and password inputs (any items without a password )
