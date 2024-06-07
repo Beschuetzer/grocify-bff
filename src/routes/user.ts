@@ -10,7 +10,8 @@ import { UserSchema } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { CurrentPassword, UserAccount, UserDocument } from "../types";
-import { PASSWORD_SCHEMA, USER_PATH } from "./constants";
+import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
+import { ItemSchema } from "../schema";
 
 const router = express.Router({
   mergeParams: true,
@@ -62,6 +63,20 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
       USERS_CACHE.delete(_id);
     }
     res.send(deletedUser);
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+router.delete(`${USER_PATH}${ITEM_PATH}/all`, async (req: Request, res: Response) => {
+  const { password, _id } = req.body as Pick<UserAccount, "_id" | "password">;
+
+  try {
+    const user = await getAndThenCacheUser(_id);
+    await checkIsAuthorized(password, user?.password);
+    const deletedItems = await ItemSchema.deleteMany({ userId: _id })
+    console.log({deletedItems});
+    res.send(deletedItems);
   } catch (error) {
     handleError(res, error);
   }

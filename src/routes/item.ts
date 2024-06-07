@@ -9,7 +9,7 @@ import {
 import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { SaveItemRequest } from "../types";
-import { ITEM_PATH } from "./constants";
+import { ITEM_PATH, USER_PATH } from "./constants";
 
 const router = express.Router({
   mergeParams: true,
@@ -25,7 +25,7 @@ router.get(`${ITEM_PATH}/:id`, async (req: Request, res: Response) => {
   }
 });
 
-router.get(`${ITEM_PATH}/user/:id`, async (req: Request, res: Response) => {
+router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const items = await getUserItems(id);
@@ -90,7 +90,5 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     handleError(res, error);
   }
 });
-
-
 
 export default router;
