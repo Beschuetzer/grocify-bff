@@ -1,10 +1,7 @@
 ## MVP
 - figure out handleStoreSpecificValues():  
-    --create a separate function called getUpdateObjectForStoreSpecificValues(), which maps the storeSpecificValues to an object which can be used to update the object with the news values
-    -- use try/catch and try updating only the new fields via  await StoreSpecificValuesSchema.updateOne({userId}, {
-        "values.400601364519.aisleNumber.target": 987
-        ...
-      })
+    --finish getUpdateObjectForStoreSpecificValues(), 
+    -- use try/catch and try updating only the new fields via  await StoreSpecificValuesSchema.updateOne
     -- if it fails, that means that the item should be created from scratch?
 
 - update the frontend service to match the new routes for user and item
