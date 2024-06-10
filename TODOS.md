@@ -1,8 +1,6 @@
 ## MVP
 - figure out handleStoreSpecificValues():  
     --finish getUpdateObjectForStoreSpecificValues(), 
-    -- use try/catch and try updating only the new fields via  await StoreSpecificValuesSchema.updateOne
-    -- if it fails, that means that the item should be created from scratch?
 
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password

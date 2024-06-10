@@ -4,7 +4,6 @@ import { UserSchema } from "../schema/user";
 import {
   ErrorMessage,
   StoreSpecificValues,
-  StoreSpecificValuesDocument,
   UserDocument,
 } from "../types";
 import { Response } from "express";
@@ -12,6 +11,7 @@ import { REGISTERED_USERS_CACHE } from "../cache";
 import { ItemSchema } from "../schema";
 import { ZodEffects } from "zod";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
+import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -128,62 +128,24 @@ export async function handleStoreSpecificValues(
   if (Object.keys(storeSpecificValuesToAdd || {}).length <= 0) {
     return;
   }
-  const existingDocument =
-    ((await StoreSpecificValuesSchema.findOne({
-      userId,
-    })) as StoreSpecificValuesDocument)
+
+  const updated = await StoreSpecificValuesSchema.updateOne(
+    { userId },
+    getUpdateObjectForStoreSpecificValues(storeSpecificValuesToAdd)
+  );
+  console.log({ updated });
+
+  if (!updated.acknowledged) {
     const newDocument = new StoreSpecificValuesSchema({
       userId,
-      values: {},
+      values: storeSpecificValuesToAdd,
     });
-
-  const map = { ...existingDocument.values || newDocument.values };
-  console.log({ mapInitial: map });
-
-    for (const [upc, values] of Object.entries(storeSpecificValuesToAdd || {})) {
-      if (!upc || !values) continue;
-      if (!map?.[upc]) {
-        map[upc] = {} as any;
-      }
-      
-      console.log({upc, values, map});
-      for (const [storeSpecificValueKey, storeSpecificValueObj] of Object.entries(values || {})) {
-        if (!storeSpecificValueKey || !storeSpecificValueObj) continue;
-
-        console.log({current: (map[upc] as any)?.[storeSpecificValueKey]});
-        
-        if (!(map[upc] as any)?.[storeSpecificValueKey]) {
-          console.log("setting key for " + storeSpecificValueKey);
-          
-          (map[upc] as any)[storeSpecificValueKey] = {}
-        }
-
-        console.log({storeSpecificValueKey, storeSpecificValueObj, map});
-        for (const [storeName, storeValue] of Object.entries(storeSpecificValueObj || {})) {
-        if (!storeName || storeValue == null) continue;
-
-          console.log({storeName, storeValue, upcMap: (map[upc] as any), storeSpecificValueKeyInMap: (map[upc] as any)[storeSpecificValueKey]});
-          (map[upc] as any)[storeSpecificValueKey][storeName] = storeValue;
-        }
-      }
+    try {
+      await newDocument.save();
+    } catch (error) {
+      throw new Error(`Unable to update StoreSpecificValuesSchema document with userId of '${userId}'.`);
     }
-
-    console.log({ mapFinal: map });
-    let saved;
-    if (existingDocument) {
-      console.log("updating");
-      
-      saved = await StoreSpecificValuesSchema.updateOne({userId}, {
-        "values.400601364519.aisleNumber.target": 987
-      })
-    } else {
-      saved = await newDocument.save();
-    }
-
-    console.log({ saved });
-  // }
-
-  console.log("todo: implement logic to update and save values");
+  }
 }
 
 export function hashPassword(

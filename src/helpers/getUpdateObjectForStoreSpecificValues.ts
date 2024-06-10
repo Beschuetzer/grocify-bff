@@ -3,7 +3,8 @@ import { StoreSpecificValues } from "../types";
 /**
 *This returns an object that can be used to update a StoreSpecificSchema document's `values` object
 **/
-export function getUpdateObjectForStoreSpecificValues(storeSpecificValues: StoreSpecificValues) {
+export function getUpdateObjectForStoreSpecificValues(storeSpecificValues?: StoreSpecificValues) {
+  if (!storeSpecificValues || Object.keys(storeSpecificValues || {}).length <= 0) return {};
   //todo map the storeSpecificValues to an object like:
   // {
   //   "values.keyToUse.storeSpecificValueKey.storeName": value
