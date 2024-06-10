@@ -128,26 +128,16 @@ export async function handleStoreSpecificValues(
   if (Object.keys(storeSpecificValuesToAdd || {}).length <= 0) {
     return;
   }
-  const existingValues =
+  const existingDocument =
     ((await StoreSpecificValuesSchema.findOne({
       userId,
-    })) as StoreSpecificValuesDocument) ||
-    new StoreSpecificValuesSchema({
+    })) as StoreSpecificValuesDocument)
+    const newDocument = new StoreSpecificValuesSchema({
       userId,
       values: {},
     });
-  // console.log({existingValues});
-  // if (!existingValues) {
-  //   const createdValues = new StoreSpecificValuesSchema({
-  //     userId,
-  //     values: storeSpecificValuesToAdd
-  //   })
-  //   await createdValues.save();
-  //   console.log({createdValues});
-  //   return;
-  // }
 
-  const map = { ...existingValues.values };
+  const map = { ...existingDocument.values || newDocument.values };
   console.log({ mapInitial: map });
 
     for (const [upc, values] of Object.entries(storeSpecificValuesToAdd || {})) {
@@ -179,8 +169,17 @@ export async function handleStoreSpecificValues(
     }
 
     console.log({ mapFinal: map });
-    existingValues.values = map;
-    const saved = await existingValues.save();
+    let saved;
+    if (existingDocument) {
+      console.log("updating");
+      
+      saved = await StoreSpecificValuesSchema.updateOne({userId}, {
+        "values.400601364519.aisleNumber.target": 987
+      })
+    } else {
+      saved = await newDocument.save();
+    }
+
     console.log({ saved });
   // }
 
