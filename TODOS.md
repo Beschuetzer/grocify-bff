@@ -1,7 +1,8 @@
 ## MVP
 - figure out update item case for store specific values:
-    -- if it's possible to delete a whole id/key in one command, then go the item ids as keys approach, otherwise change the schema and have each store specific values document just be for a specific item (would need to reference an item id ref)
-    -- do the keys for the storeSpecificItemValue schema need to be item ids?  How else would the values be removed for a no longer present key?
+    -- need to make sure that fields are deleted in store specific values object when the key changes for an item and the new key is added with all of the current values
+    -- use item ids for the storeSpecificValues key field (instead of getKeyToUse)?
+    -- if this ends up not working just have a document for each itemId and userId combination with the store specific values
 
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password
