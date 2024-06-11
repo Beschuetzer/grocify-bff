@@ -11,6 +11,8 @@ export type ErrorMessage = {
   };
 };
 
+type ExtractInnerType<T> = T extends StoreSpecificValue<infer U> ? U : never;
+
 /**
  *This is the id used to save the item in db
  **/
@@ -51,7 +53,7 @@ export type Item = Key & ItemBase;
 export type ItemWithStoreSpecificValues = Item & StoreSpecificValues;
 export type SaveItemRequest = {
   item: Item;
-  storeSpecificValues: StoreSpecificValues;
+  storeSpecificValuesMap: StoreSpecificValuesMap;
   password?: string;
   userId?: string;
 };
@@ -69,12 +71,9 @@ export type StoreSpecificValues = {
   [StoreSpecificValueKey.ItemId]: StoreSpecificValue<string>;
   [StoreSpecificValueKey.Price]: StoreSpecificValue<number>;
   [StoreSpecificValueKey.Quantity]: StoreSpecificValue<number>;
-} | null;
-
-export type StoreSpecificValue<T> =
-  | { [storeKey: string]: T }
-  | null
-  | undefined;
+}
+export type StoreSpecificValue<T> ={ [storeKey: string]: T }
+export type StoreSpecificValueTypes = ExtractInnerType<ExtractInnerType<StoreSpecificValues>>
 export type StoreSpecificValuesMap = { [key: string]: StoreSpecificValues };
 export type StoreSpecificValuesSchema = {
   userId: string;
@@ -95,3 +94,4 @@ export type UserAccount = {
 export type UserDocument = mongoose.Document & UserAccount;
 export type ItemDocument = mongoose.Document & SaveItemRequest;
 export type StoreSpecificValuesDocument = mongoose.Document & StoreSpecificValuesSchema;
+

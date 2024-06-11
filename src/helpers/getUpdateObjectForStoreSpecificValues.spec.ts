@@ -78,24 +78,24 @@ describe("getUpdateObjectForStoreSpecificValues", () => {
         },
       },
     });
-    expect(actual).toEqual([
-      ["000000000001.aisleNumber.target", targetAisleNumber],
-      ["000000000001.aisleNumber.costco", costcoAisleNumber],
-      ["000000000001.itemId.target", targetItemId],
-      ["000000000001.isInCart.target", targetIsInCart],
-      ["000000000001.price.target", targetPrice],
-      ["000000000001.quantity.target",targetQuantity],
-      ["000000000002.aisleNumber.target", targetAisleNumber],
-      ["000000000002.aisleNumber.costco", costcoAisleNumber],
-      ["000000000002.aisleNumber.walmart", walmartAisleNumber],
-      ["000000000002.itemId.target", targetItemId],
-      ["000000000002.itemId.walmart", walmartItemId],
-      ["000000000002.isInCart.target", targetIsInCart],
-      ["000000000002.isInCart.walmart", walmartIsInCart],
-      ["000000000002.price.target", targetPrice],
-      ["000000000002.price.walmart", walmarttPrice],
-      ["000000000002.quantity.target",targetQuantity],
-      ["000000000002.quantity.walmart", walmartQuantity],
-    ]);
+    expect(actual).toEqual({
+      "000000000001.aisleNumber.target": targetAisleNumber,
+      "000000000001.aisleNumber.costco": costcoAisleNumber,
+      "000000000001.itemId.target": targetItemId,
+      "000000000001.isInCart.target": targetIsInCart,
+      "000000000001.price.target": targetPrice,
+      "000000000001.quantity.target":targetQuantity,
+      "000000000002.aisleNumber.target": targetAisleNumber,
+      "000000000002.aisleNumber.costco": costcoAisleNumber,
+      "000000000002.aisleNumber.walmart": walmartAisleNumber,
+      "000000000002.itemId.target": targetItemId,
+      "000000000002.itemId.walmart": walmartItemId,
+      "000000000002.isInCart.target": targetIsInCart,
+      "000000000002.isInCart.walmart": walmartIsInCart,
+      "000000000002.price.target": targetPrice,
+      "000000000002.price.walmart": walmarttPrice,
+      "000000000002.quantity.target":targetQuantity,
+      "000000000002.quantity.walmart": walmartQuantity,
+    });
   });
 });

@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { UserSchema } from "../schema/user";
 import {
   ErrorMessage,
-  StoreSpecificValues,
+  StoreSpecificValuesMap,
   UserDocument,
 } from "../types";
 import { Response } from "express";
@@ -122,7 +122,7 @@ export function handleError(res: Response, error: unknown, statusCode = 500) {
  **/
 export async function handleStoreSpecificValues(
   userId: string,
-  storeSpecificValuesToAdd?: StoreSpecificValues
+  storeSpecificValuesToAdd?: StoreSpecificValuesMap
 ) {
   console.log({ storeSpecificValuesToAdd });
   if (Object.keys(storeSpecificValuesToAdd || {}).length <= 0) {

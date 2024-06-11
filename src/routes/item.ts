@@ -36,7 +36,7 @@ router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) =
 });
 
 router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, storeSpecificValues, password, userId } =
+  const { item, storeSpecificValuesMap: storeSpecificValues, password, userId } =
     req.body as SaveItemRequest;
 
   console.log({method: "PUT", userId, password, item});
@@ -61,7 +61,7 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 });
 
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, storeSpecificValues, userId, password } = req.body as SaveItemRequest;
+  const { item, storeSpecificValuesMap: storeSpecificValues, userId, password } = req.body as SaveItemRequest;
 
   console.log({method: "POST", userId, password, item, storeSpecificValues});
 
