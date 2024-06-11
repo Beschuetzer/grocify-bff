@@ -1,6 +1,6 @@
 ## MVP
-- figure out handleStoreSpecificValues():  
-    --finish getUpdateObjectForStoreSpecificValues(), 
+- figure out update item case:
+    -- do the keys for the storeSpecificItemValue schema need to be item ids?  How else would the values be removed for a no longer present key?
 
 - update the frontend service to match the new routes for user and item
 - add mock endpoint that takes number of items to generate and a username and password
