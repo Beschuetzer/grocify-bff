@@ -1,15 +1,10 @@
-import {
-  StoreSpecificValueKey,
-  StoreSpecificValues,
-  StoreSpecificValuesMap,
-} from "../types";
+import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
+import { StoreSpecificValueKey } from "../types";
 import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
 
 const MOCK_UPCS = [
   "000000000001",
   "000000000002",
-  "000000000003",
-  "000000000004",
 ];
 
 const targetAisleNumber = 321;
@@ -79,23 +74,23 @@ describe("getUpdateObjectForStoreSpecificValues", () => {
       },
     });
     expect(actual).toEqual({
-      "000000000001.aisleNumber.target": targetAisleNumber,
-      "000000000001.aisleNumber.costco": costcoAisleNumber,
-      "000000000001.itemId.target": targetItemId,
-      "000000000001.isInCart.target": targetIsInCart,
-      "000000000001.price.target": targetPrice,
-      "000000000001.quantity.target":targetQuantity,
-      "000000000002.aisleNumber.target": targetAisleNumber,
-      "000000000002.aisleNumber.costco": costcoAisleNumber,
-      "000000000002.aisleNumber.walmart": walmartAisleNumber,
-      "000000000002.itemId.target": targetItemId,
-      "000000000002.itemId.walmart": walmartItemId,
-      "000000000002.isInCart.target": targetIsInCart,
-      "000000000002.isInCart.walmart": walmartIsInCart,
-      "000000000002.price.target": targetPrice,
-      "000000000002.price.walmart": walmarttPrice,
-      "000000000002.quantity.target":targetQuantity,
-      "000000000002.quantity.walmart": walmartQuantity,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[0]}.aisleNumber.target`]: targetAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[0]}.aisleNumber.costco`]: costcoAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[0]}.itemId.target`]: targetItemId,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[0]}.isInCart.target`]: targetIsInCart,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[0]}.price.target`]: targetPrice,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[0]}.quantity.target`]:targetQuantity,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.aisleNumber.target`]: targetAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.aisleNumber.costco`]: costcoAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.aisleNumber.walmart`]: walmartAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.itemId.target`]: targetItemId,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.itemId.walmart`]: walmartItemId,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.isInCart.target`]: targetIsInCart,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.isInCart.walmart`]: walmartIsInCart,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.price.target`]: targetPrice,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.price.walmart`]: walmarttPrice,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.quantity.target`]:targetQuantity,
+      [`${storeSpecificValuesSchemaValueFieldName}.${MOCK_UPCS[1]}.quantity.walmart`]: walmartQuantity,
     });
   });
 });

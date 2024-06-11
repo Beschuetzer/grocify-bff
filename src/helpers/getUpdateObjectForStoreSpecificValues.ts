@@ -1,3 +1,4 @@
+import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
 import { StoreSpecificValueTypes, StoreSpecificValuesMap } from "../types";
 
 export type GetUpdateObjectForStoreSpecificValuesResponse = {
@@ -15,7 +16,7 @@ export function getUpdateObjectForStoreSpecificValues(
   )
     return [];
   const toReturn = {} as { [key: string]: StoreSpecificValueTypes };
-
+  
   function iterate(current: { [key: string]: any }, path: string) {
     if (typeof current === "object" && current !== null) {
       for (let key in current) {
@@ -24,7 +25,7 @@ export function getUpdateObjectForStoreSpecificValues(
         }
       }
     } else {
-      toReturn[path] = current;
+      toReturn[`${storeSpecificValuesSchemaValueFieldName}.${path}`] = current;
     }
   }
 

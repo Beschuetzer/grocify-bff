@@ -4,7 +4,7 @@ import {
   getItemOrThrow,
   getUserItems,
   handleError,
-  handleStoreSpecificValues,
+  handleStoreSpecificValues as handleStoreSpecificValuesMap,
 } from "../helpers";
 import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
@@ -36,7 +36,7 @@ router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) =
 });
 
 router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, storeSpecificValuesMap: storeSpecificValues, password, userId } =
+  const { item, storeSpecificValuesMap, password, userId } =
     req.body as SaveItemRequest;
 
   console.log({method: "PUT", userId, password, item});
@@ -44,7 +44,7 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    await handleStoreSpecificValues(user._id, storeSpecificValues);
+    await handleStoreSpecificValuesMap(user._id, storeSpecificValuesMap);
     const updatedItem = await ItemSchema.findOneAndUpdate(
       { _id: item._id },
       item
@@ -61,15 +61,15 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 });
 
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, storeSpecificValuesMap: storeSpecificValues, userId, password } = req.body as SaveItemRequest;
+  const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
 
-  console.log({method: "POST", userId, password, item, storeSpecificValues});
+  console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
 
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const createdItem = new ItemSchema({ ...item, userId });
-    await handleStoreSpecificValues(user._id, storeSpecificValues);
+    await handleStoreSpecificValuesMap(user._id, storeSpecificValuesMap);
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
     res.send(savedItem);
