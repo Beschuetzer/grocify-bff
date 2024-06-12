@@ -82,13 +82,14 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 });
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { _id, password } = req.body;
   try {
-    const foundItem = await getItemOrThrow(_id);
-    const user = await getAndThenCacheUser(foundItem?.userId?.toString());
+    const { ids, userId, password } = req.body;
+    const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const deletedItem = await ItemSchema.findOneAndDelete({_id})
-    res.send(deletedItem);
+    const deletedItems = await ItemSchema.deleteMany({
+      _id: { $in: ids }
+    })
+    res.send(deletedItems);
   } catch (error) {
     handleError(res, error);
   }

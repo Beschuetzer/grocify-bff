@@ -161,15 +161,15 @@
 						"exec": [
 							"\r",
 							"function getRandomInt(min, max) {\r",
-							"  // Ensure that min is less than or equal to max\r",
-							"  if (min > max) {\r",
-							"    throw new Error('Min must be less than or equal to max');\r",
-							"  }\r",
+							"    // Ensure that min is less than or equal to max\r",
+							"    if (min > max) {\r",
+							"        throw new Error('Min must be less than or equal to max');\r",
+							"    }\r",
 							"\r",
-							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
 							"\r",
-							"  const randomInt = min + Math.floor(Math.random() * max);\r",
-							"  return randomInt;\r",
+							"    const randomInt = min + Math.floor(Math.random() * max);\r",
+							"    return randomInt;\r",
 							"}\r",
 							"\r",
 							"// Function to generate GUID\r",
@@ -188,25 +188,154 @@
 							"        guid.substring(20);\r",
 							"}\r",
 							"\r",
+							"var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
+							"pm.globals.set(\"upcToAdd\", upc)\r",
+							"\r",
 							"pm.request.body.raw = JSON.stringify({\r",
 							"    \"item\": {\r",
 							"        \"name\": \"name\",\r",
-							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+							"        \"upc\": upc,\r",
 							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
 							"        \"frequency\": getRandomInt(1, 50),\r",
 							"        \"unit\": \"month\",\r",
-							"        \"images\": [ \"image1\" ],\r",
+							"        \"images\": [\"image1\"],\r",
 							"        \"imageToUseIndex\": 0,\r",
 							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
-							"        \"aisle\": {\r",
-							"            \"target\": 123\r",
-							"        },\r",
+							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
 							"        \"_id\": generateGUID()\r",
 							"    },\r",
 							"    \"storeSpecificValues\": {\r",
-							"        \"aisle\": \"122\",\r",
-							"        \"test\": \"123\"\r",
+							"        \"{{upcToAdd}}\": {\r",
+							"            \"aisleNumber\": {\r",
+							"                \"target\": \"123\"\r",
+							"            },\r",
+							"            \"quantity\": {\r",
+							"                \"target\": 2\r",
+							"            }\r",
+							"        }\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+							"console.log({pm, environment: pm.environment})\r",
+							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Item (Valid and Update StoreSpecificValues) Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"    // Ensure that min is less than or equal to max\r",
+							"    if (min > max) {\r",
+							"        throw new Error('Min must be less than or equal to max');\r",
+							"    }\r",
+							"\r",
+							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"    const randomInt = min + Math.floor(Math.random() * max);\r",
+							"    return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
+							"pm.globals.set(\"upcToAdd\", upc)\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"item\": {\r",
+							"        \"name\": \"name\",\r",
+							"        \"upc\": upc,\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [\"image1\"],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+							"        \"_id\": generateGUID()\r",
+							"    },\r",
+							"    \"storeSpecificValuesMap\": {\r",
+							"        \"{{upcToAdd}}\": {\r",
+							"            \"aisleNumber\": {\r",
+							"                \"target\": 555,\r",
+							"                \"costco\": 553\r",
+							"            },\r",
+							"            \"itemId\": {\r",
+							"                \"target\": \"abc123\"\r",
+							"            }\r",
+							"        },\r",
+							"        \"00000012\": {\r",
+							"            \"aisleNumber\": {\r",
+							"                \"target\": 111,\r",
+							"                \"costco\": 111,\r",
+							"                \"walmart\": 111\r",
+							"            },\r",
+							"            \"itemId\": {\r",
+							"                \"target\": \"aa\"\r",
+							"            },\r",
+							"            \"quantity\": {\r",
+							"                \"walmart\": 12\r",
+							"            }\r",
+							"        }\r",
 							"    },\r",
 							"    \"userId\": \"{{userId}}\",\r",
 							"    \"password\": \"{{userPassword}}\"\r",
@@ -447,7 +576,115 @@
 			"response": []
 		},
 		{
-			"name": "Delete Item",
+			"name": "Update item (Change Key)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"  // Ensure that min is less than or equal to max\r",
+							"  if (min > max) {\r",
+							"    throw new Error('Min must be less than or equal to max');\r",
+							"  }\r",
+							"\r",
+							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"  const randomInt = min + Math.floor(Math.random() * max);\r",
+							"  return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"item\": {\r",
+							"        \"name\": \"updatedName\",\r",
+							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [ \"image1\" ],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+							"        \"_id\": \"{{itemId}}\"\r",
+							"    },\r",
+							"    \"storeSpecificValuesMap\": {\r",
+							"        \"{{upcToAdd}}\": {\r",
+							"            \"aisleNumber\": {\r",
+							"                \"target\": 555,\r",
+							"            },\r",
+							"            \"itemId\": {\r",
+							"                \"target\": \"abc123\"\r",
+							"            },\r",
+							"            \"isInCart\": {\r",
+							"                \"target\": false\r",
+							"            },\r",
+							"            \"quantity\": {\r",
+							"                \"target\": 1\r",
+							"            }\r",
+							"        }\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Items",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -475,7 +712,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"_id\": \"{{itemId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"raw": "{\r\n    \"ids\": [\r\n        \"{{itemId}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -489,6 +726,105 @@
 					],
 					"path": [
 						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Store Specific Value Field",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item/Test22",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item",
+						"Test22"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User Items",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"_id\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/user/item/all",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"user",
+						"item",
+						"all"
 					]
 				}
 			},
