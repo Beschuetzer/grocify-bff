@@ -4,7 +4,7 @@ import {
   getItemOrThrow,
   getUserItems,
   handleError,
-  handleStoreSpecificValues as handleStoreSpecificValuesMap,
+  handleStoreSpecificValuesMap,
 } from "../helpers";
 import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
@@ -44,7 +44,6 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    await handleStoreSpecificValuesMap(user._id, storeSpecificValuesMap);
     const updatedItem = await ItemSchema.findOneAndUpdate(
       { _id: item._id },
       item
@@ -52,6 +51,7 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     if (!updatedItem) {
       throw new Error(`No item with id of '${item._id}'.`)
     }
+    await handleStoreSpecificValuesMap(item._id, user._id, storeSpecificValuesMap);
     console.log({updatedItem});
     
     res.send(updatedItem);
@@ -69,9 +69,12 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const createdItem = new ItemSchema({ ...item, userId });
-    await handleStoreSpecificValuesMap(user._id, storeSpecificValuesMap);
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
+
+    if (!savedItem?._id) throw new Error('Unable to obtain an id for the item');
+
+    await handleStoreSpecificValuesMap(savedItem?._id, user._id, storeSpecificValuesMap);
     res.send(savedItem);
   } catch (error) {
     handleError(res, error);

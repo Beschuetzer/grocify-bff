@@ -12,6 +12,7 @@ import { ItemSchema } from "../schema";
 import { ZodEffects } from "zod";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
+import { getReplacedValuesMap } from "./getReplacedValuesMap";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -120,25 +121,31 @@ export function handleError(res: Response, error: unknown, statusCode = 500) {
 /**
  *Saves the storesSpecific values either as a new document or updates the current document if found
  **/
-export async function handleStoreSpecificValues(
+export async function handleStoreSpecificValuesMap(
+  itemId: string,
   userId: string,
   storeSpecificValuesToAdd?: StoreSpecificValuesMap
 ) {
   console.log({ storeSpecificValuesToAdd });
-  if (Object.keys(storeSpecificValuesToAdd || {}).length <= 0) {
+  const keys = Object.keys(storeSpecificValuesToAdd || {});
+  if (keys.length <= 0) {
     return;
   }
 
+  const replacedWithItemId = getReplacedValuesMap({
+    [keys[0]]: itemId
+  }, storeSpecificValuesToAdd);
+  const updateObj = getUpdateObjectForStoreSpecificValues(replacedWithItemId);
   const updated = await StoreSpecificValuesSchema.updateOne(
     { userId },
-    getUpdateObjectForStoreSpecificValues(storeSpecificValuesToAdd)
+    updateObj
   );
-  console.log({ updated });
+  console.log({ updated, updateObj });
 
-  if (!updated.acknowledged) {
+  if (!updated.acknowledged || updated.modifiedCount <= 0) {
     const newDocument = new StoreSpecificValuesSchema({
       userId,
-      values: storeSpecificValuesToAdd,
+      values: replacedWithItemId,
     });
     try {
       await newDocument.save();

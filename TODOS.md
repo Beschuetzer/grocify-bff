@@ -1,5 +1,4 @@
 ## MVP
-- Need to use id for store specific values main key
 - need to save the item id on the front end after creation
 - need to unset item id in store specific values when deleting an item
 
