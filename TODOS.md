@@ -1,6 +1,7 @@
 ## MVP
-- need to save the item id on the front end after creation
 - need to unset item id in store specific values when deleting an item
+- need to save the item id on the front end after creation
+- figure out how to create the item id on the backend?
 
 
 - figure out update item case for store specific values:
