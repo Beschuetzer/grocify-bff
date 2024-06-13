@@ -51,12 +51,6 @@ export type ItemBase = {
  **/
 export type Item = Key & ItemBase;
 export type ItemWithStoreSpecificValues = Item & StoreSpecificValues;
-export type SaveItemRequest = {
-  item: Item;
-  storeSpecificValuesMap: StoreSpecificValuesMap;
-  password?: string;
-  userId?: string;
-};
 export enum StoreSpecificValueKey {
   AisleNumber = "aisleNumber",
   ItemId = "itemId",
@@ -91,7 +85,24 @@ export type UserAccount = {
   email: string;
   password: string;
 };
+
+//#region Documents
 export type UserDocument = mongoose.Document & UserAccount;
 export type ItemDocument = mongoose.Document & SaveItemRequest;
 export type StoreSpecificValuesDocument = mongoose.Document & StoreSpecificValuesSchema;
+//#endregion
 
+//#region Requests and Related
+export type AccountCredentials = {
+  password?: string;
+  userId?: string;
+}
+
+export type DeleteManyRequest = { 
+  ids: string[];
+} & AccountCredentials;
+export type SaveItemRequest = {
+  item: Item;
+  storeSpecificValuesMap: StoreSpecificValuesMap;
+} & AccountCredentials;
+//#endregion

@@ -1,8 +1,6 @@
 ## MVP
-- figure out how to create the item id on the backend?
-- need to unset item id in store specific values when deleting an item
-- need to save the item id on the front end after creation
-
+- need to unset item ids in store specific values object in the delete many ids endpoint
+- figure out how to create the item id on the backend (need to remove the functionality from frontend and change the logic around whether to call PUT/POST in saveItem).
 
 - figure out update item case for store specific values:
     -- need to make sure that fields are deleted in store specific values object when the key changes for an item and the new key is added with all of the current values

@@ -8,7 +8,7 @@ import {
 } from "../helpers";
 import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { SaveItemRequest } from "../types";
+import { DeleteManyRequest, SaveItemRequest } from "../types";
 import { ITEM_PATH, USER_PATH } from "./constants";
 
 const router = express.Router({
@@ -83,12 +83,24 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
-    const { ids, userId, password } = req.body;
+    const { ids, userId, password } = req.body as DeleteManyRequest;
+    console.log({ids, userId, password});
+    
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const deletedItems = await ItemSchema.deleteMany({
       _id: { $in: ids }
     })
+    if (deletedItems.deletedCount > 0) {
+      console.log("need to clean up ");
+      // ids.map
+      // for (const id of ids) {
+      // }
+
+      // await StoreSpecificValuesSchema.updateOne({userId}, {
+      //   $unset: {[`${}`]}
+      // })
+    }
     res.send(deletedItems);
   } catch (error) {
     handleError(res, error);
