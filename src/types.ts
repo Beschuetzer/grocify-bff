@@ -105,4 +105,8 @@ export type SaveItemRequest = {
   item: Item;
   storeSpecificValuesMap: StoreSpecificValuesMap;
 } & AccountCredentials;
+export type SaveManyItemsRequest = {
+  items: Item[];
+  storeSpecificValuesMap: StoreSpecificValuesMap;
+} & AccountCredentials;
 //#endregion
