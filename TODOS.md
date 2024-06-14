@@ -1,5 +1,4 @@
 ## MVP
-- need to unset item ids in store specific values object in the delete many ids endpoint
 - figure out how to create the item id on the backend (need to remove the functionality from frontend and change the logic around whether to call PUT/POST in saveItem).
 
 - figure out update item case for store specific values:

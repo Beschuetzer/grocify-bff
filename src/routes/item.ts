@@ -48,7 +48,8 @@ router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const updatedItem = await ItemSchema.findOneAndUpdate(
       { _id: item._id },
-      item
+      item,
+      { new: true }
     );
     if (!updatedItem) {
       throw new Error(`No item with id of '${item._id}'.`)
