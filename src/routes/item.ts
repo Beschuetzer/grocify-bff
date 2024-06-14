@@ -10,6 +10,8 @@ import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { DeleteManyRequest, SaveItemRequest } from "../types";
 import { ITEM_PATH, USER_PATH } from "./constants";
+import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
+import { getUnsetObj } from "../helpers/getUnsetObj";
 
 const router = express.Router({
   mergeParams: true,
@@ -93,13 +95,11 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     })
     if (deletedItems.deletedCount > 0) {
       console.log("need to clean up ");
-      // ids.map
-      // for (const id of ids) {
-      // }
-
-      // await StoreSpecificValuesSchema.updateOne({userId}, {
-      //   $unset: {[`${}`]}
-      // })
+      const unsetObject = getUnsetObj(ids);
+      console.log({unsetObject});
+      await StoreSpecificValuesSchema.updateOne({userId}, {
+        $unset: unsetObject
+      })
     }
     res.send(deletedItems);
   } catch (error) {
