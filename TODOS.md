@@ -1,6 +1,8 @@
 ## MVP
 - figure out how to create the item id on the backend (need to remove the functionality from frontend and change the logic around whether to call PUT/POST in saveItem).
 
+-how is no network connectivity handles with saving?
+
 - figure out update item case for store specific values:
     -- need to make sure that fields are deleted in store specific values object when the key changes for an item and the new key is added with all of the current values
     -- use item ids for the storeSpecificValues key field (instead of getKeyToUse)?
