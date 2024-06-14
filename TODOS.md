@@ -1,4 +1,5 @@
 ## MVP
+- fix issue when updating store specific values with a '.' (e.g. Target in North St. Paul for the store);  Dots may need to be removed or escaped
 - finish POST item/many (make sure store specific)
     -- need to refactor handleStoreSpecificValuesMap to take the result of :
     getReplacedValuesMap({
