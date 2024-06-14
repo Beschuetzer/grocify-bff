@@ -262,6 +262,119 @@
 			"response": []
 		},
 		{
+			"name": "Save Many Items (Valid User)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"    // Ensure that min is less than or equal to max\r",
+							"    if (min > max) {\r",
+							"        throw new Error('Min must be less than or equal to max');\r",
+							"    }\r",
+							"\r",
+							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"    const randomInt = min + Math.floor(Math.random() * max);\r",
+							"    return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"function getNewItem() {\r",
+							"    const idToUse = generateGUID();\r",
+							"    console.log({idToUse})\r",
+							"    return {\r",
+							"        \"name\": \"name\",\r",
+							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [\"image1\"],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+							"        \"_id\": idToUse\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"items\": [\r",
+							"        getNewItem(),\r",
+							"        getNewItem(),\r",
+							"        getNewItem(),\r",
+							"    ],\r",
+							"    \"storeSpecificValues\": {\r",
+							"        \"{{upcToAdd}}\": {\r",
+							"            \"aisleNumber\": {\r",
+							"                \"target\": \"123\"\r",
+							"            },\r",
+							"            \"quantity\": {\r",
+							"                \"target\": 2\r",
+							"            }\r",
+							"        }\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl\n}}/item/many",
+					"host": [
+						"{{groficyBaseUrl\n}}"
+					],
+					"path": [
+						"item",
+						"many"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Save Item (Valid and Update StoreSpecificValues) Copy",
 			"event": [
 				{
@@ -809,7 +922,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"_id\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

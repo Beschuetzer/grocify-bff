@@ -4,6 +4,7 @@
     getReplacedValuesMap({
     [keys[0]]: itemId
   }, storeSpecificValuesToAdd); This way the endpoint can pass in the correct map to use for the store specific values obj
+- deleting a user account should also delete all the items and the store specific values info
 
 - figure out how to create the item id on the backend (need to remove the functionality from frontend and change the logic around whether to call PUT/POST in saveItem).
 

@@ -9,7 +9,7 @@ import {
 import { UserSchema } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { CurrentPassword, UserAccount, UserDocument } from "../types";
+import { AccountCredentials, CurrentPassword, UserAccount, UserDocument } from "../types";
 import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
 import { ItemSchema } from "../schema";
 
@@ -53,14 +53,13 @@ router.get(`${USER_PATH}/:id`, async (req: Request, res: Response) => {
 });
 
 router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
-  const { password, _id } = req.body as Pick<UserAccount, "_id" | "password">;
-
   try {
-    const user = await getAndThenCacheUser(_id);
+    const { password, userId } = req.body as Required<AccountCredentials>;
+    const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const deletedUser = await UserSchema.findByIdAndDelete(_id);
+    const deletedUser = await UserSchema.findByIdAndDelete(userId);
     if (!!deletedUser) {
-      USERS_CACHE.delete(_id);
+      USERS_CACHE.delete(userId);
     }
     res.send(deletedUser);
   } catch (error) {
@@ -69,12 +68,11 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
 });
 
 router.delete(`${USER_PATH}${ITEM_PATH}/all`, async (req: Request, res: Response) => {
-  const { password, _id } = req.body as Pick<UserAccount, "_id" | "password">;
-
   try {
-    const user = await getAndThenCacheUser(_id);
+    const { password, userId } = req.body as Required<AccountCredentials>;
+    const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const deletedItems = await ItemSchema.deleteMany({ userId: _id })
+    const deletedItems = await ItemSchema.deleteMany({ userId })
     console.log({deletedItems});
     res.send(deletedItems);
   } catch (error) {
