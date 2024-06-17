@@ -5,6 +5,7 @@ import {
   getUserItems,
   handleError,
   handleStoreSpecificValuesMap,
+  sanitizeItem,
 } from "../helpers";
 import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
@@ -71,7 +72,7 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const createdItem = new ItemSchema({ ...item, userId });
+    const createdItem = new ItemSchema({ ...sanitizeItem(item), userId });
     createdItem._id = item._id;
     const savedItem = await createdItem.save();
 

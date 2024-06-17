@@ -1,4 +1,4 @@
-import { sanitizeKeys } from ".";
+import { sanitize } from ".";
 import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
 import { StoreSpecificValueTypes, StoreSpecificValuesMap } from "../types";
 
@@ -23,7 +23,7 @@ export function getUpdateObjectForStoreSpecificValues(
     if (typeof current === "object" && current !== null) {
       for (let key in current) {
         if (current.hasOwnProperty(key)) {
-          const replacedKey = sanitizeKeys(key);
+          const replacedKey = sanitize(key);
           iterate(current[key], path ? `${path}.${replacedKey}` : replacedKey);
         }
       }

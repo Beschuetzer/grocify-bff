@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { UserSchema } from "../schema/user";
 import {
   ErrorMessage,
+  Item,
   StoreSpecificValuesMap,
   UserDocument,
 } from "../types";
@@ -166,10 +167,22 @@ export function hashPassword(
 }
 
 /**
+*Use this to ensure that items saved are free of invalid characters
+*`.` is not a valid character due to how Mongoose.updateMany and {@link getUpdateObjectForStoreSpecificValues} work.
+**/
+export function sanitizeItem(item: Item) {
+  const copy = { ...item };
+  copy.name = sanitize(copy.name);
+  copy.upc = sanitize(copy.upc);
+  return copy;
+}
+
+/**
 *This is used to sanitize the keys used in storeSpecific values and for stores
 **/
-export function sanitizeKeys(str: string) {
-  return str?.replace(/\./g, '') || str;
+export function sanitize(str?: string) {
+  if (!str) return str;
+  return str?.replace(/\./g, '');
 }
 
 export function validateMatchesSchema<T>(schema: ZodEffects<any>, item: T) {
