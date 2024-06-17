@@ -1,3 +1,4 @@
+import { sanitizeKeys } from ".";
 import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
 import { StoreSpecificValueTypes, StoreSpecificValuesMap } from "../types";
 
@@ -6,6 +7,7 @@ export type GetUpdateObjectForStoreSpecificValuesResponse = {
 };
 /**
  *This returns an object that can be used to update a StoreSpecificSchema document's `values` object
+ * `.` is replace with empty space.
  **/
 export function getUpdateObjectForStoreSpecificValues(
   storeSpecificValuesMap?: StoreSpecificValuesMap
@@ -21,7 +23,8 @@ export function getUpdateObjectForStoreSpecificValues(
     if (typeof current === "object" && current !== null) {
       for (let key in current) {
         if (current.hasOwnProperty(key)) {
-          iterate(current[key], path ? `${path}.${key}` : key);
+          const replacedKey = sanitizeKeys(key);
+          iterate(current[key], path ? `${path}.${replacedKey}` : replacedKey);
         }
       }
     } else {
@@ -30,5 +33,6 @@ export function getUpdateObjectForStoreSpecificValues(
   }
 
   iterate(storeSpecificValuesMap, "");
+
   return toReturn;
 }

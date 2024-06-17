@@ -1,6 +1,7 @@
 import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
 import { StoreSpecificValueKey } from "../types";
 import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
+import { sanitizeKeys } from '.'
 
 const MOCK_UPCS = [
   "000000000001",
@@ -18,6 +19,8 @@ const targetPrice = 3.88;
 const walmarttPrice = 3.99;
 const targetQuantity = 2;
 const walmartQuantity = 99;
+const storeNameWithDots = 'target in n. st. paul';
+const keyWithDots = 'Some_Key.With.Dots';
 
 describe("getUpdateObjectForStoreSpecificValues", () => {
   //todo: write tests for the actual use case and for more advanced cases
@@ -28,6 +31,34 @@ describe("getUpdateObjectForStoreSpecificValues", () => {
   test("falsy returns empty", async () => {
     const actual = getUpdateObjectForStoreSpecificValues(undefined as any);
     expect(actual).toStrictEqual([]);
+  });
+  test("can escape . in store name", async () => {
+    const actual = getUpdateObjectForStoreSpecificValues({
+      [keyWithDots]: {
+        [StoreSpecificValueKey.AisleNumber]: {
+          [storeNameWithDots]: targetAisleNumber,
+        },
+        [StoreSpecificValueKey.ItemId]: {
+          [storeNameWithDots]: targetItemId,
+        },
+        [StoreSpecificValueKey.IsInCart]: {
+          [storeNameWithDots]: targetIsInCart,
+        },
+        [StoreSpecificValueKey.Price]: {
+          [storeNameWithDots]: targetPrice,
+        },
+        [StoreSpecificValueKey.Quantity]: {
+          [storeNameWithDots]: targetQuantity,
+        },
+      }
+    })
+    expect(actual).toEqual({
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.AisleNumber}.${sanitizeKeys(storeNameWithDots)}`]: targetAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.IsInCart}.${sanitizeKeys(storeNameWithDots)}`]: targetIsInCart,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.ItemId}.${sanitizeKeys(storeNameWithDots)}`]: targetItemId,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.Price}.${sanitizeKeys(storeNameWithDots)}`]: targetPrice,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.Quantity}.${sanitizeKeys(storeNameWithDots)}`]: targetQuantity,
+    })
   });
   test("simple example", async () => {
     const actual = getUpdateObjectForStoreSpecificValues({

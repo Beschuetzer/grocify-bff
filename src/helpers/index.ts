@@ -165,6 +165,13 @@ export function hashPassword(
   });
 }
 
+/**
+*This is used to sanitize the keys used in storeSpecific values and for stores
+**/
+export function sanitizeKeys(str: string) {
+  return str?.replace(/\./g, '') || str;
+}
+
 export function validateMatchesSchema<T>(schema: ZodEffects<any>, item: T) {
   const { success, error } = schema.safeParse(item);
 
