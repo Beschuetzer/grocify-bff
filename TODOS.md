@@ -1,6 +1,11 @@
 ## MVP
 - fix issue when updating store specific values with a '.' (e.g. Target in North St. Paul for the store);  Dots may need to be removed or escaped
-- finish POST item/many (make sure store specific)
+- create an endpoint to save everything:
+    --figure out saving stores first
+    --remove POST item/many
+    --create new endpoint that saves everything all in one go
+    
+- finish POST item/many (or create a an endpoint to save everything) (make sure store specific)
     -- need to refactor handleStoreSpecificValuesMap to take the result of :
     getReplacedValuesMap({
     [keys[0]]: itemId
