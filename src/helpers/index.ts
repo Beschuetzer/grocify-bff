@@ -181,7 +181,7 @@ export function sanitizeItem(item: Item) {
 *This is used to sanitize the keys used in storeSpecific values and for stores
 **/
 export function sanitize(str?: string) {
-  if (!str) return str;
+  if (!str) return "";
   return str?.replace(/\./g, '');
 }
 
