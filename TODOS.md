@@ -1,4 +1,7 @@
 ## MVP
+- finish store saving stuff:
+    --test saving an item with the current schema (do i need to specify the objects for gpsCoordinates and address?)
+    --finish store.ts routes (and test)
 
 - create an endpoint to save everything:
     --figure out saving stores first

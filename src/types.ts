@@ -110,3 +110,25 @@ export type SaveManyItemsRequest = {
   storeSpecificValuesMap: StoreSpecificValuesMap;
 } & AccountCredentials;
 //#endregion
+
+
+//#region Store
+export type Address = AddressGeneric<string>;
+export type AddressGeneric<T> = {
+  addressLineOne: T;
+  addressLineTwo?: T;
+  city: T;
+  country: T;
+  state: T;
+  zipCode: T;
+};
+export type Store = {
+  gpsCoordinates?: GpsCoordinate;
+  name: string;
+  calculatedDistance?: number;
+} & Partial<Address>;
+export type GpsCoordinate = {
+  lat: string;
+  lon: string;
+};
+//#endregion
