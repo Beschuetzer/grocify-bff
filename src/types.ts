@@ -52,19 +52,21 @@ export type ItemBase = {
 export type Item = Key & ItemBase;
 export type ItemWithStoreSpecificValues = Item & StoreSpecificValues;
 export enum StoreSpecificValueKey {
-  AisleNumber = "aisleNumber",
-  ItemId = "itemId",
-  Price = "price",
-  Quantity = "quantity",
-  IsInCart = "isInCart",
+  AisleNumber = 'aisleNumber',
+  IsInCart = 'isInCart',
+  ItemId = 'itemId',
+  Note = 'note',
+  Price = 'price',
+  Quantity = 'quantity',
 }
 
 export type StoreSpecificValues = {
-  [StoreSpecificValueKey.AisleNumber]: StoreSpecificValue<number>;
-  [StoreSpecificValueKey.IsInCart]: StoreSpecificValue<boolean>;
-  [StoreSpecificValueKey.ItemId]: StoreSpecificValue<string>;
-  [StoreSpecificValueKey.Price]: StoreSpecificValue<number>;
-  [StoreSpecificValueKey.Quantity]: StoreSpecificValue<number>;
+  [StoreSpecificValueKey.AisleNumber]?: StoreSpecificValue<number>;
+  [StoreSpecificValueKey.IsInCart]?: StoreSpecificValue<boolean>;
+  [StoreSpecificValueKey.ItemId]?: StoreSpecificValue<string>;
+  [StoreSpecificValueKey.Note]?: StoreSpecificValue<string>;
+  [StoreSpecificValueKey.Price]?: StoreSpecificValue<number>;
+  [StoreSpecificValueKey.Quantity]?: StoreSpecificValue<number>;
 }
 export type StoreSpecificValue<T> ={ [storeKey: string]: T }
 export type StoreSpecificValueTypes = ExtractInnerType<ExtractInnerType<StoreSpecificValues>>
