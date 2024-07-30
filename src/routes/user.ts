@@ -163,30 +163,31 @@ router.post(
   `${USER_PATH}/saveAll`,
   async (req: Request, res: Response) => {
     const { 
+      email, 
       itemsList,
+      lastPurchasedMap,
+      password,
       storesList,
       storeSpecificValues,
-      lastPurchasedMap,
-      upcProducts,
     } = req.body
     console.log( { 
       itemsList,
       storesList,
       storeSpecificValues,
       lastPurchasedMap,
-      upcProducts,
     });
     try {
-      // if (!email) throw new Error('No email given');
-      // if (!password) throw new Error('No password given');
-      // const trimmedEmail = email.trim();
-      // const user = await UserSchema.findOne({
-      //   email: { $regex: new RegExp(trimmedEmail, "i") },
-      // });
-      // console.log({user});
+      if (!email) throw new Error('No email given');
+      if (!password) throw new Error('No password given');
+      const trimmedEmail = email.trim();
+      const user = await UserSchema.findOne({
+        email: { $regex: new RegExp(trimmedEmail, "i") },
+      });
+      console.log({user});
       
-      // await checkIsAuthorized(password, user?.password);
-      res.send("ok");
+      await checkIsAuthorized(password, user?.password);
+      //todo: save all the data here (make sure that existing data isn't overridden?)
+      res.send("Need to implement this");
     } catch (error) {
       handleError(res, error);
     }
