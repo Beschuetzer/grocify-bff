@@ -175,6 +175,8 @@ router.post(
       storesList,
       storeSpecificValues,
       lastPurchasedMap,
+      email,
+      password,
     });
     try {
       if (!email) throw new Error('No email given');
