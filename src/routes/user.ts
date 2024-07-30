@@ -12,6 +12,7 @@ import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { AccountCredentials, CurrentPassword, UserAccount, UserDocument } from "../types";
 import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
 import { ItemSchema } from "../schema";
+import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 
 const router = express.Router({
   mergeParams: true,
@@ -58,6 +59,8 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const deletedUser = await UserSchema.findByIdAndDelete(userId);
+    const deletedItems = await ItemSchema.deleteMany({ userId })
+    const deletedStoreSpecificItems = await StoreSpecificValuesSchema.deleteOne({ userId })
     if (!!deletedUser) {
       USERS_CACHE.delete(userId);
     }
@@ -150,6 +153,40 @@ router.post(
       
       await checkIsAuthorized(password, user?.password);
       res.send(user);
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
+);
+
+router.post(
+  `${USER_PATH}/saveAll`,
+  async (req: Request, res: Response) => {
+    const { 
+      itemsList,
+      storesList,
+      storeSpecificValues,
+      lastPurchasedMap,
+      upcProducts,
+    } = req.body
+    console.log( { 
+      itemsList,
+      storesList,
+      storeSpecificValues,
+      lastPurchasedMap,
+      upcProducts,
+    });
+    try {
+      // if (!email) throw new Error('No email given');
+      // if (!password) throw new Error('No password given');
+      // const trimmedEmail = email.trim();
+      // const user = await UserSchema.findOne({
+      //   email: { $regex: new RegExp(trimmedEmail, "i") },
+      // });
+      // console.log({user});
+      
+      // await checkIsAuthorized(password, user?.password);
+      res.send("ok");
     } catch (error) {
       handleError(res, error);
     }

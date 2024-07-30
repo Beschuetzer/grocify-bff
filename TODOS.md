@@ -1,4 +1,7 @@
 ## MVP
+- save all:
+    --finish the user/saveAll endpoint (do we want to save upcProducts since they are fetched externally?)
+
 - finish store saving stuff:
     --test saving an item with the current schema (do i need to specify the objects for gpsCoordinates and address?)
     --finish store.ts routes (and test)
