@@ -163,28 +163,25 @@ router.post(
   `${USER_PATH}/saveAll`,
   async (req: Request, res: Response) => {
     const { 
-      email, 
-      itemsList,
+      items: itemsList,
       lastPurchasedMap,
       password,
-      storesList,
+      stores: storesList,
       storeSpecificValues,
+      userId, 
     } = req.body
     console.log( { 
       itemsList,
       storesList,
       storeSpecificValues,
       lastPurchasedMap,
-      email,
+      userId,
       password,
     });
     try {
-      if (!email) throw new Error('No email given');
+      if (!userId) throw new Error('No userId given');
       if (!password) throw new Error('No password given');
-      const trimmedEmail = email.trim();
-      const user = await UserSchema.findOne({
-        email: { $regex: new RegExp(trimmedEmail, "i") },
-      });
+      const user = await UserSchema.findById(userId);
       console.log({user});
       
       await checkIsAuthorized(password, user?.password);
