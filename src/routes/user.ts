@@ -13,6 +13,7 @@ import { AccountCredentials, CurrentPassword, UserAccount, UserDocument } from "
 import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
 import { ItemSchema } from "../schema";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
+import { Document } from "mongoose";
 
 const router = express.Router({
   mergeParams: true,
@@ -170,23 +171,60 @@ router.post(
       storeSpecificValues,
       userId, 
     } = req.body
-    console.log( { 
-      itemsList,
-      storesList,
-      storeSpecificValues,
-      lastPurchasedMap,
-      userId,
-      password,
-    });
+    // console.log( { 
+    //   itemsList,
+    //   storesList,
+    //   storeSpecificValues,
+    //   lastPurchasedMap,
+    //   userId,
+    //   password,
+    // });
     try {
       if (!userId) throw new Error('No userId given');
       if (!password) throw new Error('No password given');
       const user = await UserSchema.findById(userId);
-      console.log({user});
-      
       await checkIsAuthorized(password, user?.password);
+
+      //save items in bulk (doesn't return the ids though)
+      const items = await Promise.all(itemsList.data.map(async function (item: Document){
+        let itemToReturn = await ItemSchema.findById(item._id);
+        if (!itemToReturn) {
+          itemToReturn = new ItemSchema({
+             ...item,
+             userId: user?._id
+          });
+        }
+        return itemToReturn;
+      }));
+
       //todo: save all the data here (make sure that existing data isn't overridden?)
-      res.send("Need to implement this");
+      //todo: need to return all the saved values to the frontend so it can populate the redux with the new ids created for each type (item, store, etc)
+      //  --may be able just return the values for the writeResult.upsertedIds and writeResult.insertedIds but need to look up the method for that
+      //todo: use await Promise.all for each 
+
+      const startBulkSave = performance.now();
+      const writeResult = await ItemSchema.bulkSave(items);
+      const endBulkSave = performance.now();
+      console.log({timeToSave: endBulkSave - startBulkSave});
+
+      let itemRetrievalPromise = new Promise(resolve => resolve([]));
+      if (writeResult.insertedCount > 0) {
+        console.log({insertCount: writeResult.insertedCount});
+        console.log({writeResult});
+        
+        const startItemRetrieval = performance.now();
+        itemRetrievalPromise = ItemSchema.find({userId: user?._id})
+        const endItemRetrieval = performance.now();
+        console.log({timeToRetrieveItems: endItemRetrieval - startItemRetrieval});
+      }
+
+      const resolvedPromises = await Promise.all([
+        itemRetrievalPromise,
+        new Promise(resolve => resolve([]))
+      ])
+
+      console.log({resolvedItems: resolvedPromises[0], test: resolvedPromises[1]});
+      res.send(writeResult);
     } catch (error) {
       handleError(res, error);
     }
