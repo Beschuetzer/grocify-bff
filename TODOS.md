@@ -6,6 +6,8 @@
     --test saving an item with the current schema (do i need to specify the objects for gpsCoordinates and address?)
     --finish store.ts routes (and test)
 
+- need to fix bug where the receiving no store specific values when saving an item causes problems ("The update path 'values.492df78a-4dc3-5ee1-bb53-f520aef32414.isInCart.' contains an empty field name, which is not allowed.")
+
 - create an endpoint to save everything:
     --figure out saving stores first
     --remove POST item/many
