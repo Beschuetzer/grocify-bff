@@ -171,14 +171,15 @@ router.post(
       storeSpecificValues,
       userId, 
     } = req.body
-    // console.log( { 
-    //   itemsList,
-    //   storesList,
-    //   storeSpecificValues,
-    //   lastPurchasedMap,
-    //   userId,
-    //   password,
-    // });
+    console.log( { 
+      itemsList,
+      storesList,
+      storeSpecificValues,
+      lastPurchasedMap,
+      userId,
+      password,
+      data: itemsList.data
+    });
     try {
       if (!userId) throw new Error('No userId given');
       if (!password) throw new Error('No password given');
@@ -203,14 +204,14 @@ router.post(
       //todo: use await Promise.all for each 
 
       const startBulkSave = performance.now();
-      const writeResult = await ItemSchema.bulkSave(items);
+      const itemsResult = await ItemSchema.bulkSave(items);
       const endBulkSave = performance.now();
       console.log({timeToSave: endBulkSave - startBulkSave});
 
       let itemRetrievalPromise = new Promise(resolve => resolve([]));
-      if (writeResult.insertedCount > 0) {
-        console.log({insertCount: writeResult.insertedCount});
-        console.log({writeResult});
+      if (itemsResult.insertedCount > 0) {
+        console.log({insertCount: itemsResult.insertedCount});
+        console.log({writeResult: itemsResult});
         
         const startItemRetrieval = performance.now();
         itemRetrievalPromise = ItemSchema.find({userId: user?._id})
@@ -224,7 +225,9 @@ router.post(
       ])
 
       console.log({resolvedItems: resolvedPromises[0], test: resolvedPromises[1]});
-      res.send(writeResult);
+      res.send({
+        itemsResult
+      });
     } catch (error) {
       handleError(res, error);
     }
