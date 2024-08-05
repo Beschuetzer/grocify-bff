@@ -198,33 +198,18 @@ router.post(
         return itemToReturn;
       }));
 
-      //todo: save all the data here (make sure that existing data isn't overridden?)
-      //todo: need to return all the saved values to the frontend so it can populate the redux with the new ids created for each type (item, store, etc)
-      //  --may be able just return the values for the writeResult.upsertedIds and writeResult.insertedIds but need to look up the method for that
-      //todo: use await Promise.all for each 
+      //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
+      //todo: just need to return all the writeReults and then the front end can act accordingly
 
       const startBulkSave = performance.now();
-      const itemsResult = await ItemSchema.bulkSave(items);
-      const endBulkSave = performance.now();
-      console.log({timeToSave: endBulkSave - startBulkSave});
-
-      let itemRetrievalPromise = new Promise(resolve => resolve([]));
-      if (itemsResult.insertedCount > 0) {
-        console.log({insertCount: itemsResult.insertedCount});
-        console.log({writeResult: itemsResult});
-        
-        const startItemRetrieval = performance.now();
-        itemRetrievalPromise = ItemSchema.find({userId: user?._id})
-        const endItemRetrieval = performance.now();
-        console.log({timeToRetrieveItems: endItemRetrieval - startItemRetrieval});
-      }
-
-      const resolvedPromises = await Promise.all([
-        itemRetrievalPromise,
-        new Promise(resolve => resolve([]))
+      const itemsBulkSavePromise = ItemSchema.bulkSave(items);
+      const bulkSaveResults = await Promise.all([
+        itemsBulkSavePromise
       ])
+      const endBulkSave = performance.now();
+      const [ itemsResult ] = bulkSaveResults;
 
-      console.log({resolvedItems: resolvedPromises[0], test: resolvedPromises[1]});
+      console.log({timeToSave: endBulkSave - startBulkSave, itemsResult});
       res.send({
         itemsResult
       });
