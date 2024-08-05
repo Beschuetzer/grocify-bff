@@ -38,32 +38,6 @@ router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) =
   }
 });
 
-router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, storeSpecificValuesMap, password, userId } =
-    req.body as SaveItemRequest;
-
-  console.log({method: "PUT", userId, password, item});
-
-  try {
-    const user = await getAndThenCacheUser(userId);
-    await checkIsAuthorized(password, user?.password);
-    const updatedItem = await ItemSchema.findOneAndUpdate(
-      { _id: item._id },
-      item,
-      { new: true }
-    );
-    if (!updatedItem) {
-      throw new Error(`No item with id of '${item._id}'.`)
-    }
-    await handleStoreSpecificValuesMap(item._id, user._id, storeSpecificValuesMap);
-    console.log({updatedItem});
-    
-    res.send(updatedItem);
-  } catch (error) {
-    handleError(res, error);
-  }
-});
-
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
 
@@ -74,14 +48,16 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const createdItem = new ItemSchema({ ...sanitizeItem(item), userId });
     createdItem._id = item._id;
-    const savedItem = await createdItem.save();
-
-    if (!savedItem?._id) throw new Error('Unable to obtain an id for the item');
-
-    await handleStoreSpecificValuesMap(savedItem?._id, user._id, storeSpecificValuesMap);
-    res.send(savedItem);
+    const saveItemsPromise = ItemSchema.findByIdAndUpdate(item._id, item, { upsert: true })
+    const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(createdItem._id, user._id, storeSpecificValuesMap);
+    const resolvedPromises = await Promise.race([
+      saveItemsPromise,
+      handleStoreSpecificValuesMapPromise
+    ])
+    return res.send(true);
   } catch (error) {
-    handleError(res, error);
+    console.log({error});
+    return res.status(500).send(false);
   }
 });
 

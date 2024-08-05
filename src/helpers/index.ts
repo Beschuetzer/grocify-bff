@@ -127,7 +127,7 @@ export async function handleStoreSpecificValuesMap(
   userId: string,
   storeSpecificValuesToAdd?: StoreSpecificValuesMap
 ) {
-  console.log({ storeSpecificValuesToAdd });
+  console.log({ itemId, userId, storeSpecificValuesToAdd });
   const keys = Object.keys(storeSpecificValuesToAdd || {});
   if (keys.length <= 0) {
     return;
@@ -137,23 +137,17 @@ export async function handleStoreSpecificValuesMap(
     [keys[0]]: itemId
   }, storeSpecificValuesToAdd);
   const updateObj = getUpdateObjectForStoreSpecificValues(replacedWithItemId);
-  const updated = await StoreSpecificValuesSchema.updateOne(
-    { userId },
-    updateObj
+  const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
+    { userId: userId.toString() },
+    updateObj,
+    { upsert: true }
   );
-  console.log({ updated, updateObj });
-
-  if (!updated.acknowledged || updated.modifiedCount <= 0) {
-    const newDocument = new StoreSpecificValuesSchema({
-      userId,
-      values: replacedWithItemId,
-    });
-    try {
-      await newDocument.save();
-    } catch (error) {
-      throw new Error(`Unable to update StoreSpecificValuesSchema document with userId of '${userId}'.`);
-    }
+  if (!updated?._id) {
+    throw new Error(`Unable to update StoreSpecificValuesSchema document with userId of '${userId}'.`);
   }
+
+  console.log({ updated, updateObj });
+  return;
 }
 
 export function hashPassword(
