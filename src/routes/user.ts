@@ -186,7 +186,7 @@ router.post(
       const user = await UserSchema.findById(userId);
       await checkIsAuthorized(password, user?.password);
 
-      //save items in bulk (doesn't return the ids though)
+      //creates documents for saving
       const items = await Promise.all(itemsList.data.map(async function (item: Document){
         let itemToReturn = await ItemSchema.findById(item._id);
         if (!itemToReturn) {
