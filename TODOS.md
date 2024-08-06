@@ -1,6 +1,10 @@
 ## MVP
 - save all:
-    --finish the user/saveAll endpoint (do we want to save upcProducts since they are fetched externally?)
+    --need to rework how the storeSpecificValue object is created
+        --based on the userId and the storeSpecificValuesMap, an update obj should be created (one function)
+        --based on an update obj, the values should be updated
+    --work on storeSpecific items
+    --work on stores
 
 - finish store saving stuff:
     --test saving an item with the current schema (do i need to specify the objects for gpsCoordinates and address?)
