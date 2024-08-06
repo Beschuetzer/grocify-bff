@@ -1,6 +1,6 @@
 ## MVP
 - save all:
-    --need to rework how the storeSpecificValue object is created
+    --need to rework how the storeSpecificValue object is created (rework handleStoreSpecificValuesMap to do the following):
         --based on the userId and the storeSpecificValuesMap, an update obj should be created (one function)
         --based on an update obj, the values should be updated
     --work on storeSpecific items
