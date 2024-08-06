@@ -1,7 +1,7 @@
 import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
 import { StoreSpecificValueKey } from "../types";
 import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
-import { sanitizeKeys } from '.'
+import { sanitize } from '.'
 
 const MOCK_UPCS = [
   "000000000001",
@@ -50,14 +50,36 @@ describe("getUpdateObjectForStoreSpecificValues", () => {
         [StoreSpecificValueKey.Quantity]: {
           [storeNameWithDots]: targetQuantity,
         },
+      },
+      [storeNameWithDots]: {
+        [StoreSpecificValueKey.AisleNumber]: {
+          [storeNameWithDots]: targetAisleNumber,
+        },
+        [StoreSpecificValueKey.ItemId]: {
+          [storeNameWithDots]: targetItemId,
+        },
+        [StoreSpecificValueKey.IsInCart]: {
+          [storeNameWithDots]: targetIsInCart,
+        },
+        [StoreSpecificValueKey.Price]: {
+          [storeNameWithDots]: targetPrice,
+        },
+        [StoreSpecificValueKey.Quantity]: {
+          [storeNameWithDots]: targetQuantity,
+        },
       }
     })
     expect(actual).toEqual({
-      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.AisleNumber}.${sanitizeKeys(storeNameWithDots)}`]: targetAisleNumber,
-      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.IsInCart}.${sanitizeKeys(storeNameWithDots)}`]: targetIsInCart,
-      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.ItemId}.${sanitizeKeys(storeNameWithDots)}`]: targetItemId,
-      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.Price}.${sanitizeKeys(storeNameWithDots)}`]: targetPrice,
-      [`${storeSpecificValuesSchemaValueFieldName}.${sanitizeKeys(keyWithDots)}.${StoreSpecificValueKey.Quantity}.${sanitizeKeys(storeNameWithDots)}`]: targetQuantity,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(keyWithDots)}.${StoreSpecificValueKey.AisleNumber}.${sanitize(storeNameWithDots)}`]: targetAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(keyWithDots)}.${StoreSpecificValueKey.IsInCart}.${sanitize(storeNameWithDots)}`]: targetIsInCart,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(keyWithDots)}.${StoreSpecificValueKey.ItemId}.${sanitize(storeNameWithDots)}`]: targetItemId,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(keyWithDots)}.${StoreSpecificValueKey.Price}.${sanitize(storeNameWithDots)}`]: targetPrice,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(keyWithDots)}.${StoreSpecificValueKey.Quantity}.${sanitize(storeNameWithDots)}`]: targetQuantity,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(storeNameWithDots)}.${StoreSpecificValueKey.AisleNumber}.${sanitize(storeNameWithDots)}`]: targetAisleNumber,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(storeNameWithDots)}.${StoreSpecificValueKey.IsInCart}.${sanitize(storeNameWithDots)}`]: targetIsInCart,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(storeNameWithDots)}.${StoreSpecificValueKey.ItemId}.${sanitize(storeNameWithDots)}`]: targetItemId,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(storeNameWithDots)}.${StoreSpecificValueKey.Price}.${sanitize(storeNameWithDots)}`]: targetPrice,
+      [`${storeSpecificValuesSchemaValueFieldName}.${sanitize(storeNameWithDots)}.${StoreSpecificValueKey.Quantity}.${sanitize(storeNameWithDots)}`]: targetQuantity,
     })
   });
   test("simple example", async () => {
