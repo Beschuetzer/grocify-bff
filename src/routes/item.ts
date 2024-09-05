@@ -39,11 +39,9 @@ router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) =
 });
 
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
-
-  console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
-
   try {
+    const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
+    console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const createdItem = new ItemSchema({ ...sanitizeItem(item), userId });
