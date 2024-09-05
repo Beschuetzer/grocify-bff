@@ -1,6 +1,8 @@
 ## MVP
 - save all:
     --work on stores
+        --finish the routes (add postman cases)
+        --finish POST /user/saveAll
     --work on lastPurchaseMap
         ---need to add schema
         ---need to delete the lastPurchaseMap for the user on DELETE /user call
