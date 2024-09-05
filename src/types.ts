@@ -111,6 +111,9 @@ export type SaveManyItemsRequest = {
   items: Item[];
   storeSpecificValuesMap: StoreSpecificValuesMap;
 } & AccountCredentials;
+export type SaveStoreRequest = {
+  store: Store;
+} & AccountCredentials;
 //#endregion
 
 
@@ -126,9 +129,8 @@ export type AddressGeneric<T> = {
 };
 export type Store = {
   gpsCoordinates?: GpsCoordinate;
-  name: string;
   calculatedDistance?: number;
-} & Partial<Address>;
+} & Partial<Address> & Omit<Required<Key>, 'upc'>;
 export type GpsCoordinate = {
   lat: string;
   lon: string;

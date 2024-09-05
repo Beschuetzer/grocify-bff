@@ -14,6 +14,7 @@ import { ZodEffects } from "zod";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
 import { getReplacedValuesMap } from "./getReplacedValuesMap";
+import { StoreSchema } from "../schema/store";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -83,6 +84,16 @@ export async function getItemOrThrow(id: string) {
   return user;
 }
 
+export async function getStoreOrThrow(id: string) {
+  const store = await StoreSchema.findById(id);
+
+  if (!store) {
+    throw getErrorMessage(`No store with id of '${id}' found.`);
+  }
+
+  return store;
+}
+
 export async function getUserItems(userId: string) {
   if (!userId) {
     throw new Error("No userId given in getUserItems().");
@@ -100,6 +111,15 @@ export async function getUserOrThrow(id: string) {
   }
 
   return user;
+}
+
+export async function getUserStores(userId: string) {
+  if (!userId) {
+    throw new Error("No userId given in getUserStores().");
+  }
+
+  const stores = await StoreSchema.find({ userId });
+  return stores;
 }
 
 export function handleError(res: Response, error: unknown, statusCode = 500) {

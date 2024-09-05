@@ -1,10 +1,14 @@
 import express, { Request, Response } from "express";
 import {
-  getItemOrThrow,
+  getUserStores,
+  getStoreOrThrow,
   handleError,
+  getAndThenCacheUser,
 } from "../helpers";
-import { STORE_PATH } from "./constants";
-
+import { STORE_PATH, USER_PATH } from "./constants";
+import { SaveStoreRequest } from "../types";
+import { checkIsAuthorized } from "../middlware/isAuthenticated";
+import { StoreSchema } from "../schema/store";
 
 const router = express.Router({
   mergeParams: true,
@@ -13,69 +17,41 @@ const router = express.Router({
 router.get(`${STORE_PATH}/:id`, async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const foundItem = await getItemOrThrow(id);
+    const foundItem = await getStoreOrThrow(id);
     res.send(foundItem);
   } catch (error) {
     handleError(res, error);
   }
 });
 
-// router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) => {
-//   const { id } = req.params;
-//   try {
-//     const items = await getUserItems(id);
-//     res.send(items);
-//   } catch (error) {
-//     handleError(res, error);
-//   }
-// });
+router.get(
+  `${STORE_PATH}${USER_PATH}/:id`,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      const items = await getUserStores(id);
+      res.send(items);
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
+);
 
-// router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-//   const { item, storeSpecificValuesMap, password, userId } =
-//     req.body as SaveItemRequest;
-
-//   console.log({method: "PUT", userId, password, item});
-
-//   try {
-//     const user = await getAndThenCacheUser(userId);
-//     await checkIsAuthorized(password, user?.password);
-//     const updatedItem = await ItemSchema.findOneAndUpdate(
-//       { _id: item._id },
-//       item,
-//       { new: true }
-//     );
-//     if (!updatedItem) {
-//       throw new Error(`No item with id of '${item._id}'.`)
-//     }
-//     await handleStoreSpecificValuesMap(item._id, user._id, storeSpecificValuesMap);
-//     console.log({updatedItem});
-    
-//     res.send(updatedItem);
-//   } catch (error) {
-//     handleError(res, error);
-//   }
-// });
-
-// router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-//   const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
-
-//   console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
-
-//   try {
-//     const user = await getAndThenCacheUser(userId);
-//     await checkIsAuthorized(password, user?.password);
-//     const createdItem = new ItemSchema({ ...sanitizeItem(item), userId });
-//     createdItem._id = item._id;
-//     const savedItem = await createdItem.save();
-
-//     if (!savedItem?._id) throw new Error('Unable to obtain an id for the item');
-
-//     await handleStoreSpecificValuesMap(savedItem?._id, user._id, storeSpecificValuesMap);
-//     res.send(savedItem);
-//   } catch (error) {
-//     handleError(res, error);
-//   }
-// });
+router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
+  try {
+    const { store, userId, password } = req.body as SaveStoreRequest;
+    console.log({ method: "POST", userId, password, store });
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    const createdItem = new StoreSchema({ ...store, userId });
+    createdItem._id = store._id;
+    await createdItem.save();
+    return res.send(true);
+  } catch (error) {
+    console.log({error});
+    return res.status(500).send(false);
+  }
+});
 
 // router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 //   const { items, storeSpecificValuesMap, userId, password } = req.body as SaveManyItemsRequest;
@@ -104,7 +80,7 @@ router.get(`${STORE_PATH}/:id`, async (req: Request, res: Response) => {
 //   try {
 //     const { ids, userId, password } = req.body as DeleteManyRequest;
 //     console.log({ids, userId, password});
-    
+
 //     const user = await getAndThenCacheUser(userId);
 //     await checkIsAuthorized(password, user?.password);
 //     const deletedItems = await ItemSchema.deleteMany({
