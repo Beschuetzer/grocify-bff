@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const storeSchema = new mongoose.Schema({
     /**
-    *This a UUID v5 that the front end creates
+    *This a UUID v4 that the front end creates
     **/
     _id: String,
     address: { type: Schema.Types.Mixed },

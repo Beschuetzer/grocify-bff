@@ -9,7 +9,12 @@ import {
 import { UserSchema } from "../schema/user";
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { AccountCredentials, CurrentPassword, UserAccount, UserDocument } from "../types";
+import {
+  AccountCredentials,
+  CurrentPassword,
+  UserAccount,
+  UserDocument,
+} from "../types";
 import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
 import { ItemSchema } from "../schema";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
@@ -28,10 +33,13 @@ router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
   try {
     const sanitizedEmail = email.trim().toLowerCase();
     const sanitizedPassword = password.trim();
-    validateMatchesSchema(PASSWORD_SCHEMA, sanitizedPassword)
+    validateMatchesSchema(PASSWORD_SCHEMA, sanitizedPassword);
     hashPassword(sanitizedPassword, async function (err, hash) {
       try {
-        const createdUser = new UserSchema({ email: sanitizedEmail, password: hash });
+        const createdUser = new UserSchema({
+          email: sanitizedEmail,
+          password: hash,
+        });
         const savedUser = (await createdUser.save()) as UserDocument;
         USERS_CACHE.set(savedUser._id.toString(), savedUser);
         res.send(savedUser);
@@ -59,9 +67,16 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const { password, userId } = req.body as Required<AccountCredentials>;
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const deletedUser = await UserSchema.findByIdAndDelete(userId);
-    const deletedItems = await ItemSchema.deleteMany({ userId })
-    const deletedStoreSpecificItems = await StoreSpecificValuesSchema.deleteOne({ userId })
+    const deletedUserPromise = UserSchema.findByIdAndDelete(userId);
+    const deletedItemsPromise = ItemSchema.deleteMany({ userId });
+    const deletedStoreSpecificItemsPromise = StoreSpecificValuesSchema.deleteOne(
+      { userId }
+    );
+    const [deletedUser, deletedItems, deletedStoreSpecificItems] = await Promise.all([
+      deletedUserPromise,
+      deletedItemsPromise,
+      deletedStoreSpecificItemsPromise,
+    ])
     if (!!deletedUser) {
       USERS_CACHE.delete(userId);
     }
@@ -71,18 +86,21 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
   }
 });
 
-router.delete(`${USER_PATH}${ITEM_PATH}/all`, async (req: Request, res: Response) => {
-  try {
-    const { password, userId } = req.body as Required<AccountCredentials>;
-    const user = await getAndThenCacheUser(userId);
-    await checkIsAuthorized(password, user?.password);
-    const deletedItems = await ItemSchema.deleteMany({ userId })
-    console.log({deletedItems});
-    res.send(deletedItems);
-  } catch (error) {
-    handleError(res, error);
+router.delete(
+  `${USER_PATH}${ITEM_PATH}/all`,
+  async (req: Request, res: Response) => {
+    try {
+      const { password, userId } = req.body as Required<AccountCredentials>;
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+      const deletedItems = await ItemSchema.deleteMany({ userId });
+      console.log({ deletedItems });
+      res.send(deletedItems);
+    } catch (error) {
+      handleError(res, error);
+    }
   }
-});
+);
 
 router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
   const userToUpdate = req.body as UserDocument;
@@ -138,85 +156,79 @@ router.get(
   }
 );
 
-router.post(
-  `${USER_PATH}/login`,
-  async (req: Request, res: Response) => {
-    const { email, password } = req.body as Omit<UserAccount, '_id'>
-    console.log({email, password, body: req.body});
-    try {
-      if (!email) throw new Error('No email given');
-      if (!password) throw new Error('No password given');
-      const trimmedEmail = email.trim();
-      const user = await UserSchema.findOne({
-        email: { $regex: new RegExp(trimmedEmail, "i") },
-      });
-      console.log({user});
-      
-      await checkIsAuthorized(password, user?.password);
-      res.send(user);
-    } catch (error) {
-      handleError(res, error);
-    }
-  }
-);
+router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
+  const { email, password } = req.body as Omit<UserAccount, "_id">;
+  console.log({ email, password, body: req.body });
+  try {
+    if (!email) throw new Error("No email given");
+    if (!password) throw new Error("No password given");
+    const trimmedEmail = email.trim();
+    const user = await UserSchema.findOne({
+      email: { $regex: new RegExp(trimmedEmail, "i") },
+    });
+    console.log({ user });
 
-router.post(
-  `${USER_PATH}/saveAll`,
-  async (req: Request, res: Response) => {
-    const { 
+    await checkIsAuthorized(password, user?.password);
+    res.send(user);
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
+  try {
+    const {
       items: itemsList,
       lastPurchasedMap,
       password,
       stores: storesList,
       storeSpecificValues,
-      userId, 
-    } = req.body
-    console.log( { 
+      userId,
+    } = req.body;
+    console.log({
       itemsList,
       storesList,
       storeSpecificValues,
       lastPurchasedMap,
       userId,
       password,
-      data: itemsList.data
+      data: itemsList.data,
     });
-    try {
-      if (!userId) throw new Error('No userId given');
-      if (!password) throw new Error('No password given');
-      const user = await UserSchema.findById(userId);
-      await checkIsAuthorized(password, user?.password);
+    if (!userId) throw new Error("No userId given");
+    if (!password) throw new Error("No password given");
+    const user = await UserSchema.findById(userId);
+    await checkIsAuthorized(password, user?.password);
 
-      //creates documents for saving
-      const items = await Promise.all(itemsList.data.map(async function (item: Document){
+    //creates documents for saving
+    const items = await Promise.all(
+      itemsList.data.map(async function (item: Document) {
         let itemToReturn = await ItemSchema.findById(item._id);
         if (!itemToReturn) {
           itemToReturn = new ItemSchema({
-             ...item,
-             userId: user?._id
+            ...item,
+            userId: user?._id,
           });
         }
         return itemToReturn;
-      }));
+      })
+    );
 
-      //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
-      //todo: just need to return all the writeReults and then the front end can act accordingly
+    //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
+    //todo: just need to return all the writeReults and then the front end can act accordingly
 
-      const startBulkSave = performance.now();
-      const itemsBulkSavePromise = ItemSchema.bulkSave(items);
-      const bulkSaveResults = await Promise.all([
-        itemsBulkSavePromise
-      ])
-      const endBulkSave = performance.now();
-      const [ itemsResult ] = bulkSaveResults;
+    const startBulkSave = performance.now();
+    const itemsBulkSavePromise = ItemSchema.bulkSave(items);
+    const bulkSaveResults = await Promise.all([itemsBulkSavePromise]);
+    const endBulkSave = performance.now();
+    const [itemsResult] = bulkSaveResults;
 
-      console.log({timeToSave: endBulkSave - startBulkSave, itemsResult});
-      res.send({
-        itemsResult
-      });
-    } catch (error) {
-      handleError(res, error);
-    }
+    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult });
+    res.send({
+      itemsResult,
+    });
+  } catch (error) {
+    handleError(res, error);
   }
-);
+});
 
 export default router;
