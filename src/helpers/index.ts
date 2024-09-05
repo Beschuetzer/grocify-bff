@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { UserSchema } from "../schema/user";
 import {
   ErrorMessage,
-  Item,
+  Key,
   StoreSpecificValuesMap,
   UserDocument,
 } from "../types";
@@ -181,13 +181,17 @@ export function hashPassword(
 }
 
 /**
-*Use this to ensure that items saved are free of invalid characters
+*Use this to ensure that the keys saved are free of invalid characters
 *`.` is not a valid character due to how Mongoose.updateMany and {@link getUpdateObjectForStoreSpecificValues} work.
 **/
-export function sanitizeItem(item: Item) {
-  const copy = { ...item };
-  copy.name = sanitize(copy.name);
-  copy.upc = sanitize(copy.upc);
+export function sanitizeKey(key: Key) {
+  const copy = { ...key };
+  if (copy?.name) {
+    copy.name = sanitize(copy.name);
+  }
+  if (copy?.upc) {
+    copy.upc = sanitize(copy.upc);
+  }
   return copy;
 }
 

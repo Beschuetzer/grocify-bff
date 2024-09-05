@@ -1,13 +1,19 @@
 import mongoose, { Schema } from "mongoose";
+import { string } from "zod";
 
 const storeSchema = new mongoose.Schema({
     /**
     *This a UUID v4 that the front end creates
     **/
     _id: String,
-    address: { type: Schema.Types.Mixed },
+    addressLineOne: String,
+    addressLineTwo: String,
+    city: String,
+    country: String,
+    state: String,
+    zipCode: String,
     gpsCoordinates: { type: Schema.Types.Mixed },
-    name: {type: String},
+    name: String,
 });
 
 export const StoreSchema = mongoose.model("Store", storeSchema);

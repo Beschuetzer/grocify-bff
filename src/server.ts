@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import itemRoutes from './routes/item'
 import userRoutes from './routes/user'
 import testRoutes from './routes/testing'
+import storeRoutes from './routes/store'
 
 const app = express();
 const dbName = "grocify";
@@ -20,6 +21,7 @@ app.use(express.json({limit: '50mb'}));
 app.use(testRoutes)
 app.use(itemRoutes)
 app.use(userRoutes)
+app.use(storeRoutes)
 
 app.listen(config.server.port, () => {
   console.log(`App running on port ${config.server.port}`);

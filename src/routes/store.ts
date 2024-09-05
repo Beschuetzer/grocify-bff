@@ -4,6 +4,7 @@ import {
   getStoreOrThrow,
   handleError,
   getAndThenCacheUser,
+  sanitizeKey,
 } from "../helpers";
 import { STORE_PATH, USER_PATH } from "./constants";
 import { SaveStoreRequest } from "../types";
@@ -43,10 +44,13 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
     console.log({ method: "POST", userId, password, store });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const createdItem = new StoreSchema({ ...store, userId });
-    createdItem._id = store._id;
-    await createdItem.save();
-    return res.send(true);
+    if (store.calculatedDistance) {
+      delete store.calculatedDistance;
+    }
+    const createdStore = new StoreSchema({ ...sanitizeKey(store), userId });
+    createdStore._id = store._id;
+    const savedStore = await createdStore.save();
+    return res.send(savedStore);
   } catch (error) {
     console.log({error});
     return res.status(500).send(false);

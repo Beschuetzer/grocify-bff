@@ -5,7 +5,7 @@ import {
   getUserItems,
   handleError,
   handleStoreSpecificValuesMap,
-  sanitizeItem,
+  sanitizeKey,
 } from "../helpers";
 import { ItemSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
@@ -44,15 +44,14 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const createdItem = new ItemSchema({ ...sanitizeItem(item), userId });
-    createdItem._id = item._id;
-    const saveItemsPromise = ItemSchema.findByIdAndUpdate(item._id, item, { upsert: true })
-    const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(createdItem._id, user._id, storeSpecificValuesMap);
-    const resolvedPromises = await Promise.race([
-      saveItemsPromise,
+    const sanitizedItem = sanitizeKey(item)
+    const saveItemPromise = ItemSchema.findByIdAndUpdate( sanitizedItem._id, sanitizedItem, { upsert: true })
+    const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(sanitizedItem._id, user._id, storeSpecificValuesMap);
+    await Promise.all([
+      saveItemPromise,
       handleStoreSpecificValuesMapPromise
     ])
-    return res.send(true);
+    return res.send(item);
   } catch (error) {
     console.log({error});
     return res.status(500).send(false);
