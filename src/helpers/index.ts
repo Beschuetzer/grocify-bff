@@ -184,7 +184,7 @@ export function hashPassword(
 *Use this to ensure that the keys saved are free of invalid characters
 *`.` is not a valid character due to how Mongoose.updateMany and {@link getUpdateObjectForStoreSpecificValues} work.
 **/
-export function sanitizeKey(key: Key) {
+export function sanitizeKey<T extends Key>(key: T) {
   const copy = { ...key };
   if (copy?.name) {
     copy.name = sanitize(copy.name);
