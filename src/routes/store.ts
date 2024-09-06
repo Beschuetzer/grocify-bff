@@ -7,7 +7,7 @@ import {
   sanitizeKey,
 } from "../helpers";
 import { STORE_PATH, USER_PATH } from "./constants";
-import { SaveStoreRequest } from "../types";
+import { DeleteManyRequest, SaveStoreRequest } from "../types";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { StoreSchema } from "../schema/store";
 
@@ -81,28 +81,21 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
 //   }
 // });
 
-// router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-//   try {
-//     const { ids, userId, password } = req.body as DeleteManyRequest;
-//     console.log({ids, userId, password});
+router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
+  try {
+    const { ids, userId, password } = req.body as DeleteManyRequest;
+    console.log({ids, userId, password});
 
-//     const user = await getAndThenCacheUser(userId);
-//     await checkIsAuthorized(password, user?.password);
-//     const deletedItems = await ItemSchema.deleteMany({
-//       _id: { $in: ids }
-//     })
-//     if (deletedItems.deletedCount > 0) {
-//       console.log("need to clean up ");
-//       const unsetObject = getUnsetObj(ids);
-//       console.log({unsetObject});
-//       await StoreSpecificValuesSchema.updateOne({userId}, {
-//         $unset: unsetObject
-//       })
-//     }
-//     res.send(deletedItems);
-//   } catch (error) {
-//     handleError(res, error);
-//   }
-// });
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    const deletedItems = await StoreSchema.deleteMany({
+      _id: { $in: ids }
+    })
+    console.log({deletedItems});
+    res.send(deletedItems);
+  } catch (error) {
+    handleError(res, error);
+  }
+});
 
 export default router;
