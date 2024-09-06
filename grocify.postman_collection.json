@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "cd3b66cd-3d79-4284-ab8a-a4c644068f2d",
+		"_postman_id": "c600e229-daa3-4522-b17f-dfd7c27f525f",
 		"name": "grocify",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "14418289",
-		"_collection_link": "https://lively-comet-477342.postman.co/workspace/nxBridge~693c9375-622a-44bf-992d-236c27ca3a29/collection/14418289-cd3b66cd-3d79-4284-ab8a-a4c644068f2d?action=share&source=collection_link&creator=14418289"
+		"_collection_link": "https://lively-comet-477342.postman.co/workspace/nxBridge~693c9375-622a-44bf-992d-236c27ca3a29/collection/14418289-c600e229-daa3-4522-b17f-dfd7c27f525f?action=share&source=collection_link&creator=14418289"
 	},
 	"item": [
 		{
@@ -25,9 +25,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user/isEmailAvailable/{{userEmail}}",
+					"raw": "{{groficyBaseUrl}}/user/isEmailAvailable/{{userEmail}}",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user",
@@ -45,7 +45,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": {{userEmail}},\r\n    \"password\": {{userPassword}}\r\n}",
+					"raw": "{\r\n    \"email\": \"{{userEmail}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -53,9 +53,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user/login",
+					"raw": "{{groficyBaseUrl}}/user/login",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user",
@@ -108,9 +108,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user/isEmailAvailable/{{userEmailUppercase}}",
+					"raw": "{{groficyBaseUrl}}/user/isEmailAvailable/{{userEmailUppercase}}",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user",
@@ -139,9 +139,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user/isEmailAvailable/test@test.com",
+					"raw": "{{groficyBaseUrl}}/user/isEmailAvailable/test@test.com",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user",
@@ -204,13 +204,13 @@
 							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
 							"        \"_id\": generateGUID()\r",
 							"    },\r",
-							"    \"storeSpecificValues\": {\r",
+							"    \"storeSpecificValuesMap\": {\r",
 							"        \"{{upcToAdd}}\": {\r",
 							"            \"aisleNumber\": {\r",
 							"                \"target\": \"123\"\r",
 							"            },\r",
 							"            \"quantity\": {\r",
-							"                \"target\": 2\r",
+							"                \"target\": 4\r",
 							"            }\r",
 							"        }\r",
 							"    },\r",
@@ -227,9 +227,9 @@
 					"script": {
 						"exec": [
 							"var jsonData = pm.response.json();\r",
-							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+							"var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
 							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							"pm.globals.set(\"itemId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
 							""
 						],
 						"type": "text/javascript",
@@ -250,9 +250,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item",
+					"raw": "{{groficyBaseUrl}}/item",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item"
@@ -362,9 +362,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item/many",
+					"raw": "{{groficyBaseUrl}}/item/many",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item",
@@ -486,9 +486,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item",
+					"raw": "{{groficyBaseUrl}}/item",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item"
@@ -585,12 +585,393 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item",
+					"raw": "{{groficyBaseUrl}}/item",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Item then Sync with Changes",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"    // Ensure that min is less than or equal to max\r",
+							"    if (min > max) {\r",
+							"        throw new Error('Min must be less than or equal to max');\r",
+							"    }\r",
+							"\r",
+							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"    const randomInt = min + Math.floor(Math.random() * max);\r",
+							"    return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
+							"pm.globals.set(\"upcToAdd\", upc)\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"item\": {\r",
+							"        \"name\": \"name\",\r",
+							"        \"upc\": upc,\r",
+							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+							"        \"frequency\": getRandomInt(1, 50),\r",
+							"        \"unit\": \"month\",\r",
+							"        \"images\": [\"image1\"],\r",
+							"        \"imageToUseIndex\": 0,\r",
+							"        \"fullScreenImage\": \"image1\",\r",
+							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+							"        \"_id\": generateGUID()\r",
+							"    },\r",
+							"    \"storeSpecificValues\": {\r",
+							"        \"{{upcToAdd}}\": {\r",
+							"            \"aisleNumber\": {\r",
+							"                \"target\": \"123\"\r",
+							"            },\r",
+							"            \"quantity\": {\r",
+							"                \"target\": 2\r",
+							"            }\r",
+							"        }\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+							"console.log({pm, environment: pm.environment})\r",
+							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/item",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Store(Valid User)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"function getRandomInt(min, max) {\r",
+							"    // Ensure that min is less than or equal to max\r",
+							"    if (min > max) {\r",
+							"        throw new Error('Min must be less than or equal to max');\r",
+							"    }\r",
+							"\r",
+							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
+							"\r",
+							"    const randomInt = min + Math.floor(Math.random() * max);\r",
+							"    return randomInt;\r",
+							"}\r",
+							"\r",
+							"// Function to generate GUID\r",
+							"function generateGUID() {\r",
+							"    // Generate random bytes\r",
+							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+							"\r",
+							"    // Convert bytes to hexadecimal string\r",
+							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+							"\r",
+							"    // Format GUID according to the standard\r",
+							"    return guid.substring(0, 8) + '-' +\r",
+							"        guid.substring(8, 12) + '-' +\r",
+							"        guid.substring(12, 16) + '-' +\r",
+							"        guid.substring(16, 20) + '-' +\r",
+							"        guid.substring(20);\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    \"store\": {\r",
+							"        \"name\": \"store-name.-.with_lots-of-...chars\",        \r",
+							"        \"gpsCoordinates\": {\r",
+							"            \"lat\": \"34.1231908\",\r",
+							"            \"lon\": \"99.23089320\"\r",
+							"        },\r",
+							"        \"addressLineOne\": \"123 Main St.\",\r",
+							"        \"city\": \"Bloomington\",\r",
+							"        \"state\": \"MN\",\r",
+							"        \"country\": \"US\",\r",
+							"        \"zipCode\": \"55438\",\r",
+							"        \"calculatedDistance\": 44.33,\r",
+							"        \"_id\": generateGUID()\r",
+							"    },\r",
+							"    \"userId\": \"{{userId}}\",\r",
+							"    \"password\": \"{{userPassword}}\"\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+							"console.log({jsonData, pm, environment: pm.environment})\r",
+							"pm.globals.set(\"storeId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/store",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"store"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save All",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var MOCK_UPCS = [\r",
+							"    \"000000000001\",\r",
+							"    \"000000000002\",\r",
+							"];\r",
+							"var targetAisleNumber = 321;\r",
+							"var costcoAisleNumber = 554;\r",
+							"var walmartAisleNumber = 231;\r",
+							"var targetItemId = \"testingnewID\";\r",
+							"var walmartItemId = \"abc12345\";\r",
+							"var targetIsInCart = true;\r",
+							"var walmartIsInCart = false;\r",
+							"var targetPrice = 3.88;\r",
+							"var walmarttPrice = 3.99;\r",
+							"var targetQuantity = 2;\r",
+							"var walmartQuantity = 99;\r",
+							"var storeNameWithDots = 'target in n. st. paul';\r",
+							"var keyWithDots = 'Some_Key.With.Dots';\r",
+							"var storeSpecificValues = {\r",
+							"    [MOCK_UPCS[0]]: {\r",
+							"        \"aisleNumber\": {\r",
+							"            target: targetAisleNumber,\r",
+							"            costco: costcoAisleNumber,\r",
+							"        },\r",
+							"        \"itemId\": {\r",
+							"            target: targetItemId,\r",
+							"        },\r",
+							"        \"isInCart\": {\r",
+							"            target: targetIsInCart,\r",
+							"        },\r",
+							"        \"price\": {\r",
+							"            target: targetPrice,\r",
+							"        },\r",
+							"        \"quantity\": {\r",
+							"            target: targetQuantity,\r",
+							"        },\r",
+							"    },\r",
+							"    [MOCK_UPCS[1]]: {\r",
+							"        \"aisleNumber\": {\r",
+							"            target: targetAisleNumber,\r",
+							"            costco: costcoAisleNumber,\r",
+							"            walmart: walmartAisleNumber,\r",
+							"        },\r",
+							"        \"itemId\": {\r",
+							"            target: targetItemId,\r",
+							"            walmart: walmartItemId,\r",
+							"        },\r",
+							"        \"isInCart\": {\r",
+							"            target: targetIsInCart,\r",
+							"            walmart: !targetIsInCart,\r",
+							"        },\r",
+							"        \"price\": {\r",
+							"            target: targetPrice,\r",
+							"            walmart: walmarttPrice,\r",
+							"        },\r",
+							"        \"quantity\": {\r",
+							"            target: targetQuantity,\r",
+							"            walmart: walmartQuantity,\r",
+							"        },\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify({\r",
+							"    storeSpecificValues,\r",
+							"    password: \"{{userPassword}}\",\r",
+							"    userId: \"{{userId}}\",\r",
+							"    lastPurchasedMap: {},\r",
+							"    items: {\r",
+							"        data: [\r",
+							"            {\r",
+							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
+							"                \"addedDate\": 1706479117683,\r",
+							"                \"frequency\": 432000000,\r",
+							"                \"images\": [\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\",\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\",\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\"\r",
+							"                ],\r",
+							"                \"imageToUseIndex\": 0,\r",
+							"                \"lastUpdatedDate\": 1722909498849,\r",
+							"                \"name\": \"Candy1\",\r",
+							"                \"unit\": \"package\",\r",
+							"                \"upc\": \"000000000001\"\r",
+							"            },\r",
+							"            {\r",
+							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6372\",\r",
+							"                \"addedDate\": 1706479117683,\r",
+							"                \"frequency\": 432000000,\r",
+							"                \"images\": [\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\",\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\",\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\"\r",
+							"                ],\r",
+							"                \"imageToUseIndex\": 1,\r",
+							"                \"lastUpdatedDate\": 1722909498849,\r",
+							"                \"name\": \"Candy2\",\r",
+							"                \"unit\": \"package\",\r",
+							"                \"upc\": \"000000000002\"\r",
+							"            },\r",
+							"            {\r",
+							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6373\",\r",
+							"                \"addedDate\": 1706479117683,\r",
+							"                \"frequency\": 432000000,\r",
+							"                \"images\": [\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\",\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\",\r",
+							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\"\r",
+							"                ],\r",
+							"                \"imageToUseIndex\": 2,\r",
+							"                \"lastUpdatedDate\": 1722909498849,\r",
+							"                \"name\": \"Candy3\",\r",
+							"                \"unit\": \"package\",\r",
+							"                \"upc\": \"000000000003\"\r",
+							"            }\r",
+							"        ]\r",
+							"\r",
+							"    },\r",
+							"    stores: {\r",
+							"        data: []\r",
+							"    },\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var upperCaseEmail = jsonData.email.toUpperCase();\r",
+							"console.log({pm, environment: pm.environment, upperCaseEmail})\r",
+							"pm.globals.set(\"userId\", jsonData._id); // Set the variable 'variableName' with the extracted value\r",
+							"pm.globals.set(\"userEmail\", jsonData.email); // Set the variable 'variableName' with the extracted value\r",
+							"pm.globals.set(\"userEmailUppercase\", upperCaseEmail); // Set the variable 'variableName' with the extracted value\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/user/saveAll",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"user",
+						"saveAll"
 					]
 				}
 			},
@@ -677,9 +1058,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item",
+					"raw": "{{groficyBaseUrl}}/item",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item"
@@ -785,9 +1166,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item",
+					"raw": "{{groficyBaseUrl}}/item",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item"
@@ -833,12 +1214,60 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item",
+					"raw": "{{groficyBaseUrl}}/item",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Stores",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ids\": [\r\n        \"{{storeId}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/store",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"store"
 					]
 				}
 			},
@@ -881,9 +1310,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item/Test22",
+					"raw": "{{groficyBaseUrl}}/item/Test22",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item",
@@ -930,9 +1359,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user/item/all",
+					"raw": "{{groficyBaseUrl}}/user/item/all",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user",
@@ -961,9 +1390,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item/{{itemId}}",
+					"raw": "{{groficyBaseUrl}}/item/{{itemId}}",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item",
@@ -991,12 +1420,117 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/item/user/{{userId}}",
+					"raw": "{{groficyBaseUrl}}/item/user/{{userId}}",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"item",
+						"user",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Store (Valid User)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/store/{{storeId}}",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"store",
+						"{{storeId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Stores (Valid User)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/store/user/{{userId}}",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"store",
 						"user",
 						"{{userId}}"
 					]
@@ -1039,7 +1573,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": {{userEmail}}\r\n}",
+					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1047,9 +1581,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user",
+					"raw": "{{groficyBaseUrl}}/user",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user"
@@ -1076,9 +1610,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user/{{userId}}",
+					"raw": "{{groficyBaseUrl}}/user/{{userId}}",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user",
@@ -1103,9 +1637,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user",
+					"raw": "{{groficyBaseUrl}}/user",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user"
@@ -1157,9 +1691,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user",
+					"raw": "{{groficyBaseUrl}}/user",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user"
@@ -1183,9 +1717,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user",
+					"raw": "{{groficyBaseUrl}}/user",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user"
@@ -1213,7 +1747,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"_id\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1221,9 +1755,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{groficyBaseUrl\n}}/user",
+					"raw": "{{groficyBaseUrl}}/user",
 					"host": [
-						"{{groficyBaseUrl\n}}"
+						"{{groficyBaseUrl}}"
 					],
 					"path": [
 						"user"
