@@ -7,7 +7,7 @@ import {
   sanitizeKey,
 } from "../helpers";
 import { STORE_PATH, USER_PATH } from "./constants";
-import { DeleteManyRequest, SaveStoreRequest } from "../types";
+import { DeleteManyRequest, SaveStoreRequest, Store } from "../types";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { StoreSchema } from "../schema/store";
 
@@ -45,10 +45,7 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
     console.log({ method: "POST", userId, password, store });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    if (store.calculatedDistance) {
-      delete store.calculatedDistance;
-    }
-    const createdStore = new StoreSchema({ ...sanitizeKey(store), userId });
+    const createdStore = new StoreSchema({ ...sanitizeStore(store), userId });
     createdStore._id = store._id;
     const savedStore = await createdStore.save();
     return res.send(savedStore);
@@ -58,28 +55,24 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
   }
 });
 
-// router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
-//   const { items, storeSpecificValuesMap, userId, password } = req.body as SaveManyItemsRequest;
-
-//   console.log({method: "POST", userId, password, items, storeSpecificValuesMap});
-
-//   try {
-//     const user = await getAndThenCacheUser(userId);
-//     await checkIsAuthorized(password, user?.password);
-//     // const createdItem = new ItemSchema({ ...item, userId });
-//     // createdItem._id = item._id;
-//     const savedItems = await ItemSchema.insertMany(items, { ordered: false })
-
-//     console.log({savedItems});
-
-//     //todo: how to handleStoreSpecificValuesMap with many?
-//     // if (!savedItem?._id) throw new Error('Unable to obtain an id for the item');
-//     // await handleStoreSpecificValuesMap(savedItem?._id, user._id, storeSpecificValuesMap);
-//     res.send(savedItems);
-//   } catch (error) {
-//     handleError(res, error);
-//   }
-// });
+router.put(`${STORE_PATH}`, async (req: Request, res: Response) => {
+  try {
+    const { store, userId, password } = req.body as SaveStoreRequest;
+    console.log({ method: "PUT", userId, password, store });
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    const savedStore = await StoreSchema.updateOne(
+      { _id: store._id },
+      {
+        ...sanitizeStore(store),
+      }
+    );
+    return res.send(savedStore);
+  } catch (error) {
+    console.log({error});
+    return res.status(500).send(false);
+  }
+});
 
 router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
   try {
@@ -99,3 +92,11 @@ router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
 });
 
 export default router;
+
+function sanitizeStore(store: Store) {
+  const sanitized = sanitizeKey(store);
+  if (sanitized.calculatedDistance) {
+    delete sanitized.calculatedDistance;
+  }
+  return sanitized;
+}
