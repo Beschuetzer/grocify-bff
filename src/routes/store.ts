@@ -26,11 +26,12 @@ router.get(`${STORE_PATH}/:id`, async (req: Request, res: Response) => {
 });
 
 router.get(
-  `${STORE_PATH}${USER_PATH}/:id`,
+  `${STORE_PATH}${USER_PATH}/:userId`,
   async (req: Request, res: Response) => {
-    const { id } = req.params;
     try {
-      const items = await getUserStores(id);
+      const { userId } = req.params;
+      console.log({userId});
+      const items = await getUserStores(userId);
       res.send(items);
     } catch (error) {
       handleError(res, error);

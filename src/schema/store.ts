@@ -14,6 +14,7 @@ const storeSchema = new mongoose.Schema({
     zipCode: String,
     gpsCoordinates: { type: Schema.Types.Mixed },
     name: String,
+    userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
 export const StoreSchema = mongoose.model("Store", storeSchema);
