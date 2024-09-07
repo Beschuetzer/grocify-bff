@@ -162,10 +162,6 @@ export async function handleStoreSpecificValuesMap(
     updateObj,
     { upsert: true }
   );
-  if (!updated?._id) {
-    throw new Error(`Unable to update StoreSpecificValuesSchema document with userId of '${userId}'.`);
-  }
-
   console.log({ updated, updateObj });
   return;
 }
