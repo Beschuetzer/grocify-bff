@@ -42,9 +42,10 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
     const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
     console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
+    const itemWithUserId = { ...item, userId }
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const sanitizedItem = sanitizeKey(item)
+    const sanitizedItem = sanitizeKey(itemWithUserId)
     const saveItemPromise = ItemSchema.findByIdAndUpdate( sanitizedItem._id, sanitizedItem, { upsert: true })
     const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(sanitizedItem._id, user._id, storeSpecificValuesMap);
     await Promise.all([

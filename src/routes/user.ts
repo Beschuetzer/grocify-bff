@@ -19,6 +19,7 @@ import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
 import { ItemSchema } from "../schema";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { Document } from "mongoose";
+import { StoreSchema } from "../schema/store";
 
 const router = express.Router({
   mergeParams: true,
@@ -69,12 +70,14 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const deletedUserPromise = UserSchema.findByIdAndDelete(userId);
     const deletedItemsPromise = ItemSchema.deleteMany({ userId });
+    const deletedStoresPromise = StoreSchema.deleteMany({ userId });
     const deletedStoreSpecificItemsPromise = StoreSpecificValuesSchema.deleteOne(
       { userId }
     );
-    const [deletedUser, deletedItems, deletedStoreSpecificItems] = await Promise.all([
+    const [deletedUser, deletedItems, deletedStores, deletedStoreSpecificItems] = await Promise.all([
       deletedUserPromise,
       deletedItemsPromise,
+      deletedStoresPromise,
       deletedStoreSpecificItemsPromise,
     ])
     if (!!deletedUser) {
