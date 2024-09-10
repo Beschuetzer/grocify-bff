@@ -12,6 +12,8 @@ import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import {
   AccountCredentials,
   CurrentPassword,
+  Item,
+  Store,
   UserAccount,
   UserDocument,
 } from "../types";
@@ -206,29 +208,37 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     //creates documents for saving
     const items = await Promise.all(
       itemsList.data.map(async function (item: Document) {
-        let itemToReturn = await ItemSchema.findById(item._id);
-        if (!itemToReturn) {
-          itemToReturn = new ItemSchema({
+        let existingItem = await ItemSchema.findById(item._id);
+        if (!existingItem) {
+          return new ItemSchema({
             ...item,
             userId: user?._id,
           });
+        } 
+
+        for (const key of Object.keys(item)) {
+          const typedKey = key as keyof Document<unknown, {}, Item>;
+          existingItem[typedKey] = item[typedKey]
         }
-        return itemToReturn;
+        return existingItem;
       })
     );
 
     const stores = await Promise.all(
       storesList.data.map(async function (store: Document) {
-        let storeToReturn = await StoreSchema.findById(store._id);
-        if (!storeToReturn) {
-          storeToReturn = new StoreSchema({
+        let existingStore = await StoreSchema.findById(store._id);
+        if (!existingStore) {
+          return new StoreSchema({
             ...store,
             userId: user?._id,
           });
-        } else {
-          storeToReturn.userId = user?._id
+        } 
+          
+        for (const key of Object.keys(store)) {
+          const typedKey = key as keyof Document<unknown, {}, Store>;
+          existingStore[typedKey] = store[typedKey]
         }
-        return storeToReturn;
+        return existingStore;
       })
     );
 
@@ -247,7 +257,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     const storesBulkSavePromise = StoreSchema.bulkSave(stores);
     const [itemsResult, storesResult, storeSpecificValuesResult]  = await Promise.all([itemsBulkSavePromise, storesBulkSavePromise, storeSpecificValuesPromise]);
     const endBulkSave = performance.now();
-    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult, storesResult });
+    const itemsSaved = itemsList.data.map(item => ({name: item.name, upc: item.upc}));
+    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult, storesResult, itemsSaved });
     res.send({
       itemsResult,
       storesResult,
