@@ -153,10 +153,7 @@ export async function handleStoreSpecificValuesMap(
     return;
   }
 
-  const replacedWithItemId = getReplacedValuesMap({
-    [keys[0]]: itemId
-  }, storeSpecificValuesToAdd);
-  const updateObj = getUpdateObjectForStoreSpecificValues(replacedWithItemId);
+  const updateObj = getUpdateObjectForStoreSpecificValues(storeSpecificValuesToAdd);
   const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
     { userId: userId.toString() },
     updateObj,
