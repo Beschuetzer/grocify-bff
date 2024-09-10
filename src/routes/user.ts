@@ -20,6 +20,7 @@ import { ItemSchema } from "../schema";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { Document } from "mongoose";
 import { StoreSchema } from "../schema/store";
+import { getUpdateObjectForStoreSpecificValues } from "../helpers/getUpdateObjectForStoreSpecificValues";
 
 const router = express.Router({
   mergeParams: true,
@@ -216,18 +217,41 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       })
     );
 
+    const stores = await Promise.all(
+      storesList.data.map(async function (store: Document) {
+        let storeToReturn = await StoreSchema.findById(store._id);
+        if (!storeToReturn) {
+          storeToReturn = new StoreSchema({
+            ...store,
+            userId: user?._id,
+          });
+        } else {
+          storeToReturn.userId = user?._id
+        }
+        return storeToReturn;
+      })
+    );
+
+    const updateObj = getUpdateObjectForStoreSpecificValues(storeSpecificValues);
+    const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOneAndUpdate(
+      { userId: userId.toString() },
+      updateObj,
+      { upsert: true }
+    );
+
     //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
     //todo: just need to return all the writeReults and then the front end can act accordingly
 
     const startBulkSave = performance.now();
     const itemsBulkSavePromise = ItemSchema.bulkSave(items);
-    const bulkSaveResults = await Promise.all([itemsBulkSavePromise]);
+    const storesBulkSavePromise = StoreSchema.bulkSave(stores);
+    const [itemsResult, storesResult, storeSpecificValuesResult]  = await Promise.all([itemsBulkSavePromise, storesBulkSavePromise, storeSpecificValuesPromise]);
     const endBulkSave = performance.now();
-    const [itemsResult] = bulkSaveResults;
-
-    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult });
+    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult, storesResult });
     res.send({
       itemsResult,
+      storesResult,
+      storeSpecificValuesResult
     });
   } catch (error) {
     handleError(res, error);
