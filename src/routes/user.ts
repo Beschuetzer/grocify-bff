@@ -207,38 +207,30 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
 
     //creates documents for saving
     const items = await Promise.all(
-      itemsList.data.map(async function (item: Document) {
-        let existingItem = await ItemSchema.findById(item._id);
-        if (!existingItem) {
+      itemsList.data.map(async function (item: Item) {
+        let existingDocument = await ItemSchema.findById(item._id);
+        if (!existingDocument) {
           return new ItemSchema({
             ...item,
             userId: user?._id,
           });
         } 
-
-        for (const key of Object.keys(item)) {
-          const typedKey = key as keyof Document<unknown, {}, Item>;
-          existingItem[typedKey] = item[typedKey]
-        }
-        return existingItem;
+        updateDocument(existingDocument, item)
+        return existingDocument;
       })
     );
 
     const stores = await Promise.all(
-      storesList.data.map(async function (store: Document) {
-        let existingStore = await StoreSchema.findById(store._id);
-        if (!existingStore) {
+      storesList.data.map(async function (store: Store) {
+        let existingDocument = await StoreSchema.findById(store._id);
+        if (!existingDocument) {
           return new StoreSchema({
             ...store,
             userId: user?._id,
           });
         } 
-          
-        for (const key of Object.keys(store)) {
-          const typedKey = key as keyof Document<unknown, {}, Store>;
-          existingStore[typedKey] = store[typedKey]
-        }
-        return existingStore;
+        updateDocument(existingDocument, store)
+        return existingDocument;
       })
     );
 
@@ -270,3 +262,11 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
 });
 
 export default router;
+
+function updateDocument<T>(existingItem: Document<unknown, {}, T>, newItem: T) {
+  if (!existingItem || !newItem) return null;
+  for (const key of Object.keys(newItem)) {
+    const typedKey = key as keyof Document<unknown, {}, T>;
+    existingItem[typedKey] = newItem[typedKey as keyof T]
+  }
+}
