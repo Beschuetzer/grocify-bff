@@ -249,8 +249,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     const storesBulkSavePromise = StoreSchema.bulkSave(stores);
     const [itemsResult, storesResult, storeSpecificValuesResult]  = await Promise.all([itemsBulkSavePromise, storesBulkSavePromise, storeSpecificValuesPromise]);
     const endBulkSave = performance.now();
-    const itemsSaved = itemsList.data.map(item => ({name: item.name, upc: item.upc}));
-    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult, storesResult, itemsSaved });
+    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult, storesResult });
     res.send({
       itemsResult,
       storesResult,

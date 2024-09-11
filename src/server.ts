@@ -2,9 +2,10 @@ import express from 'express';
 import { config } from './config';
 import mongoose from 'mongoose';
 import itemRoutes from './routes/item'
-import userRoutes from './routes/user'
-import testRoutes from './routes/testing'
+import lastPurchasedRoutes from './routes/lastPurchasedMap'
 import storeRoutes from './routes/store'
+import testRoutes from './routes/testing'
+import userRoutes from './routes/user'
 
 const app = express();
 const dbName = "grocify";
@@ -18,10 +19,11 @@ mongoose.connect(mongoDbURL)
 app.use(express.json({limit: '50mb'}));
  
 //routes
-app.use(testRoutes)
 app.use(itemRoutes)
-app.use(userRoutes)
+app.use(lastPurchasedRoutes)
 app.use(storeRoutes)
+app.use(testRoutes)
+app.use(userRoutes)
 
 app.listen(config.server.port, () => {
   console.log(`App running on port ${config.server.port}`);

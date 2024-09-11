@@ -51,6 +51,7 @@ export type ItemBase = {
  **/
 export type Item = Key & ItemBase;
 export type ItemWithStoreSpecificValues = Item & StoreSpecificValues;
+export type LastPurchasedMap = { [key: string]: StoreSpecificValue<number> };
 export enum StoreSpecificValueKey {
   AisleNumber = 'aisleNumber',
   IsInCart = 'isInCart',
@@ -113,6 +114,9 @@ export type SaveManyItemsRequest = {
 } & AccountCredentials;
 export type SaveStoreRequest = {
   store: Store;
+} & AccountCredentials;
+export type SaveLastPurchasedMapRequest = {
+  lastPurchasedMap: LastPurchasedMap;
 } & AccountCredentials;
 //#endregion
 

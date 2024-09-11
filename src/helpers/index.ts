@@ -13,8 +13,8 @@ import { ItemSchema } from "../schema";
 import { ZodEffects } from "zod";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
-import { getReplacedValuesMap } from "./getReplacedValuesMap";
 import { StoreSchema } from "../schema/store";
+import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -82,6 +82,16 @@ export async function getItemOrThrow(id: string) {
   }
 
   return user;
+}
+
+export async function getLastPurchasedOrThrow(userId: string) {
+  const lastPurchased = await LastPurchasedMapSchema.findOne({userId});
+
+  if (!lastPurchased) {
+    throw getErrorMessage(`No lastPurchasedMap associated with userId of '${userId}'.`);
+  }
+
+  return lastPurchased;
 }
 
 export async function getStoreOrThrow(id: string) {
@@ -189,7 +199,7 @@ export function sanitizeKey<T extends Key>(key: T) {
 }
 
 /**
-*This is used to sanitize the keys used in storeSpecific values and for stores
+*This is used to sanitize the keys used in documents with a values field (e.g. LastPurchasedMapSchema and StoreSpecificValuesSchema)
 **/
 export function sanitize(str?: string) {
   if (!str) return "";
