@@ -13,9 +13,9 @@ import {
   AccountCredentials,
   CurrentPassword,
   Item,
+  LastPurchasedMap,
   Store,
   StoreSpecificValuesMap,
-  StoreSpecificValueTypes,
   UserAccount,
   UserDocument,
 } from "../types";
@@ -25,6 +25,7 @@ import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { Document } from "mongoose";
 import { StoreSchema } from "../schema/store";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
+import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
 
 const router = express.Router({
   mergeParams: true,
@@ -73,22 +74,39 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const { password, userId } = req.body as Required<AccountCredentials>;
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const deletedUserPromise = UserSchema.findByIdAndDelete(userId);
+    const deletedUser = await UserSchema.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      throw new Error(`Unable to delete the user with the id of ${userId}.`);
+    }
+
+    USERS_CACHE.delete(userId);
     const deletedItemsPromise = ItemSchema.deleteMany({ userId });
+    const deletedLastPurchasedMapPromise = LastPurchasedMapSchema.deleteMany({
+      userId,
+    });
     const deletedStoresPromise = StoreSchema.deleteMany({ userId });
-    const deletedStoreSpecificItemsPromise = StoreSpecificValuesSchema.deleteOne(
-      { userId }
-    );
-    const [deletedUser, deletedItems, deletedStores, deletedStoreSpecificItems] = await Promise.all([
-      deletedUserPromise,
+    const deletedStoreSpecificItemsPromise =
+      StoreSpecificValuesSchema.deleteOne({ userId });
+    const [
+      deletedItems,
+      deletedLastPurchasedMap,
+      deletedStores,
+      deletedStoreSpecificItems,
+    ] = await Promise.all([
       deletedItemsPromise,
+      deletedLastPurchasedMapPromise,
       deletedStoresPromise,
       deletedStoreSpecificItemsPromise,
-    ])
-    if (!!deletedUser) {
-      USERS_CACHE.delete(userId);
-    }
-    res.send(deletedUser);
+    ]);
+
+    res.send({
+      deletedUser,
+      deletedItems,
+      deletedLastPurchasedMap,
+      deletedStores,
+      deletedStoreSpecificItems,
+    });
   } catch (error) {
     handleError(res, error);
   }
@@ -216,8 +234,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
             ...item,
             userId: user?._id,
           });
-        } 
-        updateDocument(existingDocument, item)
+        }
+        updateDocument(existingDocument, item);
         return existingDocument;
       })
     );
@@ -230,18 +248,32 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
             ...store,
             userId: user?._id,
           });
-        } 
-        updateDocument(existingDocument, store)
+        }
+        updateDocument(existingDocument, store);
         return existingDocument;
       })
     );
 
-    const updateObj = getUpdateObjectForValuesDocument<StoreSpecificValuesMap, StoreSpecificValueTypes>(storeSpecificValues);
-    const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOneAndUpdate(
-      { userId: userId.toString() },
-      updateObj,
-      { upsert: true }
-    );
+
+    const storeSpecificValuesPromise =
+      StoreSpecificValuesSchema.findOneAndUpdate(
+        { userId: userId.toString() },
+        getUpdateObjectForValuesDocument<
+          StoreSpecificValuesMap,
+          StoreSpecificValuesMap[string]
+        >(storeSpecificValues),
+        { upsert: true }
+      );
+
+    const lastPurchasedMapPromise =
+      LastPurchasedMapSchema.findOneAndUpdate(
+        { userId: userId.toString() },
+        getUpdateObjectForValuesDocument<
+          LastPurchasedMap,
+          LastPurchasedMap[string]
+        >(lastPurchasedMap),
+        { upsert: true }
+      );
 
     //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
     //todo: just need to return all the writeReults and then the front end can act accordingly
@@ -249,13 +281,25 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     const startBulkSave = performance.now();
     const itemsBulkSavePromise = ItemSchema.bulkSave(items);
     const storesBulkSavePromise = StoreSchema.bulkSave(stores);
-    const [itemsResult, storesResult, storeSpecificValuesResult]  = await Promise.all([itemsBulkSavePromise, storesBulkSavePromise, storeSpecificValuesPromise]);
+    const [itemsResult, lastPurchasedMapResult, storesResult, storeSpecificValuesResult] =
+      await Promise.all([
+        itemsBulkSavePromise,
+        lastPurchasedMapPromise,
+        storesBulkSavePromise,
+        storeSpecificValuesPromise,
+      ]);
     const endBulkSave = performance.now();
-    console.log({ timeToSave: endBulkSave - startBulkSave, itemsResult, storesResult });
+    console.log({
+      timeToSave: endBulkSave - startBulkSave,
+      itemsResult,
+      lastPurchasedMapResult,
+      storesResult,
+    });
     res.send({
       itemsResult,
+      lastPurchasedMapResult,
       storesResult,
-      storeSpecificValuesResult
+      storeSpecificValuesResult,
     });
   } catch (error) {
     handleError(res, error);
@@ -268,6 +312,6 @@ function updateDocument<T>(existingItem: Document<unknown, {}, T>, newItem: T) {
   if (!existingItem || !newItem) return null;
   for (const key of Object.keys(newItem)) {
     const typedKey = key as keyof Document<unknown, {}, T>;
-    existingItem[typedKey] = newItem[typedKey as keyof T]
+    existingItem[typedKey] = newItem[typedKey as keyof T];
   }
 }

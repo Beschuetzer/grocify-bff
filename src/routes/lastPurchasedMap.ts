@@ -5,10 +5,8 @@ import {
   getAndThenCacheUser,
 } from "../helpers";
 import { LAST_PURCHASED } from "./constants";
-import { LastPurchasedMap, SaveLastPurchasedMapRequest } from "../types";
+import { DeleteValuesDocumentRequest, LastPurchasedMap, SaveLastPurchasedMapRequest } from "../types";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { StoreSchema } from "../schema/store";
-import store from "./store";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 
@@ -33,7 +31,7 @@ router.post(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
     console.log({ method: "POST", userId, password, lastPurchasedMap });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const updateObj = getUpdateObjectForValuesDocument<LastPurchasedMap, number>()
+    const updateObj = getUpdateObjectForValuesDocument<LastPurchasedMap, LastPurchasedMap[string]>(lastPurchasedMap)
     console.log({updateObj});
     const result = await LastPurchasedMapSchema.findOneAndUpdate(
         { userId },
@@ -46,39 +44,18 @@ router.post(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
   }
 });
 
-// router.put(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
-//   try {
-//     const { store, userId, password } = req.body as SaveStoreRequest;
-//     console.log({ method: "PUT", userId, password, store });
-//     const user = await getAndThenCacheUser(userId);
-//     await checkIsAuthorized(password, user?.password);
-//     const savedStore = await StoreSchema.updateOne(
-//       { _id: store._id },
-//       {
-//         ...sanitizeStore(store),
-//       }
-//     );
-//     return res.send(savedStore);
-//   } catch (error) {
-//     console.log({error});
-//     return res.status(500).send(false);
-//   }
-// });
+router.delete(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
+  try {
+    const { userId, password } = req.body as DeleteValuesDocumentRequest;
+    console.log({userId, password});
 
-// router.delete(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
-//   try {
-//     const { ids, userId, password } = req.body as DeleteManyRequest;
-//     console.log({ids, userId, password});
-
-//     const user = await getAndThenCacheUser(userId);
-//     await checkIsAuthorized(password, user?.password);
-//     const deletedStores = await StoreSchema.deleteMany({
-//       _id: { $in: ids }
-//     })
-//     res.send(deletedStores);
-//   } catch (error) {
-//     handleError(res, error);
-//   }
-// });
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    const deletedStores = await LastPurchasedMapSchema.deleteMany({ userId })
+    res.send(deletedStores);
+  } catch (error) {
+    handleError(res, error);
+  }
+});
 
 export default router;

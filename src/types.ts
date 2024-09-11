@@ -104,6 +104,7 @@ export type AccountCredentials = {
 export type DeleteManyRequest = { 
   ids: string[];
 } & AccountCredentials;
+export type DeleteValuesDocumentRequest = AccountCredentials;
 export type SaveItemRequest = {
   item: Item;
   storeSpecificValuesMap: StoreSpecificValuesMap;

@@ -1,11 +1,6 @@
 ## MVP
-- save all:
-    --work on stores
-        --finish the routes (add postman cases)
-        --finish POST /user/saveAll
-    --work on lastPurchaseMap
-        ---need to add schema
-        ---need to delete the lastPurchaseMap for the user on DELETE /user call
+- save all (postman tests work):
+    --test using the front end 
 
 - finish store saving stuff:
     --test saving an item with the current schema (do i need to specify the objects for gpsCoordinates and address?)
