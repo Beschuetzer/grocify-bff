@@ -5,6 +5,7 @@ import {
   ErrorMessage,
   Key,
   StoreSpecificValuesMap,
+  StoreSpecificValueTypes,
   UserDocument,
 } from "../types";
 import { Response } from "express";
@@ -12,9 +13,9 @@ import { REGISTERED_USERS_CACHE } from "../cache";
 import { ItemSchema } from "../schema";
 import { ZodEffects } from "zod";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
-import { getUpdateObjectForStoreSpecificValues } from "./getUpdateObjectForStoreSpecificValues";
 import { StoreSchema } from "../schema/store";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
+import { getUpdateObjectForValuesDocument } from "./getUpdateObjectForValuesDocument";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -163,7 +164,7 @@ export async function handleStoreSpecificValuesMap(
     return;
   }
 
-  const updateObj = getUpdateObjectForStoreSpecificValues(storeSpecificValuesToAdd);
+  const updateObj = getUpdateObjectForValuesDocument<StoreSpecificValuesMap, StoreSpecificValueTypes>(storeSpecificValuesToAdd);
   const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
     { userId: userId.toString() },
     updateObj,

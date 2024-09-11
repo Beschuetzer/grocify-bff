@@ -14,6 +14,8 @@ import {
   CurrentPassword,
   Item,
   Store,
+  StoreSpecificValuesMap,
+  StoreSpecificValueTypes,
   UserAccount,
   UserDocument,
 } from "../types";
@@ -22,7 +24,7 @@ import { ItemSchema } from "../schema";
 import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { Document } from "mongoose";
 import { StoreSchema } from "../schema/store";
-import { getUpdateObjectForStoreSpecificValues } from "../helpers/getUpdateObjectForStoreSpecificValues";
+import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 
 const router = express.Router({
   mergeParams: true,
@@ -234,7 +236,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       })
     );
 
-    const updateObj = getUpdateObjectForStoreSpecificValues(storeSpecificValues);
+    const updateObj = getUpdateObjectForValuesDocument<StoreSpecificValuesMap, StoreSpecificValueTypes>(storeSpecificValues);
     const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOneAndUpdate(
       { userId: userId.toString() },
       updateObj,

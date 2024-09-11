@@ -1,23 +1,20 @@
 import { sanitize } from ".";
 import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
-import { StoreSpecificValueTypes, StoreSpecificValuesMap } from "../types";
 
-export type GetUpdateObjectForStoreSpecificValuesResponse = {
-  [key: string]: number | string | boolean;
-};
 /**
- *This returns an object that can be used to update a StoreSpecificSchema document's `values` object
+ *This returns an object that can be used to update a LastPurchasedMapSchema document's `values` object
  * `.` is replace with empty space.
  **/
-export function getUpdateObjectForStoreSpecificValues(
-  storeSpecificValuesMap?: StoreSpecificValuesMap
+export function getUpdateObjectForValuesDocument<T, K>(
+  obj?: T
 ) {
   if (
-    !storeSpecificValuesMap ||
-    Object.keys(storeSpecificValuesMap || {}).length <= 0
-  )
+    !obj ||
+    Object.keys(obj || {}).length <= 0
+  ) {
     return [];
-  const toReturn = {} as { [key: string]: StoreSpecificValueTypes };
+  }
+  const toReturn = {} as { [key: string]: K };
   
   function iterate(current: { [key: string]: any }, path: string) {
     if (typeof current === "object" && current !== null) {
@@ -32,7 +29,7 @@ export function getUpdateObjectForStoreSpecificValues(
     }
   }
 
-  iterate(storeSpecificValuesMap, "");
+  iterate(obj, "");
 
   return toReturn;
 }
