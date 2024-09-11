@@ -5,11 +5,12 @@ import {
   getAndThenCacheUser,
 } from "../helpers";
 import { LAST_PURCHASED } from "./constants";
-import { SaveLastPurchasedMapRequest } from "../types";
+import { LastPurchasedMap, SaveLastPurchasedMapRequest } from "../types";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { StoreSchema } from "../schema/store";
 import store from "./store";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
+import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 
 
 const router = express.Router({
@@ -32,13 +33,16 @@ router.post(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
     console.log({ method: "POST", userId, password, lastPurchasedMap });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const createdStore = new LastPurchasedMapSchema({ values: , userId });
-    createdStore._id = store._id;
-    const savedStore = await createdStore.save();
-    return res.send(savedStore);
+    const updateObj = getUpdateObjectForValuesDocument<LastPurchasedMap, number>()
+    console.log({updateObj});
+    const result = await LastPurchasedMapSchema.findOneAndUpdate(
+        { userId },
+        updateObj,
+        { upsert: true }
+    );
+    return res.send(result);
   } catch (error) {
-    console.log({error});
-    return res.status(500).send(false);
+    handleError(res, error);
   }
 });
 

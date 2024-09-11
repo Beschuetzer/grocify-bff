@@ -2,7 +2,7 @@ import { z } from "zod";
 
 //#region Routes
 export const ITEM_PATH = '/item';
-export const LAST_PURCHASED = '/lastPurchased';
+export const LAST_PURCHASED = '/lastPurchasedMap';
 export const STORE_PATH = '/store';
 export const USER_PATH = '/user';
 //#endregion
