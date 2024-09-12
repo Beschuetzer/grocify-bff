@@ -218,7 +218,6 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       lastPurchasedMap,
       userId,
       password,
-      data: itemsList.data,
     });
     if (!userId) throw new Error("No userId given");
     if (!password) throw new Error("No password given");
