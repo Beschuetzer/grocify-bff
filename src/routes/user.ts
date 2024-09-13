@@ -26,6 +26,8 @@ import { Document } from "mongoose";
 import { StoreSchema } from "../schema/store";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
+import { EMPTY_PATH } from "zod";
+import { EMPTY_STRING } from "../constants";
 
 const router = express.Router({
   mergeParams: true,
@@ -63,7 +65,10 @@ router.get(`${USER_PATH}/:id`, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const user = await getAndThenCacheUser(id);
-    res.send(user);
+    res.send({
+      ...user,
+      password: EMPTY_STRING
+    });
   } catch (error) {
     handleError(res, error);
   }
