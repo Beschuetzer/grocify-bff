@@ -101,8 +101,15 @@ export type AccountCredentials = {
   userId?: string;
 }
 
+/**
+*The index for a given key should be the same index for that given id
+**/
 export type DeleteManyRequest = { 
   ids: string[];
+  /**
+  *This will be the key used in {@link StoreSpecificValuesMap} and {@link LastPurchasedMap}
+  **/
+  keys?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
 export type SaveItemRequest = {
@@ -133,6 +140,7 @@ export type AddressGeneric<T> = {
   zipCode: T;
 };
 export type Store = {
+  addedDate: Number;
   gpsCoordinates?: GpsCoordinate;
   calculatedDistance?: number;
 } & Partial<Address> & Omit<Required<Key>, 'upc'>;

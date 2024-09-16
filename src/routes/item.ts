@@ -84,17 +84,17 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
-    const { ids, userId, password } = req.body as DeleteManyRequest;
-    console.log({ids, userId, password});
+    const { ids, userId, password, keys } = req.body as DeleteManyRequest;
+    console.log({items: ids, userId, password, keys});
     
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const deletedItems = await ItemSchema.deleteMany({
       _id: { $in: ids }
     })
-    if (deletedItems.deletedCount > 0) {
+    if (deletedItems.deletedCount > 0 && keys && keys.length > 0) {
       console.log("need to clean up ");
-      const unsetObject = getUnsetObj(ids);
+      const unsetObject = getUnsetObj(keys);
       console.log({unsetObject});
       await StoreSpecificValuesSchema.updateOne({userId}, {
         $unset: unsetObject

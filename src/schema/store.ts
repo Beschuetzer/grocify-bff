@@ -6,6 +6,7 @@ const storeSchema = new mongoose.Schema({
     *This a UUID v4 that the front end creates
     **/
     _id: String,
+    addedDate: Number,
     addressLineOne: String,
     addressLineTwo: String,
     city: String,
