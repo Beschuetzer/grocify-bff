@@ -85,7 +85,7 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
     const { ids, userId, password, keys } = req.body as DeleteManyRequest;
-    console.log({items: ids, userId, password, keys});
+    console.log({ ids, userId, password, keys });
     
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
