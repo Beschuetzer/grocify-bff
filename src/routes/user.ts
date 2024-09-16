@@ -239,7 +239,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
             userId: user?._id,
           });
         }
-        updateDocument(existingDocument, item);
+        updateDocument<Item>(existingDocument, item);
         return existingDocument;
       })
     );
@@ -253,7 +253,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
             userId: user?._id,
           });
         }
-        updateDocument(existingDocument, store);
+        updateDocument<Store>(existingDocument, store);
         return existingDocument;
       })
     );
