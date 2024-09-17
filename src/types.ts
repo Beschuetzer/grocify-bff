@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 import { XOR } from "ts-xor";
 
+export type AddedDate = {
+  addedDate: number;
+}
+
 export type CurrentPassword = {
   currentPassword: string;
 };
@@ -34,7 +38,6 @@ export type Key = XOR<
 >;
 
 export type ItemBase = {
-  addedDate: number;
   /**
    *This is in milliseconds
    **/
@@ -44,7 +47,7 @@ export type ItemBase = {
   imageToUseIndex: number;
   lastUpdatedDate: number;
   unit: string;
-} & Id;
+} & Id & AddedDate;
 
 /**
  *This represents something that can be added to any store
@@ -140,10 +143,9 @@ export type AddressGeneric<T> = {
   zipCode: T;
 };
 export type Store = {
-  addedDate: Number;
   gpsCoordinates?: GpsCoordinate;
   calculatedDistance?: number;
-} & Partial<Address> & Omit<Required<Key>, 'upc'>;
+} & AddedDate & Partial<Address> & Omit<Required<Key>, 'upc'>;
 export type GpsCoordinate = {
   lat: string;
   lon: string;
