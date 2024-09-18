@@ -26,8 +26,7 @@ import { Document } from "mongoose";
 import { StoreSchema } from "../schema/store";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
-import { EMPTY_PATH } from "zod";
-import { EMPTY_STRING } from "../constants";
+import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from "../constants";
 
 const router = express.Router({
   mergeParams: true,
@@ -230,36 +229,42 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
 
     //creates documents for saving
-    const items = await Promise.all(
-      itemsList.data.map(async function (item: Item) {
-        let existingDocument = await ItemSchema.findById(item._id);
-        if (!existingDocument) {
-          return new ItemSchema({
-            ...item,
-            userId: user?._id,
-          });
-        }
-        updateDocument<Item>(existingDocument, item);
-        return existingDocument;
-      })
-    );
+    let items = [];
+    let stores = [];
 
-    const stores = await Promise.all(
-      storesList.data.map(async function (store: Store) {
-        let existingDocument = await StoreSchema.findById(store._id);
-        if (!existingDocument) {
-          return new StoreSchema({
-            ...store,
-            userId: user?._id,
-          });
-        }
-        updateDocument<Store>(existingDocument, store);
-        return existingDocument;
-      })
-    );
+    if (itemsList?.data?.length > 0) {
+      items = await Promise.all(
+        itemsList.data.map(async function (item: Item) {
+          let existingDocument = await ItemSchema.findById(item._id);
+          if (!existingDocument) {
+            return new ItemSchema({
+              ...item,
+              userId: user?._id,
+            });
+          }
+          updateDocument<Item>(existingDocument, item);
+          return existingDocument;
+        })
+      );
+    }
+   
+    if (storesList?.data?.length > 0) {
+      stores = await Promise.all(
+        storesList.data.map(async function (store: Store) {
+          let existingDocument = await StoreSchema.findById(store._id);
+          if (!existingDocument) {
+            return new StoreSchema({
+              ...store,
+              userId: user?._id,
+            });
+          }
+          updateDocument<Store>(existingDocument, store);
+          return existingDocument;
+        })
+      );
+    }
 
-
-    const storeSpecificValuesPromise =
+    const storeSpecificValuesPromise = Object.keys(storeSpecificValues || {}).length > 0 ?
       StoreSpecificValuesSchema.findOneAndUpdate(
         { userId: userId.toString() },
         getUpdateObjectForValuesDocument<
@@ -267,9 +272,9 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
           StoreSpecificValuesMap[string]
         >(storeSpecificValues),
         { upsert: true }
-      );
+      ) : Promise.resolve({});
 
-    const lastPurchasedMapPromise =
+    const lastPurchasedMapPromise = Object.keys(lastPurchasedMap || {}).length > 0 ?
       LastPurchasedMapSchema.findOneAndUpdate(
         { userId: userId.toString() },
         getUpdateObjectForValuesDocument<
@@ -277,14 +282,14 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
           LastPurchasedMap[string]
         >(lastPurchasedMap),
         { upsert: true }
-      );
+      ) : Promise.resolve({});
 
     //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
     //todo: just need to return all the writeReults and then the front end can act accordingly
 
     const startBulkSave = performance.now();
-    const itemsBulkSavePromise = ItemSchema.bulkSave(items);
-    const storesBulkSavePromise = StoreSchema.bulkSave(stores);
+    const itemsBulkSavePromise = items.length > 0 ? ItemSchema.bulkSave(items) : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
+    const storesBulkSavePromise = stores.length > 0 ? StoreSchema.bulkSave(stores) : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
     const [itemsResult, lastPurchasedMapResult, storesResult, storeSpecificValuesResult] =
       await Promise.all([
         itemsBulkSavePromise,
@@ -298,6 +303,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
+      storeSpecificValuesResult
     });
     res.send({
       itemsResult,
@@ -319,3 +325,4 @@ function updateDocument<T>(existingItem: Document<unknown, {}, T>, newItem: T) {
     existingItem[typedKey] = newItem[typedKey as keyof T];
   }
 }
+

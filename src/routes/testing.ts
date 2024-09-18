@@ -66,4 +66,34 @@ router.post("/passwordCompare", async (req, res) => {
   });
 });
 
+router.get('/compareObjectCheck/:numProps', async (req, res) => {
+  const { numProps } = req.params
+  console.log({numProps});
+
+  // Create a large object
+  const largeObject = createLargeObject(numProps);
+
+  // Benchmark Object.keys()
+  const keyStart = performance.now();
+  const keys = Object.keys(largeObject);
+  const keyEnd = performance.now();
+
+  res.send({
+    keyApproach: keyEnd - keyStart,
+  })
+})
+
 export default router;
+
+function createLargeObject(numProps: string) {
+  const obj = {} as any;
+  for (let i = 0; i < Number(numProps); i++) {
+      obj[`key${i}`] = i;
+  }
+  return obj;
+}
+
+
+function isEmpty(obj) {
+  return JSON.stringify(obj) === '{}';
+}
