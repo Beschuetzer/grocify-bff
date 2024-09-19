@@ -75,7 +75,7 @@ router.get('/compareObjectCheck/:numProps', async (req, res) => {
 
   // Benchmark Object.keys()
   const keyStart = performance.now();
-  const keys = Object.keys(largeObject);
+  Object.keys(largeObject);
   const keyEnd = performance.now();
 
   res.send({
@@ -91,9 +91,4 @@ function createLargeObject(numProps: string) {
       obj[`key${i}`] = i;
   }
   return obj;
-}
-
-
-function isEmpty(obj) {
-  return JSON.stringify(obj) === '{}';
 }
