@@ -82,7 +82,7 @@ router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const deletedStores = await StoreSchema.deleteMany({
-      _id: { $in: ids }
+      _id: { $in: ids?.filter(Boolean) }
     })
     res.send(deletedStores);
   } catch (error) {

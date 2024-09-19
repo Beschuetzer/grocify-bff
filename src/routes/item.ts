@@ -90,7 +90,7 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const deletedItems = await ItemSchema.deleteMany({
-      _id: { $in: ids }
+      _id: { $in: ids?.filter(Boolean) }
     })
     if (deletedItems.deletedCount > 0 && keys && keys.length > 0) {
       console.log("need to clean up ");
