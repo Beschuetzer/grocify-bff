@@ -55,7 +55,7 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     return res.send(item);
   } catch (error) {
     console.log({error});
-    return res.status(500).send(false);
+    return res.status(500).send(null);
   }
 });
 

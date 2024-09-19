@@ -171,7 +171,7 @@ export async function handleStoreSpecificValuesMap(
     { upsert: true }
   );
   console.log({ updated, updateObj });
-  return;
+  return updated;
 }
 
 export function hashPassword(
