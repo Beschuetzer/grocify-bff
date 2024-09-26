@@ -45,28 +45,7 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
     console.log({ method: "POST", userId, password, store });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const createdStore = new StoreSchema({ ...sanitizeStore(store), userId });
-    createdStore._id = store._id;
-    const savedStore = await createdStore.save();
-    return res.send(savedStore);
-  } catch (error) {
-    console.log({error});
-    return res.status(500).send(false);
-  }
-});
-
-router.put(`${STORE_PATH}`, async (req: Request, res: Response) => {
-  try {
-    const { store, userId, password } = req.body as SaveStoreRequest;
-    console.log({ method: "PUT", userId, password, store });
-    const user = await getAndThenCacheUser(userId);
-    await checkIsAuthorized(password, user?.password);
-    await StoreSchema.updateOne(
-      { _id: store._id },
-      {
-        ...sanitizeStore(store),
-      }
-    );
+    await StoreSchema.findByIdAndUpdate( store._id, sanitizeStore(store), { upsert: true })
     return res.send(store);
   } catch (error) {
     console.log({error});
