@@ -1,11 +1,10 @@
-import { BCRYPT_SALT_ROUND, ERROR_MSG_NOT_AUTHORIZED } from "../constants";
+import { BCRYPT_SALT_ROUND, EMPTY_STRING, ERROR_MSG_NOT_AUTHORIZED } from "../constants";
 import bcrypt from "bcrypt";
 import { UserSchema } from "../schema/user";
 import {
   ErrorMessage,
   Key,
   StoreSpecificValuesMap,
-  StoreSpecificValueTypes,
   UserDocument,
 } from "../types";
 import { Response } from "express";
@@ -16,6 +15,7 @@ import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { StoreSchema } from "../schema/store";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
 import { getUpdateObjectForValuesDocument } from "./getUpdateObjectForValuesDocument";
+import { getUnsetObj } from "./getUnsetObj";
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -83,6 +83,13 @@ export async function getItemOrThrow(id: string) {
   }
 
   return user;
+}
+
+export function getKeyToUse(key?: string | Key) {
+  if (!key) return EMPTY_STRING;
+  if (typeof key === 'string') return key;
+  const sanitizedKey = sanitizeKey(key);
+  return sanitizedKey?.upc || sanitizedKey?.name || EMPTY_STRING;
 }
 
 export async function getLastPurchasedOrThrow(userId: string) {
@@ -156,7 +163,8 @@ export function handleError(res: Response, error: unknown, statusCode = 500) {
 export async function handleStoreSpecificValuesMap(
   itemId: string,
   userId: string,
-  storeSpecificValuesToAdd?: StoreSpecificValuesMap
+  storeSpecificValuesToAdd?: StoreSpecificValuesMap,
+  originalKey?: string,
 ) {
   console.log({ itemId, userId, storeSpecificValuesToAdd });
   const keys = Object.keys(storeSpecificValuesToAdd || {});
@@ -165,12 +173,19 @@ export async function handleStoreSpecificValuesMap(
   }
 
   const updateObj = getUpdateObjectForValuesDocument<StoreSpecificValuesMap, StoreSpecificValuesMap[string]>(storeSpecificValuesToAdd);
+  let objToUse = { ...updateObj };
+  if (originalKey) {
+    objToUse = {
+      ...objToUse,
+      $unset: getUnsetObj([originalKey]),
+    }
+  }
   const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
     { userId: userId.toString() },
-    updateObj,
+    objToUse,
     { upsert: true }
   );
-  console.log({ updated, updateObj });
+  console.log({ updated, updateObj, objToUse });
   return updated;
 }
 

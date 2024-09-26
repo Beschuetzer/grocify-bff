@@ -49,6 +49,10 @@ export type ItemBase = {
   unit: string;
 } & Id & AddedDate;
 
+export type OriginalKeyProp = {
+  originalKey: Key;
+};
+
 /**
  *This represents something that can be added to any store
  **/
@@ -118,7 +122,7 @@ export type DeleteValuesDocumentRequest = AccountCredentials;
 export type SaveItemRequest = {
   item: Item;
   storeSpecificValuesMap: StoreSpecificValuesMap;
-} & AccountCredentials;
+} & AccountCredentials & OriginalKeyProp;
 export type SaveManyItemsRequest = {
   items: Item[];
   storeSpecificValuesMap: StoreSpecificValuesMap;

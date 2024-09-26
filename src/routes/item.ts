@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import {
   getAndThenCacheUser,
   getItemOrThrow,
+  getKeyToUse,
   getUserItems,
   handleError,
   handleStoreSpecificValuesMap,
@@ -38,16 +39,19 @@ router.get(`${ITEM_PATH}${USER_PATH}/:id`, async (req: Request, res: Response) =
   }
 });
 
+/**
+*If the originalKey is given, that key will be removed from the {@link StoreSpecificValuesMap}.
+**/
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
-    const { item, storeSpecificValuesMap, userId, password } = req.body as SaveItemRequest;
+    const { item, storeSpecificValuesMap, userId, password, originalKey } = req.body as SaveItemRequest;
     console.log({method: "POST", userId, password, item, storeSpecificValuesMap});
     const itemWithUserId = { ...item, userId }
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const sanitizedItem = sanitizeKey(itemWithUserId)
     const saveItemPromise = ItemSchema.findByIdAndUpdate( sanitizedItem._id, sanitizedItem, { upsert: true })
-    const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(sanitizedItem._id, user._id, storeSpecificValuesMap);
+    const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(sanitizedItem._id, user._id, storeSpecificValuesMap, getKeyToUse(originalKey));
     await Promise.all([
       saveItemPromise,
       handleStoreSpecificValuesMapPromise
@@ -56,26 +60,6 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   } catch (error) {
     console.log({error});
     return res.status(500).send(null);
-  }
-});
-
-router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  try {
-    const { item, userId, password } = req.body as SaveItemRequest;
-    console.log({ method: "PUT", userId, password, item });
-    const user = await getAndThenCacheUser(userId);
-    await checkIsAuthorized(password, user?.password);
-    if (!item._id) {
-      throw new Error(`No id given for item '${item.name || item.upc}'`)
-    }
-    await ItemSchema.updateOne(
-      { _id: item._id },
-      sanitizeKey(item),
-    );
-    return res.send(item);
-  } catch (error) {
-    console.log({error});
-    return res.status(500).send(false);
   }
 });
 
