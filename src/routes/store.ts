@@ -61,13 +61,13 @@ router.put(`${STORE_PATH}`, async (req: Request, res: Response) => {
     console.log({ method: "PUT", userId, password, store });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const savedStore = await StoreSchema.updateOne(
+    await StoreSchema.updateOne(
       { _id: store._id },
       {
         ...sanitizeStore(store),
       }
     );
-    return res.send(savedStore);
+    return res.send(store);
   } catch (error) {
     console.log({error});
     return res.status(500).send(false);

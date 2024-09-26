@@ -59,6 +59,26 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   }
 });
 
+router.put(`${ITEM_PATH}`, async (req: Request, res: Response) => {
+  try {
+    const { item, userId, password } = req.body as SaveItemRequest;
+    console.log({ method: "PUT", userId, password, item });
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    if (!item._id) {
+      throw new Error(`No id given for item '${item.name || item.upc}'`)
+    }
+    await ItemSchema.updateOne(
+      { _id: item._id },
+      sanitizeKey(item),
+    );
+    return res.send(item);
+  } catch (error) {
+    console.log({error});
+    return res.status(500).send(false);
+  }
+});
+
 router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
   const { items, storeSpecificValuesMap, userId, password } = req.body as SaveManyItemsRequest;
 
