@@ -1,4 +1,7 @@
 ## MVP
+-for /POST /store:
+    --when changing the name of a store, the storeSpecificValuesMap should be updated too
+
 - save all (postman tests work):
     --test using the front end 
 
