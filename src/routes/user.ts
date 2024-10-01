@@ -284,9 +284,6 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
         { upsert: true }
       ) : Promise.resolve({});
 
-    //todo: save all the data here using promiseAll (make sure that existing data isn't overridden?)
-    //todo: just need to return all the writeReults and then the front end can act accordingly
-
     const startBulkSave = performance.now();
     const itemsBulkSavePromise = items.length > 0 ? ItemSchema.bulkSave(items) : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
     const storesBulkSavePromise = stores.length > 0 ? StoreSchema.bulkSave(stores) : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
