@@ -271,7 +271,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
           StoreSpecificValuesMap,
           StoreSpecificValuesMap[string]
         >(storeSpecificValues),
-        { upsert: true }
+        { upsert: true, new: true }
       ) : Promise.resolve({});
 
     const lastPurchasedMapPromise = Object.keys(lastPurchasedMap || {}).length > 0 ?
@@ -281,7 +281,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
           LastPurchasedMap,
           LastPurchasedMap[string]
         >(lastPurchasedMap),
-        { upsert: true }
+        { upsert: true, new: true }
       ) : Promise.resolve({});
 
     const startBulkSave = performance.now();
