@@ -27,6 +27,7 @@ import { StoreSchema } from "../schema/store";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
 import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from "../constants";
+import { getUnsetObj } from "../helpers/getUnsetObj";
 
 const router = express.Router({
   mergeParams: true,
@@ -209,6 +210,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
   try {
     const {
       items: itemsList,
+      keysToDeleteFromStoreSpecificValuesMap,
       lastPurchasedMap,
       password,
       stores: storesList,
@@ -217,6 +219,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     } = req.body;
     console.log({
       itemsList,
+      keysToDeleteFromStoreSpecificValuesMap,
       storesList,
       storeSpecificValues,
       lastPurchasedMap,
@@ -263,14 +266,16 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
         })
       );
     }
-
+    
     const storeSpecificValuesPromise = Object.keys(storeSpecificValues || {}).length > 0 ?
       StoreSpecificValuesSchema.findOneAndUpdate(
-        { userId: userId.toString() },
-        getUpdateObjectForValuesDocument<
-          StoreSpecificValuesMap,
-          StoreSpecificValuesMap[string]
-        >(storeSpecificValues),
+        { userId: userId.toString() }, {
+          ...(getUpdateObjectForValuesDocument<
+            StoreSpecificValuesMap,
+            StoreSpecificValuesMap[string]
+          >(storeSpecificValues)),
+          $unset: getUnsetObj(keysToDeleteFromStoreSpecificValuesMap),
+        },        
         { upsert: true, new: true }
       ) : Promise.resolve({});
 

@@ -7,6 +7,7 @@ export function getUnsetObj(keys: string[]) {
   if (!keys || keys.length <= 0) return {};
   const toReturn = {} as any;
   for (const key of keys) {
+    if (!key) continue;
     toReturn[`${storeSpecificValuesSchemaValueFieldName}.${key}`] = 1;
   }
   return toReturn;
