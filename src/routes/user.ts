@@ -218,8 +218,8 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
 
     const itemsPromise = ItemSchema.find({userId});
+    const storesPromise = StoreSchema.find({userId});
     const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({userId});
-    const storesPromise = StoreSchema.findOne({userId});
     const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({userId});
     const [
       items,

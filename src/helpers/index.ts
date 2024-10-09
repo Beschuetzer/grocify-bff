@@ -219,7 +219,7 @@ export function sanitizeKey<T extends Key>(key: T) {
 **/
 export function sanitize(str?: string) {
   if (!str) return "";
-  return str?.replace(/\./g, '');
+  return str?.replace(/\./g, '').trim();
 }
 
 export function validateMatchesSchema<T>(schema: ZodEffects<any>, item: T) {
