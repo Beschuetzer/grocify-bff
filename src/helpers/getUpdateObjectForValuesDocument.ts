@@ -19,7 +19,7 @@ export function getUpdateObjectForValuesDocument<T, K>(
   function iterate(current: { [key: string]: any }, path: string) {
     if (typeof current === "object" && current !== null) {
       for (let key in current) {
-        if (current.hasOwnProperty(key)) {
+        if (key && current.hasOwnProperty(key)) {
           const replacedKey = sanitize(key);
           iterate(current[key], path ? `${path}.${replacedKey}` : replacedKey);
         }

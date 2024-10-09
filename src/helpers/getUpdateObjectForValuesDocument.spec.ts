@@ -31,6 +31,19 @@ describe("getUpdateObjectForValuesDocument", () => {
     const actual = getUpdateObjectForValuesDocument(undefined as any);
     expect(actual).toStrictEqual([]);
   });
+
+  test("can handle falsy key", async () => {
+    const actual = getUpdateObjectForValuesDocument({
+      [keyWithDots]: {
+        [StoreSpecificValueKey.IsInCart]: {
+          [""]: targetIsInCart,
+        },
+      },
+    })
+    expect(actual).toStrictEqual({})
+  })
+
+
   test("can escape . in key", async () => {
     const actual = getUpdateObjectForValuesDocument({
       [keyWithDots]: {
