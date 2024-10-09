@@ -206,6 +206,45 @@ router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
   }
 });
 
+router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
+  try {
+    const {
+      password,
+      userId,
+    } = req.body;
+    if (!userId) throw new Error("No userId given");
+    if (!password) throw new Error("No password given");
+    const user = await UserSchema.findById(userId);
+    await checkIsAuthorized(password, user?.password);
+
+    const itemsPromise = ItemSchema.find({userId});
+    const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({userId});
+    const storesPromise = StoreSchema.findOne({userId});
+    const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({userId});
+    const [
+      items,
+      stores,
+      storeSpecificValues,
+      lastPurchasedMap
+    ] = await Promise.all([
+      itemsPromise,
+      storesPromise,
+      storeSpecificValuesPromise,
+      lastPurchasedMapPromise,
+    ])
+
+    res.send({
+      items,
+      stores,
+      storeSpecificValues,
+      lastPurchasedMap
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+
 router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
   try {
     const {

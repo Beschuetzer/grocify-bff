@@ -910,6 +910,12 @@
 							"        },\r",
 							"    },\r",
 							"    items: {\r",
+							"        filters: {},\r",
+							"        sortOrderValue: {\r",
+							"             sortOrder: 'Ascending',\r",
+							"              sortBy: 'name' \r",
+							"        },\r",
+							"        currentStoreName: 'Costco',\r",
 							"        data: [\r",
 							"            {\r",
 							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
@@ -960,6 +966,12 @@
 							"\r",
 							"    },\r",
 							"    stores: {\r",
+							"        filters: {},\r",
+							"        sortOrderValue: {\r",
+							"             sortOrder: 'Ascending',\r",
+							"              sortBy: 'name' \r",
+							"        },\r",
+							"        currentStoreName: 'Costco',\r",
 							"        data: [\r",
 							"            {\r",
 							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
@@ -1033,6 +1045,55 @@
 			"response": []
 		},
 		{
+			"name": "Load All",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/user/loadAll",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"user",
+						"loadAll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Delete Items",
 			"event": [
 				{
@@ -1061,7 +1122,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"ids\": [\r\n        \"{{itemId}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
+					"raw": "{\r\n    \"ids\": [\r\n        \"{{itemId}}\"\r\n    ],\r\n    \"keys\": [\r\n        \"{{upcToAdd}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1622,6 +1683,36 @@
 					"path": [
 						"user",
 						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Object Check - 10000",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{groficyBaseUrl}}/compareObjectCheck/50b0000",
+					"host": [
+						"{{groficyBaseUrl}}"
+					],
+					"path": [
+						"compareObjectCheck",
+						"50b0000"
 					]
 				}
 			},
