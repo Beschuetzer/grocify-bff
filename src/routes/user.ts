@@ -233,10 +233,13 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
       lastPurchasedMapPromise,
     ])
 
+    if (!storeSpecificValues?.values) {
+      throw new Error('Unable to load storeSpecificValues properly')
+    }
     res.send({
       items,
       stores,
-      storeSpecificValues,
+      storeSpecificValues: storeSpecificValues.values,
       lastPurchasedMap
     });
   } catch (error) {
