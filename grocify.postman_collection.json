@@ -1,2093 +1,1900 @@
 {
-	"info": {
-		"_postman_id": "c600e229-daa3-4522-b17f-dfd7c27f525f",
-		"name": "grocify",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "14418289",
-		"_collection_link": "https://lively-comet-477342.postman.co/workspace/nxBridge~693c9375-622a-44bf-992d-236c27ca3a29/collection/14418289-c600e229-daa3-4522-b17f-dfd7c27f525f?action=share&source=collection_link&creator=14418289"
-	},
-	"item": [
-		{
-			"name": "Login - Success",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"{{userEmail}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/login",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save LastPurchasedMap",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"lastPurchasedMap\": {\r",
-							"        \"000000000001\": {\r",
-							"            \"target n. st. paul\": 1,\r",
-							"            \"walmart (edina)\": 2\r",
-							"        },\r",
-							"        \"000000000002\": {\r",
-							"            \"target n. st. paul\": 3,\r",
-							"            \"walmart (edina)\": 4\r",
-							"        },\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"lastPurchasedMapId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/lastPurchasedMap",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"lastPurchasedMap"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save Many Items (Valid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"    // Ensure that min is less than or equal to max\r",
-							"    if (min > max) {\r",
-							"        throw new Error('Min must be less than or equal to max');\r",
-							"    }\r",
-							"\r",
-							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"    const randomInt = min + Math.floor(Math.random() * max);\r",
-							"    return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"function getNewItem() {\r",
-							"    const idToUse = generateGUID();\r",
-							"    console.log({idToUse})\r",
-							"    return {\r",
-							"        \"name\": \"name\",\r",
-							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [\"image1\"],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
-							"        \"_id\": idToUse\r",
-							"    }\r",
-							"}\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"items\": [\r",
-							"        getNewItem(),\r",
-							"        getNewItem(),\r",
-							"        getNewItem(),\r",
-							"    ],\r",
-							"    \"storeSpecificValues\": {\r",
-							"        \"{{upcToAdd}}\": {\r",
-							"            \"aisleNumber\": {\r",
-							"                \"target\": \"123\"\r",
-							"            },\r",
-							"            \"quantity\": {\r",
-							"                \"target\": 2\r",
-							"            }\r",
-							"        }\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item/many",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item",
-						"many"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save Item (Valid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"    // Ensure that min is less than or equal to max\r",
-							"    if (min > max) {\r",
-							"        throw new Error('Min must be less than or equal to max');\r",
-							"    }\r",
-							"\r",
-							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"    const randomInt = min + Math.floor(Math.random() * max);\r",
-							"    return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
-							"pm.globals.set(\"upcToAdd\", upc)\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"item\": {\r",
-							"        \"name\": \"name\",\r",
-							"        \"upc\": upc,\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [\"image1\"],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
-							"        \"_id\": generateGUID()\r",
-							"    },\r",
-							"    \"storeSpecificValuesMap\": {\r",
-							"        \"{{upcToAdd}}\": {\r",
-							"            \"aisleNumber\": {\r",
-							"                \"target\": \"123\"\r",
-							"            },\r",
-							"            \"quantity\": {\r",
-							"                \"target\": 4\r",
-							"            }\r",
-							"        }\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"itemId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save Item (Valid and Update StoreSpecificValues) Copy",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"    // Ensure that min is less than or equal to max\r",
-							"    if (min > max) {\r",
-							"        throw new Error('Min must be less than or equal to max');\r",
-							"    }\r",
-							"\r",
-							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"    const randomInt = min + Math.floor(Math.random() * max);\r",
-							"    return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
-							"pm.globals.set(\"upcToAdd\", upc)\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"item\": {\r",
-							"        \"name\": \"name\",\r",
-							"        \"upc\": upc,\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [\"image1\"],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
-							"        \"_id\": generateGUID()\r",
-							"    },\r",
-							"    \"storeSpecificValuesMap\": {\r",
-							"        \"{{upcToAdd}}\": {\r",
-							"            \"aisleNumber\": {\r",
-							"                \"target\": 555,\r",
-							"                \"costco\": 553\r",
-							"            },\r",
-							"            \"itemId\": {\r",
-							"                \"target\": \"abc123\"\r",
-							"            }\r",
-							"        },\r",
-							"        \"00000012\": {\r",
-							"            \"aisleNumber\": {\r",
-							"                \"target\": 111,\r",
-							"                \"costco\": 111,\r",
-							"                \"walmart\": 111\r",
-							"            },\r",
-							"            \"itemId\": {\r",
-							"                \"target\": \"aa\"\r",
-							"            },\r",
-							"            \"quantity\": {\r",
-							"                \"walmart\": 12\r",
-							"            }\r",
-							"        }\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save Item (Invalid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"  // Ensure that min is less than or equal to max\r",
-							"  if (min > max) {\r",
-							"    throw new Error('Min must be less than or equal to max');\r",
-							"  }\r",
-							"\r",
-							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"  const randomInt = min + Math.floor(Math.random() * max);\r",
-							"  return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"item\": {\r",
-							"        \"name\": \"name\",\r",
-							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [ \"image1\" ],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
-							"        \"aisle\": {\r",
-							"            \"target\": 123\r",
-							"        },\r",
-							"        \"_id\": generateGUID()\r",
-							"    },\r",
-							"    \"userId\": \"{{invalidUserId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save Item then Sync with Changes",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"    // Ensure that min is less than or equal to max\r",
-							"    if (min > max) {\r",
-							"        throw new Error('Min must be less than or equal to max');\r",
-							"    }\r",
-							"\r",
-							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"    const randomInt = min + Math.floor(Math.random() * max);\r",
-							"    return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
-							"pm.globals.set(\"upcToAdd\", upc)\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"item\": {\r",
-							"        \"name\": \"name\",\r",
-							"        \"upc\": upc,\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [\"image1\"],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
-							"        \"_id\": generateGUID()\r",
-							"    },\r",
-							"    \"storeSpecificValues\": {\r",
-							"        \"{{upcToAdd}}\": {\r",
-							"            \"aisleNumber\": {\r",
-							"                \"target\": \"123\"\r",
-							"            },\r",
-							"            \"quantity\": {\r",
-							"                \"target\": 2\r",
-							"            }\r",
-							"        }\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({pm, environment: pm.environment})\r",
-							"pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save Store(Valid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"    // Ensure that min is less than or equal to max\r",
-							"    if (min > max) {\r",
-							"        throw new Error('Min must be less than or equal to max');\r",
-							"    }\r",
-							"\r",
-							"    // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"    const randomInt = min + Math.floor(Math.random() * max);\r",
-							"    return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"store\": {\r",
-							"        \"name\": \"store-name.-.with_lots-of-...chars\",        \r",
-							"        \"gpsCoordinates\": {\r",
-							"            \"lat\": \"34.1231908\",\r",
-							"            \"lon\": \"99.23089320\"\r",
-							"        },\r",
-							"        \"addressLineOne\": \"123 Main St.\",\r",
-							"        \"city\": \"Bloomington\",\r",
-							"        \"state\": \"MN\",\r",
-							"        \"country\": \"US\",\r",
-							"        \"zipCode\": \"55438\",\r",
-							"        \"calculatedDistance\": 44.33,\r",
-							"        \"_id\": generateGUID()\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
-							"console.log({jsonData, pm, environment: pm.environment})\r",
-							"pm.globals.set(\"storeId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/store",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"store"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var upperCaseEmail = jsonData.email.toUpperCase();\r",
-							"console.log({pm, environment: pm.environment, upperCaseEmail})\r",
-							"pm.globals.set(\"userId\", jsonData._id); // Set the variable 'variableName' with the extracted value\r",
-							"pm.globals.set(\"userEmail\", jsonData.email); // Set the variable 'variableName' with the extracted value\r",
-							"pm.globals.set(\"userEmailUppercase\", upperCaseEmail); // Set the variable 'variableName' with the extracted value\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Save All",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"var MOCK_UPCS = [\r",
-							"    \"000000000001\",\r",
-							"    \"000000000002\",\r",
-							"    \"000000000003\",\r",
-							"];\r",
-							"var targetAisleNumber = 321;\r",
-							"var costcoAisleNumber = 554;\r",
-							"var walmartAisleNumber = 231;\r",
-							"var targetItemId = \"testingnewID\";\r",
-							"var walmartItemId = \"abc12345\";\r",
-							"var targetIsInCart = true;\r",
-							"var walmartIsInCart = false;\r",
-							"var targetPrice = 3.88;\r",
-							"var walmarttPrice = 3.99;\r",
-							"var targetQuantity = 2;\r",
-							"var walmartQuantity = 99;\r",
-							"var storeNameWithDots = 'target in n. st. paul';\r",
-							"var keyWithDots = 'Some_Key.With.Dots';\r",
-							"var storeSpecificValues = {\r",
-							"    [MOCK_UPCS[0]]: {\r",
-							"        \"aisleNumber\": {\r",
-							"            target: targetAisleNumber,\r",
-							"            costco: costcoAisleNumber,\r",
-							"        },\r",
-							"        \"itemId\": {\r",
-							"            target: targetItemId,\r",
-							"        },\r",
-							"        \"isInCart\": {\r",
-							"            target: targetIsInCart,\r",
-							"        },\r",
-							"        \"price\": {\r",
-							"            target: targetPrice,\r",
-							"        },\r",
-							"        \"quantity\": {\r",
-							"            target: targetQuantity,\r",
-							"        },\r",
-							"    },\r",
-							"    [MOCK_UPCS[1]]: {\r",
-							"        \"aisleNumber\": {\r",
-							"            target: targetAisleNumber,\r",
-							"            costco: costcoAisleNumber,\r",
-							"            walmart: walmartAisleNumber,\r",
-							"        },\r",
-							"        \"itemId\": {\r",
-							"            target: targetItemId,\r",
-							"            walmart: walmartItemId,\r",
-							"        },\r",
-							"        \"isInCart\": {\r",
-							"            target: targetIsInCart,\r",
-							"            walmart: !targetIsInCart,\r",
-							"        },\r",
-							"        \"price\": {\r",
-							"            target: targetPrice,\r",
-							"            walmart: walmarttPrice,\r",
-							"        },\r",
-							"        \"quantity\": {\r",
-							"            target: targetQuantity,\r",
-							"            walmart: walmartQuantity,\r",
-							"        },\r",
-							"    },\r",
-							"    [MOCK_UPCS[2]]: {\r",
-							"        \"aisleNumber\": {\r",
-							"            costco: costcoAisleNumber,\r",
-							"            walmart: walmartAisleNumber,\r",
-							"        },\r",
-							"        \"itemId\": {\r",
-							"            costco: targetItemId,\r",
-							"            walmart: walmartItemId,\r",
-							"        },\r",
-							"        \"isInCart\": {\r",
-							"            costco: targetIsInCart,\r",
-							"            walmart: !targetIsInCart,\r",
-							"        },\r",
-							"        \"price\": {\r",
-							"            costco: targetPrice,\r",
-							"            walmart: walmarttPrice,\r",
-							"        },\r",
-							"        \"quantity\": {\r",
-							"            costco: targetQuantity,\r",
-							"            walmart: walmartQuantity,\r",
-							"        },\r",
-							"    }\r",
-							"}\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    storeSpecificValues,\r",
-							"    password: \"{{userPassword}}\",\r",
-							"    userId: \"{{userId}}\",\r",
-							"    lastPurchasedMap: {\r",
-							"        \"000000000001\": {\r",
-							"            \"target n. st. paul\": 1,\r",
-							"            \"walmart (edina)\": 2\r",
-							"        },\r",
-							"        \"000000000002\": {\r",
-							"            \"target n. st. paul\": 3,\r",
-							"            \"walmart (edina)\": 4\r",
-							"        },\r",
-							"    },\r",
-							"    items: {\r",
-							"        filters: {},\r",
-							"        sortOrderValue: {\r",
-							"             sortOrder: 'Ascending',\r",
-							"              sortBy: 'name' \r",
-							"        },\r",
-							"        currentStoreName: 'Costco',\r",
-							"        data: [\r",
-							"            {\r",
-							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
-							"                \"addedDate\": 1706479117683,\r",
-							"                \"frequency\": 432000000,\r",
-							"                \"images\": [\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\",\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\",\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\"\r",
-							"                ],\r",
-							"                \"imageToUseIndex\": 0,\r",
-							"                \"lastUpdatedDate\": 1722909498849,\r",
-							"                \"name\": \"Candy1\",\r",
-							"                \"unit\": \"package\",\r",
-							"                \"upc\": MOCK_UPCS[0]\r",
-							"            },\r",
-							"            {\r",
-							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6372\",\r",
-							"                \"addedDate\": 1706479117683,\r",
-							"                \"frequency\": 432000000,\r",
-							"                \"images\": [\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\",\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\",\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\"\r",
-							"                ],\r",
-							"                \"imageToUseIndex\": 1,\r",
-							"                \"lastUpdatedDate\": 1722909498849,\r",
-							"                \"name\": \"Candy2\",\r",
-							"                \"unit\": \"package\",\r",
-							"                \"upc\": MOCK_UPCS[1]\r",
-							"            },\r",
-							"            {\r",
-							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6373\",\r",
-							"                \"addedDate\": 1706479117683,\r",
-							"                \"frequency\": 432000000,\r",
-							"                \"images\": [\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\",\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\",\r",
-							"                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\"\r",
-							"                ],\r",
-							"                \"imageToUseIndex\": 2,\r",
-							"                \"lastUpdatedDate\": 1722909498849,\r",
-							"                \"name\": \"Candy3\",\r",
-							"                \"unit\": \"package\",\r",
-							"                \"upc\": MOCK_UPCS[2]\r",
-							"            }\r",
-							"        ]\r",
-							"\r",
-							"    },\r",
-							"    stores: {\r",
-							"        filters: {},\r",
-							"        sortOrderValue: {\r",
-							"             sortOrder: 'Ascending',\r",
-							"              sortBy: 'name' \r",
-							"        },\r",
-							"        currentStoreName: 'Costco',\r",
-							"        data: [\r",
-							"            {\r",
-							"                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
-							"                \"name\": \"Store1\",\r",
-							"                \"gpsCoordinates\": {\r",
-							"                    \"lat\": \"34.0998\",\r",
-							"                    \"lon\": \"33.3289\"\r",
-							"                }\r",
-							"            },\r",
-							"            {\r",
-							"                \"_id\": \"0baa8c36-701d-50dd-b3c9-fa36207b6371\",\r",
-							"                \"name\": \"Store2\",\r",
-							"                \"gpsCoordinates\": {\r",
-							"                    \"lat\": \"22.0998\",\r",
-							"                    \"lon\": \"55.3289\"\r",
-							"                }\r",
-							"            },\r",
-							"            {\r",
-							"                \"_id\": \"0ba93c36-701d-50dd-b3c9-fa36207b6371\",\r",
-							"                \"name\": \"Store3\",\r",
-							"                \"gpsCoordinates\": {\r",
-							"                    \"lat\": \"-32.0998\",\r",
-							"                    \"lon\": \"-125.3289\"\r",
-							"                }\r",
-							"            }\r",
-							"        ]\r",
-							"    },\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();\r",
-							"var upperCaseEmail = jsonData.email.toUpperCase();\r",
-							"console.log({pm, environment: pm.environment, upperCaseEmail})\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/saveAll",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"saveAll"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Load All",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/loadAll",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"loadAll"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Items",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"ids\": [\r\n        \"{{itemId}}\"\r\n    ],\r\n    \"keys\": [\r\n        \"{{upcToAdd}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete LastPurchasedMap",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/lastPurchasedMap",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"lastPurchasedMap"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Stores",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"ids\": [\r\n        \"{{storeId}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/store",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"store"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Store Specific Value Field",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item/Test22",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item",
-						"Test22"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User Items",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/item/all",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"item",
-						"all"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.globals.set('userPassword', pm.globals.get('originalPassword'))"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Check  Email Availablility (true)",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/isEmailAvailable/test@test.com",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"isEmailAvailable",
-						"test@test.com"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Check  Email Availablility (false)",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/isEmailAvailable/{{userEmail}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"isEmailAvailable",
-						"{{userEmail}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Check  Email Availablility (false different case)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"// Fetch the global variable\r",
-							"const userEmail = pm.globals.get(\"userEmail\");\r",
-							"\r",
-							"// Check if the global variable exists\r",
-							"if (userEmail !== undefined) {\r",
-							"    // Convert the value to upper case\r",
-							"    const upperCaseValue = userEmail.toUpperCase();\r",
-							"\r",
-							"    // Set the upper case value to another variable\r",
-							"    pm.environment.set(\"upperCaseEmail\", upperCaseValue);\r",
-							"} else {\r",
-							"    console.error(\"Global variable 'myGlobalVariable' is not defined.\");\r",
-							"}\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/isEmailAvailable/{{userEmailUppercase}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"isEmailAvailable",
-						"{{userEmailUppercase}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Item",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item/{{itemId}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item",
-						"{{itemId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get User Items",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item/user/{{userId}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item",
-						"user",
-						"{{userId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Store (Valid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/store/{{storeId}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"store",
-						"{{storeId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get User Stores (Valid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/store/user/{{userId}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"store",
-						"user",
-						"{{userId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get User",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user/{{userId}}",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user",
-						"{{userId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Test Object Check - 10000",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/compareObjectCheck/50b0000",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"compareObjectCheck",
-						"50b0000"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update item",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"  // Ensure that min is less than or equal to max\r",
-							"  if (min > max) {\r",
-							"    throw new Error('Min must be less than or equal to max');\r",
-							"  }\r",
-							"\r",
-							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"  const randomInt = min + Math.floor(Math.random() * max);\r",
-							"  return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"item\": {\r",
-							"        \"name\": \"updatedName\",\r",
-							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [ \"image1\" ],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
-							"        \"_id\": \"{{itemId}}\"\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update item (Change Key)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"\r",
-							"function getRandomInt(min, max) {\r",
-							"  // Ensure that min is less than or equal to max\r",
-							"  if (min > max) {\r",
-							"    throw new Error('Min must be less than or equal to max');\r",
-							"  }\r",
-							"\r",
-							"  // Generate a random number between min (inclusive) and max (exclusive)\r",
-							"\r",
-							"  const randomInt = min + Math.floor(Math.random() * max);\r",
-							"  return randomInt;\r",
-							"}\r",
-							"\r",
-							"// Function to generate GUID\r",
-							"function generateGUID() {\r",
-							"    // Generate random bytes\r",
-							"    const bytes = CryptoJS.lib.WordArray.random(16);\r",
-							"\r",
-							"    // Convert bytes to hexadecimal string\r",
-							"    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
-							"\r",
-							"    // Format GUID according to the standard\r",
-							"    return guid.substring(0, 8) + '-' +\r",
-							"        guid.substring(8, 12) + '-' +\r",
-							"        guid.substring(12, 16) + '-' +\r",
-							"        guid.substring(16, 20) + '-' +\r",
-							"        guid.substring(20);\r",
-							"}\r",
-							"\r",
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"item\": {\r",
-							"        \"name\": \"updatedName\",\r",
-							"        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
-							"        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
-							"        \"frequency\": getRandomInt(1, 50),\r",
-							"        \"unit\": \"month\",\r",
-							"        \"images\": [ \"image1\" ],\r",
-							"        \"imageToUseIndex\": 0,\r",
-							"        \"fullScreenImage\": \"image1\",\r",
-							"        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
-							"        \"_id\": \"{{itemId}}\"\r",
-							"    },\r",
-							"    \"storeSpecificValuesMap\": {\r",
-							"        \"{{upcToAdd}}\": {\r",
-							"            \"aisleNumber\": {\r",
-							"                \"target\": 555,\r",
-							"            },\r",
-							"            \"itemId\": {\r",
-							"                \"target\": \"abc123\"\r",
-							"            },\r",
-							"            \"isInCart\": {\r",
-							"                \"target\": false\r",
-							"            },\r",
-							"            \"quantity\": {\r",
-							"                \"target\": 1\r",
-							"            }\r",
-							"        }\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/item",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"item"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update Store(Valid User)",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"pm.request.body.raw = JSON.stringify({\r",
-							"    \"store\": {\r",
-							"        \"name\": \"updated-..store._name\",        \r",
-							"        \"gpsCoordinates\": {\r",
-							"            \"lat\": \"123.45678\",\r",
-							"            \"lon\": \"45.67890\"\r",
-							"        },\r",
-							"        \"addressLineOne\": \"321 Main St.\",\r",
-							"        \"city\": \"Bloomington\",\r",
-							"        \"state\": \"MN\",\r",
-							"        \"country\": \"US\",\r",
-							"        \"zipCode\": \"55438\",\r",
-							"        \"calculatedDistance\": 44.33,\r",
-							"        \"_id\": \"{{storeId}}\"\r",
-							"    },\r",
-							"    \"userId\": \"{{userId}}\",\r",
-							"    \"password\": \"{{userPassword}}\"\r",
-							"})"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/store",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"store"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update User.email",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"hasPaid\": false,\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@yahoo.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}\r\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update User.password",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var body = JSON.parse(pm.request.body.raw);\r",
-							"console.log({body})\r",
-							"if (!!body.password) {\r",
-							"    console.log('saving new password')\r",
-							"    pm.globals.set(\"userPassword\", body.password); // Set the variable 'variableName' with the extracted value\r",
-							"}\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"{{userPassword}}23\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update All User Fields",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"password25\",\r\n    \"currentPassword\": \"password\",\r\n    \"email\": \"adam.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{groficyBaseUrl}}/user",
-					"host": [
-						"{{groficyBaseUrl}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		}
-	]
+  "info": {
+    "_postman_id": "c600e229-daa3-4522-b17f-dfd7c27f525f",
+    "name": "grocify",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "14418289",
+    "_collection_link": "https://lively-comet-477342.postman.co/workspace/nxBridge~693c9375-622a-44bf-992d-236c27ca3a29/collection/14418289-c600e229-daa3-4522-b17f-dfd7c27f525f?action=share&source=collection_link&creator=14418289"
+  },
+  "item": [
+    {
+      "name": "Login - Success",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{userEmail}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/login",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save LastPurchasedMap",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"lastPurchasedMap\": {\r",
+              "        \"000000000001\": {\r",
+              "            \"target n. st. paul\": 1,\r",
+              "            \"walmart (edina)\": 2\r",
+              "        },\r",
+              "        \"000000000002\": {\r",
+              "            \"target n. st. paul\": 3,\r",
+              "            \"walmart (edina)\": 4\r",
+              "        },\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+              "console.log({pm, environment: pm.environment})\r",
+              "pm.globals.set(\"lastPurchasedMapId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/lastPurchasedMap",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["lastPurchasedMap"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save Many Items (Valid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "    // Ensure that min is less than or equal to max\r",
+              "    if (min > max) {\r",
+              "        throw new Error('Min must be less than or equal to max');\r",
+              "    }\r",
+              "\r",
+              "    // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "    const randomInt = min + Math.floor(Math.random() * max);\r",
+              "    return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "function getNewItem() {\r",
+              "    const idToUse = generateGUID();\r",
+              "    console.log({idToUse})\r",
+              "    return {\r",
+              "        \"name\": \"name\",\r",
+              "        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [\"image1\"],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+              "        \"_id\": idToUse\r",
+              "    }\r",
+              "}\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"items\": [\r",
+              "        getNewItem(),\r",
+              "        getNewItem(),\r",
+              "        getNewItem(),\r",
+              "    ],\r",
+              "    \"storeSpecificValues\": {\r",
+              "        \"{{upcToAdd}}\": {\r",
+              "            \"aisleNumber\": {\r",
+              "                \"target\": \"123\"\r",
+              "            },\r",
+              "            \"quantity\": {\r",
+              "                \"target\": 2\r",
+              "            }\r",
+              "        }\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item/many",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item", "many"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save Item (Valid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "    // Ensure that min is less than or equal to max\r",
+              "    if (min > max) {\r",
+              "        throw new Error('Min must be less than or equal to max');\r",
+              "    }\r",
+              "\r",
+              "    // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "    const randomInt = min + Math.floor(Math.random() * max);\r",
+              "    return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
+              "pm.globals.set(\"upcToAdd\", upc)\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"item\": {\r",
+              "        \"name\": \"name\",\r",
+              "        \"upc\": upc,\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [\"image1\"],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+              "        \"_id\": generateGUID()\r",
+              "    },\r",
+              "    \"storeSpecificValuesMap\": {\r",
+              "        \"{{upcToAdd}}\": {\r",
+              "            \"aisleNumber\": {\r",
+              "                \"target\": \"123\"\r",
+              "            },\r",
+              "            \"quantity\": {\r",
+              "                \"target\": 4\r",
+              "            }\r",
+              "        }\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+              "console.log({pm, environment: pm.environment})\r",
+              "pm.globals.set(\"itemId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save Item (Valid and Update StoreSpecificValues) Copy",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "    // Ensure that min is less than or equal to max\r",
+              "    if (min > max) {\r",
+              "        throw new Error('Min must be less than or equal to max');\r",
+              "    }\r",
+              "\r",
+              "    // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "    const randomInt = min + Math.floor(Math.random() * max);\r",
+              "    return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
+              "pm.globals.set(\"upcToAdd\", upc)\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"item\": {\r",
+              "        \"name\": \"name\",\r",
+              "        \"upc\": upc,\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [\"image1\"],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+              "        \"_id\": generateGUID()\r",
+              "    },\r",
+              "    \"storeSpecificValuesMap\": {\r",
+              "        \"{{upcToAdd}}\": {\r",
+              "            \"aisleNumber\": {\r",
+              "                \"target\": 555,\r",
+              "                \"costco\": 553\r",
+              "            },\r",
+              "            \"itemId\": {\r",
+              "                \"target\": \"abc123\"\r",
+              "            }\r",
+              "        },\r",
+              "        \"00000012\": {\r",
+              "            \"aisleNumber\": {\r",
+              "                \"target\": 111,\r",
+              "                \"costco\": 111,\r",
+              "                \"walmart\": 111\r",
+              "            },\r",
+              "            \"itemId\": {\r",
+              "                \"target\": \"aa\"\r",
+              "            },\r",
+              "            \"quantity\": {\r",
+              "                \"walmart\": 12\r",
+              "            }\r",
+              "        }\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+              "console.log({pm, environment: pm.environment})\r",
+              "pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save Item (Invalid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "  // Ensure that min is less than or equal to max\r",
+              "  if (min > max) {\r",
+              "    throw new Error('Min must be less than or equal to max');\r",
+              "  }\r",
+              "\r",
+              "  // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "  const randomInt = min + Math.floor(Math.random() * max);\r",
+              "  return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"item\": {\r",
+              "        \"name\": \"name\",\r",
+              "        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [ \"image1\" ],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+              "        \"aisle\": {\r",
+              "            \"target\": 123\r",
+              "        },\r",
+              "        \"_id\": generateGUID()\r",
+              "    },\r",
+              "    \"userId\": \"{{invalidUserId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+              "console.log({pm, environment: pm.environment})\r",
+              "pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save Item then Sync with Changes",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "    // Ensure that min is less than or equal to max\r",
+              "    if (min > max) {\r",
+              "        throw new Error('Min must be less than or equal to max');\r",
+              "    }\r",
+              "\r",
+              "    // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "    const randomInt = min + Math.floor(Math.random() * max);\r",
+              "    return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "var upc = getRandomInt(1, 999999999999).toString().padStart(12, '0');\r",
+              "pm.globals.set(\"upcToAdd\", upc)\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"item\": {\r",
+              "        \"name\": \"name\",\r",
+              "        \"upc\": upc,\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [\"image1\"],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\": getRandomInt(10000, 100000),\r",
+              "        \"_id\": generateGUID()\r",
+              "    },\r",
+              "    \"storeSpecificValues\": {\r",
+              "        \"{{upcToAdd}}\": {\r",
+              "            \"aisleNumber\": {\r",
+              "                \"target\": \"123\"\r",
+              "            },\r",
+              "            \"quantity\": {\r",
+              "                \"target\": 2\r",
+              "            }\r",
+              "        }\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var extractedValue = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+              "console.log({pm, environment: pm.environment})\r",
+              "pm.globals.set(\"itemId\", extractedValue); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save Store(Valid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "    // Ensure that min is less than or equal to max\r",
+              "    if (min > max) {\r",
+              "        throw new Error('Min must be less than or equal to max');\r",
+              "    }\r",
+              "\r",
+              "    // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "    const randomInt = min + Math.floor(Math.random() * max);\r",
+              "    return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"store\": {\r",
+              "        \"name\": \"store-name.-.with_lots-of-...chars\",        \r",
+              "        \"gpsCoordinates\": {\r",
+              "            \"lat\": \"34.1231908\",\r",
+              "            \"lon\": \"99.23089320\"\r",
+              "        },\r",
+              "        \"addressLineOne\": \"123 Main St.\",\r",
+              "        \"city\": \"Bloomington\",\r",
+              "        \"state\": \"MN\",\r",
+              "        \"country\": \"US\",\r",
+              "        \"zipCode\": \"55438\",\r",
+              "        \"calculatedDistance\": 44.33,\r",
+              "        \"_id\": generateGUID()\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var idToUse = jsonData._id; // Replace 'fieldName' with the actual field name\r",
+              "console.log({jsonData, pm, environment: pm.environment})\r",
+              "pm.globals.set(\"storeId\", idToUse); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/store",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["store"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var upperCaseEmail = jsonData.email.toUpperCase();\r",
+              "console.log({pm, environment: pm.environment, upperCaseEmail})\r",
+              "pm.globals.set(\"userId\", jsonData._id); // Set the variable 'variableName' with the extracted value\r",
+              "pm.globals.set(\"userEmail\", jsonData.email); // Set the variable 'variableName' with the extracted value\r",
+              "pm.globals.set(\"userEmailUppercase\", upperCaseEmail); // Set the variable 'variableName' with the extracted value\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Save All",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var MOCK_UPCS = [\r",
+              "    \"000000000001\",\r",
+              "    \"000000000002\",\r",
+              "    \"000000000003\",\r",
+              "];\r",
+              "var targetAisleNumber = 321;\r",
+              "var costcoAisleNumber = 554;\r",
+              "var walmartAisleNumber = 231;\r",
+              "var targetItemId = \"testingnewID\";\r",
+              "var walmartItemId = \"abc12345\";\r",
+              "var targetIsInCart = true;\r",
+              "var walmartIsInCart = false;\r",
+              "var targetPrice = 3.88;\r",
+              "var walmarttPrice = 3.99;\r",
+              "var targetQuantity = 2;\r",
+              "var walmartQuantity = 99;\r",
+              "var storeNameWithDots = 'target in n. st. paul';\r",
+              "var keyWithDots = 'Some_Key.With.Dots';\r",
+              "var storeSpecificValues = {\r",
+              "    [MOCK_UPCS[0]]: {\r",
+              "        \"aisleNumber\": {\r",
+              "            target: targetAisleNumber,\r",
+              "            costco: costcoAisleNumber,\r",
+              "        },\r",
+              "        \"itemId\": {\r",
+              "            target: targetItemId,\r",
+              "        },\r",
+              "        \"isInCart\": {\r",
+              "            target: targetIsInCart,\r",
+              "        },\r",
+              "        \"price\": {\r",
+              "            target: targetPrice,\r",
+              "        },\r",
+              "        \"quantity\": {\r",
+              "            target: targetQuantity,\r",
+              "        },\r",
+              "    },\r",
+              "    [MOCK_UPCS[1]]: {\r",
+              "        \"aisleNumber\": {\r",
+              "            target: targetAisleNumber,\r",
+              "            costco: costcoAisleNumber,\r",
+              "            walmart: walmartAisleNumber,\r",
+              "        },\r",
+              "        \"itemId\": {\r",
+              "            target: targetItemId,\r",
+              "            walmart: walmartItemId,\r",
+              "        },\r",
+              "        \"isInCart\": {\r",
+              "            target: targetIsInCart,\r",
+              "            walmart: !targetIsInCart,\r",
+              "        },\r",
+              "        \"price\": {\r",
+              "            target: targetPrice,\r",
+              "            walmart: walmarttPrice,\r",
+              "        },\r",
+              "        \"quantity\": {\r",
+              "            target: targetQuantity,\r",
+              "            walmart: walmartQuantity,\r",
+              "        },\r",
+              "    },\r",
+              "    [MOCK_UPCS[2]]: {\r",
+              "        \"aisleNumber\": {\r",
+              "            costco: costcoAisleNumber,\r",
+              "            walmart: walmartAisleNumber,\r",
+              "        },\r",
+              "        \"itemId\": {\r",
+              "            costco: targetItemId,\r",
+              "            walmart: walmartItemId,\r",
+              "        },\r",
+              "        \"isInCart\": {\r",
+              "            costco: targetIsInCart,\r",
+              "            walmart: !targetIsInCart,\r",
+              "        },\r",
+              "        \"price\": {\r",
+              "            costco: targetPrice,\r",
+              "            walmart: walmarttPrice,\r",
+              "        },\r",
+              "        \"quantity\": {\r",
+              "            costco: targetQuantity,\r",
+              "            walmart: walmartQuantity,\r",
+              "        },\r",
+              "    }\r",
+              "}\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    storeSpecificValues,\r",
+              "    password: \"{{userPassword}}\",\r",
+              "    userId: \"{{userId}}\",\r",
+              "    lastPurchasedMap: {\r",
+              "        \"000000000001\": {\r",
+              "            \"target n. st. paul\": 1,\r",
+              "            \"walmart (edina)\": 2\r",
+              "        },\r",
+              "        \"000000000002\": {\r",
+              "            \"target n. st. paul\": 3,\r",
+              "            \"walmart (edina)\": 4\r",
+              "        },\r",
+              "    },\r",
+              "    items: {\r",
+              "        filters: {},\r",
+              "        sortOrderValue: {\r",
+              "             sortOrder: 'Ascending',\r",
+              "              sortBy: 'name' \r",
+              "        },\r",
+              "        currentStoreName: 'Costco',\r",
+              "        data: [\r",
+              "            {\r",
+              "                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
+              "                \"addedDate\": 1706479117683,\r",
+              "                \"frequency\": 432000000,\r",
+              "                \"images\": [\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\",\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\",\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.400.jpg\"\r",
+              "                ],\r",
+              "                \"imageToUseIndex\": 0,\r",
+              "                \"lastUpdatedDate\": 1722909498849,\r",
+              "                \"name\": \"Candy1\",\r",
+              "                \"unit\": \"package\",\r",
+              "                \"upc\": MOCK_UPCS[0]\r",
+              "            },\r",
+              "            {\r",
+              "                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6372\",\r",
+              "                \"addedDate\": 1706479117683,\r",
+              "                \"frequency\": 432000000,\r",
+              "                \"images\": [\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\",\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\",\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.401.jpg\"\r",
+              "                ],\r",
+              "                \"imageToUseIndex\": 1,\r",
+              "                \"lastUpdatedDate\": 1722909498849,\r",
+              "                \"name\": \"Candy2\",\r",
+              "                \"unit\": \"package\",\r",
+              "                \"upc\": MOCK_UPCS[1]\r",
+              "            },\r",
+              "            {\r",
+              "                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6373\",\r",
+              "                \"addedDate\": 1706479117683,\r",
+              "                \"frequency\": 432000000,\r",
+              "                \"images\": [\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\",\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\",\r",
+              "                    \"https://images.openfoodfacts.org/images/products/009/661/910/7698/nutrition_en.28.402.jpg\"\r",
+              "                ],\r",
+              "                \"imageToUseIndex\": 2,\r",
+              "                \"lastUpdatedDate\": 1722909498849,\r",
+              "                \"name\": \"Candy3\",\r",
+              "                \"unit\": \"package\",\r",
+              "                \"upc\": MOCK_UPCS[2]\r",
+              "            }\r",
+              "        ]\r",
+              "\r",
+              "    },\r",
+              "    stores: {\r",
+              "        filters: {},\r",
+              "        sortOrderValue: {\r",
+              "             sortOrder: 'Ascending',\r",
+              "              sortBy: 'name' \r",
+              "        },\r",
+              "        currentStoreName: 'Costco',\r",
+              "        data: [\r",
+              "            {\r",
+              "                \"_id\": \"0a9a8c36-701d-50dd-b3c9-fa36207b6371\",\r",
+              "                \"name\": \"Store1\",\r",
+              "                \"gpsCoordinates\": {\r",
+              "                    \"lat\": \"34.0998\",\r",
+              "                    \"lon\": \"33.3289\"\r",
+              "                }\r",
+              "            },\r",
+              "            {\r",
+              "                \"_id\": \"0baa8c36-701d-50dd-b3c9-fa36207b6371\",\r",
+              "                \"name\": \"Store2\",\r",
+              "                \"gpsCoordinates\": {\r",
+              "                    \"lat\": \"22.0998\",\r",
+              "                    \"lon\": \"55.3289\"\r",
+              "                }\r",
+              "            },\r",
+              "            {\r",
+              "                \"_id\": \"0ba93c36-701d-50dd-b3c9-fa36207b6371\",\r",
+              "                \"name\": \"Store3\",\r",
+              "                \"gpsCoordinates\": {\r",
+              "                    \"lat\": \"-32.0998\",\r",
+              "                    \"lon\": \"-125.3289\"\r",
+              "                }\r",
+              "            }\r",
+              "        ]\r",
+              "    },\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();\r",
+              "var upperCaseEmail = jsonData.email.toUpperCase();\r",
+              "console.log({pm, environment: pm.environment, upperCaseEmail})\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/saveAll",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "saveAll"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Load All",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/loadAll",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "loadAll"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Items",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"ids\": [\r\n        \"{{itemId}}\"\r\n    ],\r\n    \"keys\": [\r\n        \"{{upcToAdd}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete LastPurchasedMap",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/lastPurchasedMap",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["lastPurchasedMap"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Stores",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"ids\": [\r\n        \"{{storeId}}\"\r\n    ],\r\n    \"password\": \"{{userPassword}}\",\r\n    \"userId\": \"{{userId}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/store",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["store"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Store Specific Value Field",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item/Test22",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item", "Test22"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User Items",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/item/all",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "item", "all"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.globals.set('userPassword', pm.globals.get('originalPassword'))"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check  Email Availablility (true)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/isEmailAvailable/test@test.com",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "isEmailAvailable", "test@test.com"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check  Email Availablility (false)",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/isEmailAvailable/{{userEmail}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "isEmailAvailable", "{{userEmail}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check  Email Availablility (false different case)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Fetch the global variable\r",
+              "const userEmail = pm.globals.get(\"userEmail\");\r",
+              "\r",
+              "// Check if the global variable exists\r",
+              "if (userEmail !== undefined) {\r",
+              "    // Convert the value to upper case\r",
+              "    const upperCaseValue = userEmail.toUpperCase();\r",
+              "\r",
+              "    // Set the upper case value to another variable\r",
+              "    pm.environment.set(\"upperCaseEmail\", upperCaseValue);\r",
+              "} else {\r",
+              "    console.error(\"Global variable 'myGlobalVariable' is not defined.\");\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/isEmailAvailable/{{userEmailUppercase}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "isEmailAvailable", "{{userEmailUppercase}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Item",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item/{{itemId}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item", "{{itemId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Items",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item/user/{{userId}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item", "user", "{{userId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Store (Valid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/store/{{storeId}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["store", "{{storeId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Stores (Valid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/store/user/{{userId}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["store", "user", "{{userId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user/{{userId}}",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user", "{{userId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test Object Check - 10000",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/compareObjectCheck/50b0000",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["compareObjectCheck", "50b0000"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update item",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "  // Ensure that min is less than or equal to max\r",
+              "  if (min > max) {\r",
+              "    throw new Error('Min must be less than or equal to max');\r",
+              "  }\r",
+              "\r",
+              "  // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "  const randomInt = min + Math.floor(Math.random() * max);\r",
+              "  return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"item\": {\r",
+              "        \"name\": \"updatedName\",\r",
+              "        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [ \"image1\" ],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+              "        \"_id\": \"{{itemId}}\"\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update item (Change Key)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "\r",
+              "function getRandomInt(min, max) {\r",
+              "  // Ensure that min is less than or equal to max\r",
+              "  if (min > max) {\r",
+              "    throw new Error('Min must be less than or equal to max');\r",
+              "  }\r",
+              "\r",
+              "  // Generate a random number between min (inclusive) and max (exclusive)\r",
+              "\r",
+              "  const randomInt = min + Math.floor(Math.random() * max);\r",
+              "  return randomInt;\r",
+              "}\r",
+              "\r",
+              "// Function to generate GUID\r",
+              "function generateGUID() {\r",
+              "    // Generate random bytes\r",
+              "    const bytes = CryptoJS.lib.WordArray.random(16);\r",
+              "\r",
+              "    // Convert bytes to hexadecimal string\r",
+              "    const guid = CryptoJS.enc.Hex.stringify(bytes);\r",
+              "\r",
+              "    // Format GUID according to the standard\r",
+              "    return guid.substring(0, 8) + '-' +\r",
+              "        guid.substring(8, 12) + '-' +\r",
+              "        guid.substring(12, 16) + '-' +\r",
+              "        guid.substring(16, 20) + '-' +\r",
+              "        guid.substring(20);\r",
+              "}\r",
+              "\r",
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"item\": {\r",
+              "        \"name\": \"updatedName\",\r",
+              "        \"upc\": getRandomInt(1, 999999999999).toString().padStart(12, '0'),\r",
+              "        \"addedDate\": getRandomInt(1000000, 1000000000000),\r",
+              "        \"frequency\": getRandomInt(1, 50),\r",
+              "        \"unit\": \"month\",\r",
+              "        \"images\": [ \"image1\" ],\r",
+              "        \"imageToUseIndex\": 0,\r",
+              "        \"fullScreenImage\": \"image1\",\r",
+              "        \"lastUpdatedDate\":  getRandomInt(10000, 100000),\r",
+              "        \"_id\": \"{{itemId}}\"\r",
+              "    },\r",
+              "    \"storeSpecificValuesMap\": {\r",
+              "        \"{{upcToAdd}}\": {\r",
+              "            \"aisleNumber\": {\r",
+              "                \"target\": 555,\r",
+              "            },\r",
+              "            \"itemId\": {\r",
+              "                \"target\": \"abc123\"\r",
+              "            },\r",
+              "            \"isInCart\": {\r",
+              "                \"target\": false\r",
+              "            },\r",
+              "            \"quantity\": {\r",
+              "                \"target\": 1\r",
+              "            }\r",
+              "        }\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/item",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["item"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Store(Valid User)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.body.raw = JSON.stringify({\r",
+              "    \"store\": {\r",
+              "        \"name\": \"updated-..store._name\",        \r",
+              "        \"gpsCoordinates\": {\r",
+              "            \"lat\": \"123.45678\",\r",
+              "            \"lon\": \"45.67890\"\r",
+              "        },\r",
+              "        \"addressLineOne\": \"321 Main St.\",\r",
+              "        \"city\": \"Bloomington\",\r",
+              "        \"state\": \"MN\",\r",
+              "        \"country\": \"US\",\r",
+              "        \"zipCode\": \"55438\",\r",
+              "        \"calculatedDistance\": 44.33,\r",
+              "        \"_id\": \"{{storeId}}\"\r",
+              "    },\r",
+              "    \"userId\": \"{{userId}}\",\r",
+              "    \"password\": \"{{userPassword}}\"\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/store",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["store"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User.email",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"hasPaid\": false,\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"email\": \"adam.j.major@yahoo.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User.password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var body = JSON.parse(pm.request.body.raw);\r",
+              "console.log({body})\r",
+              "if (!!body.password) {\r",
+              "    console.log('saving new password')\r",
+              "    pm.globals.set(\"userPassword\", body.password); // Set the variable 'variableName' with the extracted value\r",
+              "}\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [""],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"password\": \"{{userPassword}}23\",\r\n    \"currentPassword\": \"{{userPassword}}\",\r\n    \"hasPaid\": false,\r\n    \"email\": \"adam.j.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update All User Fields",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"password\": \"password25\",\r\n    \"currentPassword\": \"password\",\r\n    \"email\": \"adam.major@gmail.com\",\r\n    \"_id\": \"{{userId}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{groficyBaseUrl}}/user",
+          "host": ["{{groficyBaseUrl}}"],
+          "path": ["user"]
+        }
+      },
+      "response": []
+    }
+  ]
 }

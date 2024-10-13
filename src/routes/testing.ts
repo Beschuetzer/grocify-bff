@@ -1,26 +1,26 @@
-import express from "express";
+import express from 'express';
 import {
   getRandomInt,
   handleError,
   hashPassword,
   comparePasswords,
-} from "../helpers";
-import { ItemSchema } from "../schema";
+} from '../helpers';
+import { ItemSchema } from '../schema';
 
 const router = express.Router({
   mergeParams: true,
 });
 
-router.get("/mockCreation", async (req, res) => {
+router.get('/mockCreation', async (req, res) => {
   const createdItem = new ItemSchema({
     addedDate: Date.now() - getRandomInt(1000000, 1000000000),
     frequency: getRandomInt(1, 10),
-    unit: "day",
-    name: "test item",
-    upc: getRandomInt(1, 999999999999).toString().padStart(12, "0"),
-    images: ["www.test.com"],
+    unit: 'day',
+    name: 'test item',
+    upc: getRandomInt(1, 999999999999).toString().padStart(12, '0'),
+    images: ['www.test.com'],
     imageToUseIndex: 0,
-    fullscreenImage: "www.test.com",
+    fullscreenImage: 'www.test.com',
     lastUpdatedDate: Date.now(),
   });
 
@@ -32,7 +32,7 @@ router.get("/mockCreation", async (req, res) => {
   }
 });
 
-router.post("/password", async (req, res) => {
+router.post('/password', async (req, res) => {
   const { username, password } = req.body;
   console.log({ username, password });
   const start = performance.now();
@@ -49,7 +49,7 @@ router.post("/password", async (req, res) => {
   });
 });
 
-router.post("/passwordCompare", async (req, res) => {
+router.post('/passwordCompare', async (req, res) => {
   const { hash, password } = req.body;
   console.log({ hash, password });
   const start = performance.now();
@@ -67,8 +67,8 @@ router.post("/passwordCompare", async (req, res) => {
 });
 
 router.get('/compareObjectCheck/:numProps', async (req, res) => {
-  const { numProps } = req.params
-  console.log({numProps});
+  const { numProps } = req.params;
+  console.log({ numProps });
 
   // Create a large object
   const largeObject = createLargeObject(numProps);
@@ -80,15 +80,15 @@ router.get('/compareObjectCheck/:numProps', async (req, res) => {
 
   res.send({
     keyApproach: keyEnd - keyStart,
-  })
-})
+  });
+});
 
 export default router;
 
 function createLargeObject(numProps: string) {
   const obj = {} as any;
   for (let i = 0; i < Number(numProps); i++) {
-      obj[`key${i}`] = i;
+    obj[`key${i}`] = i;
   }
   return obj;
 }

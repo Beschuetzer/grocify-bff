@@ -1,14 +1,14 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response } from 'express';
 import {
   hashPassword,
   handleError,
   getAndThenCacheUser,
   getErrorMessage,
   validateMatchesSchema,
-} from "../helpers";
-import { UserSchema } from "../schema/user";
-import { REGISTERED_USERS_CACHE as USERS_CACHE } from "../cache";
-import { checkIsAuthorized } from "../middlware/isAuthenticated";
+} from '../helpers';
+import { UserSchema } from '../schema/user';
+import { REGISTERED_USERS_CACHE as USERS_CACHE } from '../cache';
+import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
   AccountCredentials,
   CurrentPassword,
@@ -18,13 +18,18 @@ import {
   StoreSpecificValuesMap,
   UserAccount,
   UserDocument,
-} from "../types";
-import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
-import { StoreSpecificValuesSchema, StoreSchema, ItemSchema, LastPurchasedMapSchema } from "../schema/";
-import { Document } from "mongoose";
-import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
-import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from "../constants";
-import { getUnsetObj } from "../helpers/getUnsetObj";
+} from '../types';
+import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from './constants';
+import {
+  StoreSpecificValuesSchema,
+  StoreSchema,
+  ItemSchema,
+  LastPurchasedMapSchema,
+} from '../schema/';
+import { Document } from 'mongoose';
+import { getUpdateObjectForValuesDocument } from '../helpers/getUpdateObjectForValuesDocument';
+import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from '../constants';
+import { getUnsetObj } from '../helpers/getUnsetObj';
 
 const router = express.Router({
   mergeParams: true,
@@ -33,7 +38,7 @@ const router = express.Router({
 router.post(`${USER_PATH}`, async (req: Request, res: Response) => {
   const { email, password } = req.body as Pick<
     UserAccount,
-    "email" | "password"
+    'email' | 'password'
   >;
 
   try {
@@ -64,7 +69,7 @@ router.get(`${USER_PATH}/:id`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(id);
     res.send({
       ...user,
-      password: EMPTY_STRING
+      password: EMPTY_STRING,
     });
   } catch (error) {
     handleError(res, error);
@@ -171,11 +176,11 @@ router.put(`${USER_PATH}`, async (req: Request, res: Response) => {
 router.get(
   `${USER_PATH}/isEmailAvailable/:email`,
   async (req: Request, res: Response) => {
-    const { email } = req.params as Pick<UserAccount, "email">;
+    const { email } = req.params as Pick<UserAccount, 'email'>;
     const trimmedEmail = email.trim();
     try {
       const user = await UserSchema.findOne({
-        email: { $regex: new RegExp(trimmedEmail, "i") },
+        email: { $regex: new RegExp(trimmedEmail, 'i') },
       });
       res.send(!user);
     } catch (error) {
@@ -185,14 +190,14 @@ router.get(
 );
 
 router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
-  const { email, password } = req.body as Omit<UserAccount, "_id">;
+  const { email, password } = req.body as Omit<UserAccount, '_id'>;
   console.log({ email, password, body: req.body });
   try {
-    if (!email) throw new Error("No email given");
-    if (!password) throw new Error("No password given");
+    if (!email) throw new Error('No email given');
+    if (!password) throw new Error('No password given');
     const trimmedEmail = email.trim();
     const user = await UserSchema.findOne({
-      email: { $regex: new RegExp(trimmedEmail, "i") },
+      email: { $regex: new RegExp(trimmedEmail, 'i') },
     });
     console.log({ user });
 
@@ -205,45 +210,39 @@ router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
 
 router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
   try {
-    const {
-      password,
-      userId,
-    } = req.body;
-    if (!userId) throw new Error("No userId given");
-    if (!password) throw new Error("No password given");
+    const { password, userId } = req.body;
+    if (!userId) throw new Error('No userId given');
+    if (!password) throw new Error('No password given');
     const user = await UserSchema.findById(userId);
     await checkIsAuthorized(password, user?.password);
 
-    const itemsPromise = ItemSchema.find({userId});
-    const storesPromise = StoreSchema.find({userId});
-    const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({userId});
-    const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({userId});
-    const [
-      items,
-      stores,
-      storeSpecificValues,
-      lastPurchasedMap
-    ] = await Promise.all([
-      itemsPromise,
-      storesPromise,
-      storeSpecificValuesPromise,
-      lastPurchasedMapPromise,
-    ])
+    const itemsPromise = ItemSchema.find({ userId });
+    const storesPromise = StoreSchema.find({ userId });
+    const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({
+      userId,
+    });
+    const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({ userId });
+    const [items, stores, storeSpecificValues, lastPurchasedMap] =
+      await Promise.all([
+        itemsPromise,
+        storesPromise,
+        storeSpecificValuesPromise,
+        lastPurchasedMapPromise,
+      ]);
 
     if (!storeSpecificValues?.values) {
-      throw new Error('Unable to load storeSpecificValues properly')
+      throw new Error('Unable to load storeSpecificValues properly');
     }
     res.send({
       items,
       stores,
       storeSpecificValues: storeSpecificValues.values,
-      lastPurchasedMap
+      lastPurchasedMap,
     });
   } catch (error) {
     handleError(res, error);
   }
 });
-
 
 router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
   try {
@@ -265,8 +264,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       userId,
       password,
     });
-    if (!userId) throw new Error("No userId given");
-    if (!password) throw new Error("No password given");
+    if (!userId) throw new Error('No userId given');
+    if (!password) throw new Error('No password given');
     const user = await UserSchema.findById(userId);
     await checkIsAuthorized(password, user?.password);
 
@@ -289,7 +288,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
         })
       );
     }
-   
+
     if (storesList?.data?.length > 0) {
       stores = await Promise.all(
         storesList.data.map(async function (store: Store) {
@@ -305,46 +304,61 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
         })
       );
     }
-    
-    const storeSpecificValuesPromise = Object.keys(storeSpecificValues || {}).length > 0 ?
-      StoreSpecificValuesSchema.findOneAndUpdate(
-        { userId: userId.toString() }, {
-          ...(getUpdateObjectForValuesDocument<
-            StoreSpecificValuesMap,
-            StoreSpecificValuesMap[string]
-          >(storeSpecificValues)),
-          $unset: getUnsetObj(keysToDeleteFromStoreSpecificValuesMap),
-        },        
-        { upsert: true, new: true }
-      ) : Promise.resolve({});
 
-    const lastPurchasedMapPromise = Object.keys(lastPurchasedMap || {}).length > 0 ?
-      LastPurchasedMapSchema.findOneAndUpdate(
-        { userId: userId.toString() },
-        getUpdateObjectForValuesDocument<
-          LastPurchasedMap,
-          LastPurchasedMap[string]
-        >(lastPurchasedMap),
-        { upsert: true, new: true }
-      ) : Promise.resolve({});
+    const storeSpecificValuesPromise =
+      Object.keys(storeSpecificValues || {}).length > 0
+        ? StoreSpecificValuesSchema.findOneAndUpdate(
+            { userId: userId.toString() },
+            {
+              ...getUpdateObjectForValuesDocument<
+                StoreSpecificValuesMap,
+                StoreSpecificValuesMap[string]
+              >(storeSpecificValues),
+              $unset: getUnsetObj(keysToDeleteFromStoreSpecificValuesMap),
+            },
+            { upsert: true, new: true }
+          )
+        : Promise.resolve({});
+
+    const lastPurchasedMapPromise =
+      Object.keys(lastPurchasedMap || {}).length > 0
+        ? LastPurchasedMapSchema.findOneAndUpdate(
+            { userId: userId.toString() },
+            getUpdateObjectForValuesDocument<
+              LastPurchasedMap,
+              LastPurchasedMap[string]
+            >(lastPurchasedMap),
+            { upsert: true, new: true }
+          )
+        : Promise.resolve({});
 
     const startBulkSave = performance.now();
-    const itemsBulkSavePromise = items.length > 0 ? ItemSchema.bulkSave(items) : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
-    const storesBulkSavePromise = stores.length > 0 ? StoreSchema.bulkSave(stores) : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
-    const [itemsResult, lastPurchasedMapResult, storesResult, storeSpecificValuesResult] =
-      await Promise.all([
-        itemsBulkSavePromise,
-        lastPurchasedMapPromise,
-        storesBulkSavePromise,
-        storeSpecificValuesPromise,
-      ]);
+    const itemsBulkSavePromise =
+      items.length > 0
+        ? ItemSchema.bulkSave(items)
+        : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
+    const storesBulkSavePromise =
+      stores.length > 0
+        ? StoreSchema.bulkSave(stores)
+        : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
+    const [
+      itemsResult,
+      lastPurchasedMapResult,
+      storesResult,
+      storeSpecificValuesResult,
+    ] = await Promise.all([
+      itemsBulkSavePromise,
+      lastPurchasedMapPromise,
+      storesBulkSavePromise,
+      storeSpecificValuesPromise,
+    ]);
     const endBulkSave = performance.now();
     console.log({
       timeToSave: endBulkSave - startBulkSave,
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
-      storeSpecificValuesResult
+      storeSpecificValuesResult,
     });
     res.send({
       itemsResult,
@@ -366,4 +380,3 @@ function updateDocument<T>(existingItem: Document<unknown, {}, T>, newItem: T) {
     existingItem[typedKey] = newItem[typedKey as keyof T];
   }
 }
-

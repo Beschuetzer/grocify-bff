@@ -1,21 +1,25 @@
-import { BCRYPT_SALT_ROUND, EMPTY_STRING, ERROR_MSG_NOT_AUTHORIZED } from "../constants";
-import bcrypt from "bcrypt";
-import { UserSchema } from "../schema/user";
+import {
+  BCRYPT_SALT_ROUND,
+  EMPTY_STRING,
+  ERROR_MSG_NOT_AUTHORIZED,
+} from '../constants';
+import bcrypt from 'bcrypt';
+import { UserSchema } from '../schema/user';
 import {
   ErrorMessage,
   Key,
   StoreSpecificValuesMap,
   UserDocument,
-} from "../types";
-import { Response } from "express";
-import { REGISTERED_USERS_CACHE } from "../cache";
-import { ItemSchema } from "../schema";
-import { ZodEffects } from "zod";
-import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
-import { StoreSchema } from "../schema/store";
-import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
-import { getUpdateObjectForValuesDocument } from "./getUpdateObjectForValuesDocument";
-import { getUnsetObj } from "./getUnsetObj";
+} from '../types';
+import { Response } from 'express';
+import { REGISTERED_USERS_CACHE } from '../cache';
+import { ItemSchema } from '../schema';
+import { ZodEffects } from 'zod';
+import { StoreSpecificValuesSchema } from '../schema/storeSpecificValues';
+import { StoreSchema } from '../schema/store';
+import { LastPurchasedMapSchema } from '../schema/lastPurchasedMap';
+import { getUpdateObjectForValuesDocument } from './getUpdateObjectForValuesDocument';
+import { getUnsetObj } from './getUnsetObj';
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -52,7 +56,7 @@ export function comparePasswords(
  **/
 export async function getAndThenCacheUser(id?: string) {
   if (!id) {
-    throw new Error("No id given in getAndThenCacheUser()");
+    throw new Error('No id given in getAndThenCacheUser()');
   }
 
   const userFound = REGISTERED_USERS_CACHE.get(id);
@@ -93,10 +97,12 @@ export function getKeyToUse(key?: string | Key) {
 }
 
 export async function getLastPurchasedOrThrow(userId: string) {
-  const lastPurchased = await LastPurchasedMapSchema.findOne({userId});
+  const lastPurchased = await LastPurchasedMapSchema.findOne({ userId });
 
   if (!lastPurchased) {
-    throw getErrorMessage(`No lastPurchasedMap associated with userId of '${userId}'.`);
+    throw getErrorMessage(
+      `No lastPurchasedMap associated with userId of '${userId}'.`
+    );
   }
 
   return lastPurchased;
@@ -114,7 +120,7 @@ export async function getStoreOrThrow(id: string) {
 
 export async function getUserItems(userId: string) {
   if (!userId) {
-    throw new Error("No userId given in getUserItems().");
+    throw new Error('No userId given in getUserItems().');
   }
 
   const items = await ItemSchema.find({ userId });
@@ -133,7 +139,7 @@ export async function getUserOrThrow(id: string) {
 
 export async function getUserStores(userId: string) {
   if (!userId) {
-    throw new Error("No userId given in getUserStores().");
+    throw new Error('No userId given in getUserStores().');
   }
 
   const stores = await StoreSchema.find({ userId });
@@ -164,7 +170,7 @@ export async function handleStoreSpecificValuesMap(
   itemId: string,
   userId: string,
   storeSpecificValuesToAdd?: StoreSpecificValuesMap,
-  originalKey?: string,
+  originalKey?: string
 ) {
   console.log({ itemId, userId, storeSpecificValuesToAdd });
   const keys = Object.keys(storeSpecificValuesToAdd || {});
@@ -172,13 +178,16 @@ export async function handleStoreSpecificValuesMap(
     return;
   }
 
-  const updateObj = getUpdateObjectForValuesDocument<StoreSpecificValuesMap, StoreSpecificValuesMap[string]>(storeSpecificValuesToAdd);
+  const updateObj = getUpdateObjectForValuesDocument<
+    StoreSpecificValuesMap,
+    StoreSpecificValuesMap[string]
+  >(storeSpecificValuesToAdd);
   let objToUse = { ...updateObj };
   if (originalKey) {
     objToUse = {
       ...objToUse,
       $unset: getUnsetObj([originalKey]),
-    }
+    };
   }
   const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
     { userId: userId.toString() },
@@ -200,9 +209,9 @@ export function hashPassword(
 }
 
 /**
-*Use this to ensure that the keys saved are free of invalid characters
-*`.` is not a valid character due to how Mongoose.updateMany and {@link getUpdateObjectForStoreSpecificValues} work.
-**/
+ *Use this to ensure that the keys saved are free of invalid characters
+ *`.` is not a valid character due to how Mongoose.updateMany and {@link getUpdateObjectForStoreSpecificValues} work.
+ **/
 export function sanitizeKey<T extends Key>(key: T) {
   const copy = { ...key };
   if (copy?.name) {
@@ -215,10 +224,10 @@ export function sanitizeKey<T extends Key>(key: T) {
 }
 
 /**
-*This is used to sanitize the keys used in documents with a values field (e.g. LastPurchasedMapSchema and StoreSpecificValuesSchema)
-**/
+ *This is used to sanitize the keys used in documents with a values field (e.g. LastPurchasedMapSchema and StoreSpecificValuesSchema)
+ **/
 export function sanitize(str?: string) {
-  if (!str) return "";
+  if (!str) return '';
   return str?.replace(/\./g, '').trim();
 }
 
@@ -226,8 +235,8 @@ export function validateMatchesSchema<T>(schema: ZodEffects<any>, item: T) {
   const { success, error } = schema.safeParse(item);
 
   if (!success) {
-    let errorMsg = "Something went wrong parsing the schema";
-    if (typeof error === "object") {
+    let errorMsg = 'Something went wrong parsing the schema';
+    if (typeof error === 'object') {
       const errorToUse =
         error.errors.find((err) => err.code.match(/custom/i)) ||
         error.errors[0];

@@ -1,4 +1,4 @@
-import { storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
+import { storeSpecificValuesSchemaValueFieldName } from '../schema/storeSpecificValues';
 
 /**
  *Takes a list of ids and returns an object used to remove the fields for those ids in the StoreSpecificValuesSchema
