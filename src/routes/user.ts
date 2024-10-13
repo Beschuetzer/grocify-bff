@@ -20,12 +20,9 @@ import {
   UserDocument,
 } from "../types";
 import { ITEM_PATH, PASSWORD_SCHEMA, USER_PATH } from "./constants";
-import { ItemSchema } from "../schema";
-import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
+import { StoreSpecificValuesSchema, StoreSchema, ItemSchema, LastPurchasedMapSchema } from "../schema/";
 import { Document } from "mongoose";
-import { StoreSchema } from "../schema/store";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
-import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
 import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from "../constants";
 import { getUnsetObj } from "../helpers/getUnsetObj";
 

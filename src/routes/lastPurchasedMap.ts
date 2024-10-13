@@ -7,7 +7,7 @@ import {
 import { LAST_PURCHASED } from "./constants";
 import { DeleteValuesDocumentRequest, LastPurchasedMap, SaveLastPurchasedMapRequest } from "../types";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { LastPurchasedMapSchema } from "../schema/lastPurchasedMap";
+import { LastPurchasedMapSchema } from "../schema";
 import { getUpdateObjectForValuesDocument } from "../helpers/getUpdateObjectForValuesDocument";
 
 

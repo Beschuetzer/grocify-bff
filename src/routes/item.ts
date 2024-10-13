@@ -8,11 +8,10 @@ import {
   handleStoreSpecificValuesMap,
   sanitizeKey,
 } from "../helpers";
-import { ItemSchema } from "../schema";
+import { ItemSchema, StoreSpecificValuesSchema } from "../schema";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
 import { DeleteManyRequest, SaveItemRequest, SaveManyItemsRequest } from "../types";
 import { ITEM_PATH, USER_PATH } from "./constants";
-import { StoreSpecificValuesSchema } from "../schema/storeSpecificValues";
 import { getUnsetObj } from "../helpers/getUnsetObj";
 
 const router = express.Router({

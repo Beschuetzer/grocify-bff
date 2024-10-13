@@ -9,8 +9,7 @@ import {
 import { STORE_PATH, USER_PATH } from "./constants";
 import { DeleteManyRequest, SaveStoreRequest, Store } from "../types";
 import { checkIsAuthorized } from "../middlware/isAuthenticated";
-import { StoreSchema } from "../schema/store";
-import { StoreSpecificValuesSchema, storeSpecificValuesSchemaValueFieldName } from "../schema/storeSpecificValues";
+import { StoreSchema, StoreSpecificValuesSchema, storeSpecificValuesSchemaValueFieldName } from "../schema";
 import { getUnsetObj } from "../helpers/getUnsetObj";
 
 const router = express.Router({
