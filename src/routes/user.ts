@@ -25,6 +25,7 @@ import {
   StoreSchema,
   ItemSchema,
   LastPurchasedMapSchema,
+  SettingsSchema,
 } from '../schema/';
 import { Document } from 'mongoose';
 import { getUpdateObjectForValuesDocument } from '../helpers/getUpdateObjectForValuesDocument';
@@ -217,17 +218,19 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
 
     const itemsPromise = ItemSchema.find({ userId });
+    const settingsPromise = SettingsSchema.findOne({ userId });
     const storesPromise = StoreSchema.find({ userId });
     const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({
       userId,
     });
     const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({ userId });
-    const [items, stores, storeSpecificValues, lastPurchasedMap] =
+    const [items, stores, storeSpecificValues, lastPurchasedMap, settings] =
       await Promise.all([
         itemsPromise,
         storesPromise,
         storeSpecificValuesPromise,
         lastPurchasedMapPromise,
+        settingsPromise,
       ]);
 
     if (!storeSpecificValues?.values) {
@@ -238,6 +241,7 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
       stores,
       storeSpecificValues: storeSpecificValues.values,
       lastPurchasedMap,
+      settings,
     });
   } catch (error) {
     handleError(res, error);
@@ -305,6 +309,19 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       );
     }
 
+    const settingsPromise = SettingsSchema.findOneAndUpdate(
+          { userId: userId.toString() },
+          {
+            userId,
+            currentStoreId: storesList.currentStoreId,
+            sortOrderValues: {
+              items: itemsList.sortOrderValue,
+              stores: storesList.sortOrderValue
+            }
+          },
+          { upsert: true, new: true }
+        );
+
     const storeSpecificValuesPromise =
       Object.keys(storeSpecificValues || {}).length > 0
         ? StoreSpecificValuesSchema.findOneAndUpdate(
@@ -346,11 +363,13 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
+      settingsResult,
     ] = await Promise.all([
       itemsBulkSavePromise,
       lastPurchasedMapPromise,
       storesBulkSavePromise,
       storeSpecificValuesPromise,
+      settingsPromise,
     ]);
     const endBulkSave = performance.now();
     console.log({
@@ -359,12 +378,14 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
+      settingsResult
     });
     res.send({
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
+      settingsResult
     });
   } catch (error) {
     handleError(res, error);
