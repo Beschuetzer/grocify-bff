@@ -3,6 +3,7 @@ import { config } from './config';
 import mongoose from 'mongoose';
 import itemRoutes from './routes/item';
 import lastPurchasedRoutes from './routes/lastPurchasedMap';
+import s3Routes from './routes/s3';
 import storeRoutes from './routes/store';
 import testRoutes from './routes/testing';
 import userRoutes from './routes/user';
@@ -22,6 +23,7 @@ app.use(express.json({ limit: '50mb' }));
 //routes
 app.use(itemRoutes);
 app.use(lastPurchasedRoutes);
+app.use(s3Routes);
 app.use(storeRoutes);
 app.use(testRoutes);
 app.use(userRoutes);

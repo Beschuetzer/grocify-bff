@@ -33,18 +33,6 @@ router.get('/mockCreation', async (req, res) => {
   }
 });
 
-router.get('/s3/urlForDownload', async (req, res) => {
-  const url = await S3_CLIENT_WRAPPER.createPresignedUrlForDownload();
-  console.log({url});
-  res.send(url);
-});
-
-router.get('/s3/urlForUpload', async (req, res) => {
-  const url = await S3_CLIENT_WRAPPER.createPresignedUrlForUpload();
-  console.log({url});
-  res.send(url);
-});
-
 router.post('/password', async (req, res) => {
   const { username, password } = req.body;
   console.log({ username, password });
