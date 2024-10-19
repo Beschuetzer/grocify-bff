@@ -11,7 +11,7 @@ router.get(`/${S3_PATH}/signedUrlForDownload`, async (req, res) => {
   try {
     const url = await S3_CLIENT_WRAPPER.createPresignedUrlForDownload();
     console.log({ url });
-    res.send(url);
+    res.send({url});
   } catch (error) {
     handleError(res, error);
   }
@@ -21,7 +21,7 @@ router.get(`/${S3_PATH}/signedUrlForUpload`, async (req, res) => {
   try {
     const url = await S3_CLIENT_WRAPPER.createPresignedUrlForUpload();
     console.log({ url });
-    res.send(url);
+    res.send({url});
   } catch (error) {
     handleError(res, error);
   }
