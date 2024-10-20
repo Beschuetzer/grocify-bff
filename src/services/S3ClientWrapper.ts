@@ -1,6 +1,6 @@
-
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { S3Client, PutObjectCommand, GetObjectCommand, paginateListObjectsV2, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { EMPTY_STRING } from "../constants";
 
 class S3ClientWrapper {
   private readonly _client: S3Client;
@@ -20,11 +20,11 @@ class S3ClientWrapper {
   }
 
   get name() {
-    return this._s3BucketName
+    return this._s3BucketName;
   }
 
   get region() {
-    return this._s3BucketRegion
+    return this._s3BucketRegion;
   }
 
   /**
@@ -41,12 +41,54 @@ class S3ClientWrapper {
   /**
    *Use this to create a pre-signed url for downloading
    **/
-   public createPresignedUrlForDownload(fileName: string, bucketName?: string) {
+  public createPresignedUrlForDownload(fileName: string, bucketName?: string) {
     const command = new GetObjectCommand({
       Bucket: bucketName || this._s3BucketName,
       Key: fileName,
     });
     return getSignedUrl(this._client, command, { expiresIn: 3600 });
+  }
+
+  /**
+   *Use this to delete all the objects for a userId
+   **/
+  public async deleteUserObjs(userId: string) {
+    try {
+      const paginator = paginateListObjectsV2(
+        { client: this._client },
+        {
+          Bucket: this._s3BucketName,
+          Prefix: userId,
+        }
+      );
+
+      const objectKeys = [];
+      for await (const { Contents: contents } of paginator) {
+        console.log({contents});
+        
+        if (!contents) continue;
+        objectKeys.push(...contents.map((obj) => {
+            if (!obj.Key?.match(new RegExp(`^${userId}/`))) {
+                return { Key: EMPTY_STRING };
+            }
+            return { Key: obj.Key }
+        }));
+      }
+
+      const objectKeysToDelete = objectKeys.filter((obj) => !!obj.Key);
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: this._s3BucketName,
+        Delete: { Objects: objectKeysToDelete},
+      });
+      
+      await this._client.send(deleteCommand);
+    } catch (caught) {
+      if (caught instanceof Error) {
+        console.error(
+          `Failed to remove objects for ${userId}. ${caught.name}: ${caught.message}`
+        );
+      }
+    }
   }
 }
 

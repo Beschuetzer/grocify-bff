@@ -31,6 +31,7 @@ import { Document } from 'mongoose';
 import { getUpdateObjectForValuesDocument } from '../helpers/getUpdateObjectForValuesDocument';
 import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from '../constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
+import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
 
 const router = express.Router({
   mergeParams: true,
@@ -96,16 +97,20 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const deletedStoresPromise = StoreSchema.deleteMany({ userId });
     const deletedStoreSpecificItemsPromise =
       StoreSpecificValuesSchema.deleteOne({ userId });
+    const deleteS3ObjectsPromise = S3_CLIENT_WRAPPER.deleteUserObjs(userId);
+
     const [
       deletedItems,
       deletedLastPurchasedMap,
       deletedStores,
       deletedStoreSpecificItems,
+      deletedS3Objects,
     ] = await Promise.all([
       deletedItemsPromise,
       deletedLastPurchasedMapPromise,
       deletedStoresPromise,
       deletedStoreSpecificItemsPromise,
+      deleteS3ObjectsPromise,
     ]);
 
     res.send({
@@ -114,6 +119,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
       deletedLastPurchasedMap,
       deletedStores,
       deletedStoreSpecificItems,
+      deletedS3Objects,
     });
   } catch (error) {
     handleError(res, error);
