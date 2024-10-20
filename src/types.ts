@@ -121,6 +121,10 @@ export type DeleteManyRequest = {
    *This will be the key used in {@link StoreSpecificValuesMap} and {@link LastPurchasedMap}
    **/
   keys?: string[];
+  /**
+  *This is the url to the image in the cloud
+  **/
+  imagePaths?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
 export type SaveItemRequest = {

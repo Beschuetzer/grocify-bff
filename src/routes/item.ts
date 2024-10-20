@@ -17,6 +17,7 @@ import {
 } from '../types';
 import { ITEM_PATH, USER_PATH } from './constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
+import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
 
 const router = express.Router({
   mergeParams: true,
@@ -114,8 +115,8 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
-    const { ids, userId, password, keys } = req.body as DeleteManyRequest;
-    console.log({ ids, userId, password, keys });
+    const { ids, userId, password, keys, imagePaths } = req.body as DeleteManyRequest;
+    console.log({ ids, userId, password, keys, imagePaths });
 
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
@@ -123,15 +124,15 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
       _id: { $in: ids?.filter(Boolean) },
     });
     if (deletedItems.deletedCount > 0 && keys && keys.length > 0) {
-      console.log('need to clean up ');
       const unsetObject = getUnsetObj(keys);
-      console.log({ unsetObject });
-      await StoreSpecificValuesSchema.updateOne(
+      const removeStoreSpecificValuesPromise = StoreSpecificValuesSchema.updateOne(
         { userId },
         {
           $unset: unsetObject,
         }
       );
+      const removeImagePromise = S3_CLIENT_WRAPPER.deleteObj(imagePaths)
+      await Promise.all([removeImagePromise, removeStoreSpecificValuesPromise])
     }
     res.send(deletedItems);
   } catch (error) {
