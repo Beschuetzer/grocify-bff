@@ -10,10 +10,10 @@ const router = express.Router({
 
 router.post(`${S3_PATH}/signedUrlForDownload`, async (req, res) => {
   try {
-    const { userId, password } = req.body || {};
+    const { userId, password, filename } = req.body || {};
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const url = await S3_CLIENT_WRAPPER.createPresignedUrlForDownload();
+    const url = await S3_CLIENT_WRAPPER.createPresignedUrlForDownload(`${userId}/${filename}`);
     console.log({ url });
     res.send({url});
   } catch (error) {
@@ -23,10 +23,12 @@ router.post(`${S3_PATH}/signedUrlForDownload`, async (req, res) => {
 
 router.post(`${S3_PATH}/signedUrlForUpload`, async (req, res) => {
   try {
-    const { userId, password } = req.body || {};
+    const { userId, password, filename } = req.body || {};
+    console.log({userId, password, filename});
+    
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const url = await S3_CLIENT_WRAPPER.createPresignedUrlForUpload();
+    const url = await S3_CLIENT_WRAPPER.createPresignedUrlForUpload(`${userId}/${filename}`);
     console.log({ url });
     res.send({url});
   } catch (error) {

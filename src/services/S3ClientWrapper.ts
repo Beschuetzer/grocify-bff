@@ -5,7 +5,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 class S3ClientWrapper {
   private readonly _client: S3Client;
   private readonly _s3BucketName = 'grocify';
-  private readonly _s3BucketRegion = 'us-east-2';
+  private readonly _s3BucketRegion = 'us-east-1';
   private readonly _s3KeyId = process.env.s3KeyId;
   private readonly _s3KeySecret = process.env.s3KeySecret;
 
@@ -22,21 +22,21 @@ class S3ClientWrapper {
   /**
    *Use this to create a pre-signed url for uploading
    **/
-  public createPresignedUrlForUpload(bucketName?: string, key?: string) {
+  public createPresignedUrlForUpload(fileName: string, bucketName?: string) {
     const command = new PutObjectCommand({
       Bucket: bucketName || this._s3BucketName,
-      Key: key || this._s3KeyId,
+      Key: fileName,
     });
     return getSignedUrl(this._client, command, { expiresIn: 3600 });
   }
 
   /**
-   *Use this to create a pre-signed url for uploading
+   *Use this to create a pre-signed url for downloading
    **/
-  public createPresignedUrlForDownload(bucketName?: string, key?: string) {
+   public createPresignedUrlForDownload(fileName: string, bucketName?: string) {
     const command = new GetObjectCommand({
       Bucket: bucketName || this._s3BucketName,
-      Key: key || this._s3KeyId,
+      Key: fileName,
     });
     return getSignedUrl(this._client, command, { expiresIn: 3600 });
   }
