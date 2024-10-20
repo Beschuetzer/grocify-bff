@@ -56,7 +56,7 @@ export function comparePasswords(
  **/
 export async function getAndThenCacheUser(id?: string) {
   if (!id) {
-    throw new Error('No id given in getAndThenCacheUser()');
+    throw new Error('No userId given.');
   }
 
   const userFound = REGISTERED_USERS_CACHE.get(id);
