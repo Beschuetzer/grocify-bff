@@ -19,6 +19,14 @@ class S3ClientWrapper {
     });
   }
 
+  get name() {
+    return this._s3BucketName
+  }
+
+  get region() {
+    return this._s3BucketRegion
+  }
+
   /**
    *Use this to create a pre-signed url for uploading
    **/

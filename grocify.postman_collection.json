@@ -11,40 +11,13 @@
 			"name": "S3",
 			"item": [
 				{
-					"name": "Get PresignedUrl for Download",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{groficyBaseUrl}}/s3/signedUrlForDownload",
-							"host": [
-								"{{groficyBaseUrl}}"
-							],
-							"path": [
-								"s3",
-								"signedUrlForDownload"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Get PresignedUrl for Upload",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+							"raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"filename\": \"test\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -52,13 +25,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{groficyBaseUrl}}/s3/signedUrlForUpload",
+							"raw": "{{groficyBaseUrl}}/s3/signedUrl",
 							"host": [
 								"{{groficyBaseUrl}}"
 							],
 							"path": [
 								"s3",
-								"signedUrlForUpload"
+								"signedUrl"
 							]
 						}
 					},
