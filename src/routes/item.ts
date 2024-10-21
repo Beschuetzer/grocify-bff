@@ -115,7 +115,8 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
-    const { ids, userId, password, keys, imagePaths } = req.body as DeleteManyRequest;
+    const { ids, userId, password, keys, imagePaths } =
+      req.body as DeleteManyRequest;
     console.log({ ids, userId, password, keys, imagePaths });
 
     const user = await getAndThenCacheUser(userId);
@@ -123,16 +124,22 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     const deletedItems = await ItemSchema.deleteMany({
       _id: { $in: ids?.filter(Boolean) },
     });
-    if (deletedItems.deletedCount > 0 && keys && keys.length > 0) {
-      const unsetObject = getUnsetObj(keys);
-      const removeStoreSpecificValuesPromise = StoreSpecificValuesSchema.updateOne(
-        { userId },
-        {
-          $unset: unsetObject,
-        }
-      );
-      const removeImagePromise = S3_CLIENT_WRAPPER.deleteObj(imagePaths)
-      await Promise.all([removeImagePromise, removeStoreSpecificValuesPromise])
+
+    if (deletedItems.deletedCount > 0) {
+      const removeImagePromise = S3_CLIENT_WRAPPER.deleteObj(imagePaths);
+      const promises = [removeImagePromise] as Promise<any>[];
+      if (keys && keys.length > 0) {
+        const unsetObject = getUnsetObj(keys);
+        const removeStoreSpecificValuesPromise =
+          StoreSpecificValuesSchema.updateOne(
+            { userId },
+            {
+              $unset: unsetObject,
+            }
+          );
+        promises.push(removeStoreSpecificValuesPromise);
+      }
+      await Promise.all(promises);
     }
     res.send(deletedItems);
   } catch (error) {
