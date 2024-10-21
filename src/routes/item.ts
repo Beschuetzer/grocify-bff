@@ -125,9 +125,9 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
       _id: { $in: ids?.filter(Boolean) },
     });
 
+    const removeImagePromise = S3_CLIENT_WRAPPER.deleteObj(imagePaths);
+    const promises = [removeImagePromise] as Promise<any>[];
     if (deletedItems.deletedCount > 0) {
-      const removeImagePromise = S3_CLIENT_WRAPPER.deleteObj(imagePaths);
-      const promises = [removeImagePromise] as Promise<any>[];
       if (keys && keys.length > 0) {
         const unsetObject = getUnsetObj(keys);
         const removeStoreSpecificValuesPromise =
@@ -139,8 +139,8 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
           );
         promises.push(removeStoreSpecificValuesPromise);
       }
-      await Promise.all(promises);
     }
+    await Promise.all(promises);
     res.send(deletedItems);
   } catch (error) {
     handleError(res, error);
