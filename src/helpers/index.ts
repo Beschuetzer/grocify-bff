@@ -150,10 +150,9 @@ export function handleError(res: Response, error: unknown, statusCode = 500) {
   let statusCodeToUse = statusCode;
   let errorToUse = error;
   let message = (error as ErrorMessage)?.errorResponse?.message;
-  console.log({ errorMsg: (error as any)?.message, message });
 
-  if ((error as Error)?.message) {
-    message = (error as Error)?.message;
+  if ((error as Error)?.message || typeof error === 'string') {
+    message = (error as Error)?.message || error as string;
     errorToUse = getErrorMessage(message);
   }
 
