@@ -31,6 +31,7 @@ import { Document } from 'mongoose';
 import { getUpdateObjectForValuesDocument } from '../helpers/getUpdateObjectForValuesDocument';
 import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from '../constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
+import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
 
 const router = express.Router({
   mergeParams: true,
@@ -82,38 +83,47 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const { password, userId } = req.body as Required<AccountCredentials>;
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
-    const deletedUser = await UserSchema.findByIdAndDelete(userId);
 
-    if (!deletedUser) {
-      throw new Error(`Unable to delete the user with the id of ${userId}.`);
-    }
-
-    USERS_CACHE.delete(userId);
     const deletedItemsPromise = ItemSchema.deleteMany({ userId });
     const deletedLastPurchasedMapPromise = LastPurchasedMapSchema.deleteMany({
       userId,
     });
     const deletedStoresPromise = StoreSchema.deleteMany({ userId });
+    const deletedSettingsPromise =
+      SettingsSchema.deleteOne({ userId });
     const deletedStoreSpecificItemsPromise =
       StoreSpecificValuesSchema.deleteOne({ userId });
+    const deleteS3ObjectsPromise = S3_CLIENT_WRAPPER.deleteUserObjs(userId);
+
     const [
       deletedItems,
       deletedLastPurchasedMap,
+      deletedSettings,
       deletedStores,
       deletedStoreSpecificItems,
+      deletedS3Objects,
     ] = await Promise.all([
       deletedItemsPromise,
       deletedLastPurchasedMapPromise,
+      deletedSettingsPromise,
       deletedStoresPromise,
       deletedStoreSpecificItemsPromise,
+      deleteS3ObjectsPromise,
     ]);
 
+    const deletedUser = await UserSchema.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      throw new Error(`Unable to delete the user with the id of ${userId}.`);
+    }
+
+    USERS_CACHE.delete(userId);
     res.send({
       deletedUser,
       deletedItems,
       deletedLastPurchasedMap,
       deletedStores,
       deletedStoreSpecificItems,
+      deletedS3Objects,
     });
   } catch (error) {
     handleError(res, error);
@@ -310,17 +320,17 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     }
 
     const settingsPromise = SettingsSchema.findOneAndUpdate(
-          { userId: userId.toString() },
-          {
-            userId,
-            currentStoreId: storesList.currentStoreId,
-            sortOrderValues: {
-              items: itemsList.sortOrderValue,
-              stores: storesList.sortOrderValue
-            }
-          },
-          { upsert: true, new: true }
-        );
+      { userId: userId.toString() },
+      {
+        userId,
+        currentStoreId: storesList.currentStoreId,
+        sortOrderValues: {
+          items: itemsList.sortOrderValue,
+          stores: storesList.sortOrderValue,
+        },
+      },
+      { upsert: true, new: true }
+    );
 
     const storeSpecificValuesPromise =
       Object.keys(storeSpecificValues || {}).length > 0
@@ -378,14 +388,14 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
-      settingsResult
+      settingsResult,
     });
     res.send({
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
-      settingsResult
+      settingsResult,
     });
   } catch (error) {
     handleError(res, error);

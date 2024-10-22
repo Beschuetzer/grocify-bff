@@ -55,7 +55,7 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
     const sanitizedStore = sanitizeStore(store);
     const updateStorePromise = StoreSchema.findByIdAndUpdate(
       store._id,
-      sanitizedStore,
+      { ...sanitizedStore, userId },
       { upsert: true }
     );
     const updateStoreSpecificValuesPromise = StoreSpecificValuesSchema.findOne({
