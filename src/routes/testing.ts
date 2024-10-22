@@ -6,7 +6,6 @@ import {
   comparePasswords,
 } from '../helpers';
 import { ItemSchema } from '../schema';
-import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
 
 const router = express.Router({
   mergeParams: true,
