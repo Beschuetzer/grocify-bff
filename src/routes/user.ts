@@ -14,6 +14,7 @@ import {
   CurrentPassword,
   Item,
   LastPurchasedMap,
+  NewPassword,
   Store,
   StoreSpecificValuesMap,
   UserAccount,
@@ -199,6 +200,44 @@ router.get(
     }
   }
 );
+
+router.post(`${USER_PATH}/changePassword`, async (req: Request, res: Response) => {
+  const { _id, password, newPassword } = req.body as UserAccount &
+    NewPassword;
+    console.log({_id, password, newPassword});
+
+  try {
+    const user = await getAndThenCacheUser(_id);
+    await checkIsAuthorized(password, user?.password);
+    
+    if (!newPassword) {
+      throw new Error("No new password given");
+    }
+    hashPassword(newPassword, async (err, hash) => {
+      try {
+        if (err || !hash) {
+          throw new Error(`Unable to hash the new password for user with id of '${_id}'.`)
+        }
+
+        const newUser =  {
+          _id,
+          email: user.email,
+          password: hash,
+        } as UserDocument;
+        const updatedUser = await UserSchema.updateOne(
+          { _id },
+          newUser,
+        );
+        USERS_CACHE.set(_id, newUser);
+        res.send({success: !!updatedUser.acknowledged && updatedUser.modifiedCount > 0});
+      } catch (error) {
+        handleError(res, error);
+      }
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
 
 router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
   const { email, password } = req.body as Omit<UserAccount, '_id'>;
