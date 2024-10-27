@@ -9,6 +9,10 @@ export type CurrentPassword = {
   currentPassword: string;
 };
 
+export type NewPassword = {
+  newPassword: string;
+};
+
 export type ErrorMessage = {
   errorResponse: {
     message: string;
