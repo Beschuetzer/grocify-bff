@@ -16,18 +16,19 @@
     "node": "20.x"
   },
   "dependencies": {
-    "@isaacs/ttlcache": "^1.4.1",
     "@aws-sdk/client-s3": "^3.675.0",
     "@aws-sdk/s3-request-presigner": "^3.675.0",
+    "@isaacs/ttlcache": "^1.4.1",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.3.4",
+    "openai": "^4.68.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@digitak/esrun": "^3.2.26",
     "@aws-sdk/types": "^3.664.0",
+    "@digitak/esrun": "^3.2.26",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",
