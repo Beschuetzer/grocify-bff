@@ -34,7 +34,8 @@ router.get('/mockCreation', async (req, res) => {
 });
 
 router.get('/processGroceryList', async (req, res) => {
-  const response = await OPEN_AI_CLIENT_WRAPPER.processGroceryList();
+  const { image } = req.body
+  const response = await OPEN_AI_CLIENT_WRAPPER.processGroceryList(image);
   res.send({response})
 });
 
