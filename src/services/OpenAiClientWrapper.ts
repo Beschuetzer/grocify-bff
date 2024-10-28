@@ -6,15 +6,20 @@ class OpenAiClientWrapper {
 
     constructor() {
         const apiKey = process.env.openAiSecret;
+        console.log({apiKey});
+        
         if (!apiKey) throw new Error(`'${apiKey}' is not a valid openAI api key.`);
         this._client = new OpenAI({
             apiKey,
             organization: "org-YPdYFysKphKiuoolooRN1i0v",
-            project: "grocify-bff",
+            defaultHeaders: {
+                "Authorization": `Bearer ${apiKey}`
+            },
         });
     }
 
     public async processGroceryList (base64Image: string) {
+        console.log({base64Image});
         try {
             const response = await this._client.chat.completions.create({
                 model: "gpt-4o-mini",
@@ -23,36 +28,22 @@ class OpenAiClientWrapper {
                     content: [
                         {
                             type: "text",
-                            text: "Process this grocery list.  Provide a store if given."
+                            text: "Process the list."
                         },
                         {
                             type: "image_url",
                             image_url: {
-                                url: `data:image/jpeg;base64,${base64Image}`,
+                                url: base64Image,
                             }
                         }
                     ]
                 }],
             })
             console.log({response, firstChoice: response.choices[0]}) 
+            return response
         } catch (error) {
-            
+            console.log({error});
         }
-    }
-
-    public async test () {
-        const response = await this._client.chat.completions.create({
-            model: this._model,
-            messages: [
-                { role: "system", content: "You are a helpful assistant." },
-                {
-                    role: "user",
-                    content: "Write a haiku about recursion in programming.",
-                },
-            ],
-        });
-        console.log({response});
-        return this.test;
     }
 }
 

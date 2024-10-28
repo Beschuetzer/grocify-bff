@@ -6,6 +6,7 @@ import {
   comparePasswords,
 } from '../helpers';
 import { ItemSchema } from '../schema';
+import { OPEN_AI_CLIENT_WRAPPER } from '../services/OpenAiClientWrapper';
 
 const router = express.Router({
   mergeParams: true,
@@ -30,6 +31,11 @@ router.get('/mockCreation', async (req, res) => {
   } catch (error) {
     handleError(res, error);
   }
+});
+
+router.get('/processGroceryList', async (req, res) => {
+  const response = await OPEN_AI_CLIENT_WRAPPER.processGroceryList();
+  res.send({response})
 });
 
 router.post('/password', async (req, res) => {
