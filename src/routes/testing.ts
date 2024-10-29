@@ -33,12 +33,6 @@ router.get('/mockCreation', async (req, res) => {
   }
 });
 
-router.get('/processGroceryList', async (req, res) => {
-  const { image } = req.body
-  const response = await OPEN_AI_CLIENT_WRAPPER.processGroceryList(image);
-  res.send({response})
-});
-
 router.post('/password', async (req, res) => {
   const { username, password } = req.body;
   console.log({ username, password });

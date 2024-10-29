@@ -6,8 +6,6 @@ class OpenAiClientWrapper {
 
     constructor() {
         const apiKey = process.env.openAiSecret;
-        console.log({apiKey});
-        
         if (!apiKey) throw new Error(`'${apiKey}' is not a valid openAI api key.`);
         this._client = new OpenAI({
             apiKey,
@@ -20,30 +18,27 @@ class OpenAiClientWrapper {
 
     public async processGroceryList (base64Image: string) {
         console.log({base64Image});
-        try {
-            const response = await this._client.chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [{
-                    role: "user",
-                    content: [
-                        {
-                            type: "text",
-                            text: "Process this grocery list and provide a store if given.  Separate the items with a new line and nothing else."
-                        },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: base64Image,
-                            }
+        const response = await this._client.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [{
+                role: "user",
+                content: [
+                    {
+                        type: "text",
+                        text: "Process this grocery list and provide a store if given.  Separate the items with a new line and nothing else."
+                    },
+                    {
+                        type: "image_url",
+                        image_url: {
+                            url: base64Image,
                         }
-                    ]
-                }],
-            })
-            console.log({response, firstChoice: response.choices[0]}) 
-            return response
-        } catch (error) {
-            console.log({error});
-        }
+                    }
+                ]
+            }],
+        })
+        const split = response.choices[0].message.content?.split('\n').map(s => s?.trim()).filter(Boolean);
+        console.log({response});
+        return split;
     }
 }
 
