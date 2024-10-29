@@ -17,7 +17,6 @@ class OpenAiClientWrapper {
     }
 
     public async processGroceryList (base64Image: string) {
-        console.log({base64Image});
         const response = await this._client.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [{
@@ -30,7 +29,7 @@ class OpenAiClientWrapper {
                     {
                         type: "image_url",
                         image_url: {
-                            url: base64Image,
+                            url: `data:image/jpeg;base64,${base64Image}`,
                         }
                     }
                 ]
