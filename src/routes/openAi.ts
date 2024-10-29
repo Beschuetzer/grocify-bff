@@ -8,7 +8,7 @@ const router = express.Router({
   mergeParams: true,
 });
 
-router.get(`${OPEN_AI_PATH}/processGroceryList`, async (req, res) => {
+router.post(`${OPEN_AI_PATH}/processGroceryList`, async (req, res) => {
     try {
         const { image, userId, password } = req.body
         const user = await getAndThenCacheUser(userId);
