@@ -11,7 +11,7 @@ const router = express.Router({
 router.post(`${OPEN_AI_PATH}/processGroceryList`, async (req, res) => {
     try {
         const { image, userId, password } = req.body
-        console.log({image, userId, password});
+        console.log({image: typeof image === 'string' ? `${image.substring(0,5)}...${image.substring(image.length -5)}` : "", userId, password});
         
         const user = await getAndThenCacheUser(userId);
         await checkIsAuthorized(password, user?.password);

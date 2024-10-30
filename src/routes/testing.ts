@@ -6,7 +6,6 @@ import {
   comparePasswords,
 } from '../helpers';
 import { ItemSchema } from '../schema';
-import { OPEN_AI_CLIENT_WRAPPER } from '../services/OpenAiClientWrapper';
 
 const router = express.Router({
   mergeParams: true,
