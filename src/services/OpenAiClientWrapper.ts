@@ -24,7 +24,7 @@ class OpenAiClientWrapper {
                 content: [
                     {
                         type: "text",
-                        text: "Process this grocery list and provide a store if given.  Separate the items with a new line and nothing else."
+                        text: "Process this grocery list and provide a store if given.  Separate the items with a new line and nothing else.  Format each response like this 'name - quantity - unit'."
                     },
                     {
                         type: "image_url",
