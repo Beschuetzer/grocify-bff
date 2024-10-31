@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { EMPTY_STRING } from "../constants";
+import { EMPTY_NUMBER, EMPTY_STRING } from "../constants";
 
 export type ProcessGroceryListResponse = {
     store: string;
@@ -54,12 +54,12 @@ class OpenAiClientWrapper {
         const isStorePresent = !split[0].includes(this.splitCharacter);
         let store = EMPTY_STRING;
         if (isStorePresent) {
-            store = split?.shift()?.replace(/:/, EMPTY_STRING) || EMPTY_STRING;
+            store = split?.shift()?.replace(/:/, EMPTY_STRING)?.trim() || EMPTY_STRING;
         }
 
         const items =  split.map(item => {
             const splitItem = item.split(this.splitCharacter);
-            return [splitItem[0], parseInt(splitItem[1]), splitItem[2] || 'unit']
+            return [splitItem[0]?.trim() || EMPTY_STRING, parseInt(splitItem[1]) || EMPTY_NUMBER, splitItem[2]?.trim() || 'unit']
         }); 
 
         const toReturn = {
