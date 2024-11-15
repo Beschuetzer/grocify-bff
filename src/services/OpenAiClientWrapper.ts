@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { EMPTY_NUMBER, EMPTY_STRING } from "../constants";
+import { OPEN_AI_PROCESS_GROCERY_LISTCACHE } from "../cache";
 
 export type ProcessGroceryListResponse = {
     store: string;
@@ -24,6 +25,14 @@ class OpenAiClientWrapper {
     }
 
     public async processGroceryList (base64Image: string): Promise<ProcessGroceryListResponse> {
+        if (!base64Image) {
+            throw new Error("Unable to convert base64 image value.")
+        }
+        const cachedResponse = OPEN_AI_PROCESS_GROCERY_LISTCACHE.get(base64Image);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
         const response = await this._client.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [{
@@ -45,10 +54,12 @@ class OpenAiClientWrapper {
         const split = response.choices[0].message.content?.split('\n').map(s => s?.trim()).filter(Boolean);
 
         if (!split) {
-            return {
+            const toReturn = {
                 store: EMPTY_STRING,
                 items: [],
-            }
+            };
+            OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(base64Image, toReturn);
+            return toReturn;
         }
 
         const isStorePresent = !split[0].includes(this.splitCharacter);
@@ -67,6 +78,7 @@ class OpenAiClientWrapper {
             items,
         }
         console.log({toReturn, isStorePresent, items, store});
+        OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(base64Image, toReturn);
         return toReturn;
     }
 }
