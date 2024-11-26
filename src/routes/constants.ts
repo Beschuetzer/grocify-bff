@@ -3,6 +3,7 @@ import { z } from 'zod';
 //#region Routes
 export const ITEM_PATH = '/item';
 export const LAST_PURCHASED = '/lastPurchasedMap';
+export const OPEN_AI_PATH = '/openAi';
 export const S3_PATH = '/s3';
 export const STORE_PATH = '/store';
 export const USER_PATH = '/user';
