@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { EMPTY_NUMBER, EMPTY_STRING } from "../constants";
 import { OPEN_AI_PROCESS_GROCERY_LISTCACHE } from "../cache";
+import crypto from 'crypto';
 
 export type ProcessGroceryListResponse = {
     store: string;
@@ -28,8 +29,12 @@ class OpenAiClientWrapper {
         if (!base64Image) {
             throw new Error("Unable to convert base64 image value.")
         }
-        const cachedResponse = OPEN_AI_PROCESS_GROCERY_LISTCACHE.get(base64Image);
+        
+        const cachedResponse = OPEN_AI_PROCESS_GROCERY_LISTCACHE.get(this.getProcessGroceryListCacheKey(base64Image));
+        console.log({cachedResponse});
+        
         if (cachedResponse) {
+            console.log("Using cached response");
             return cachedResponse;
         }
 
@@ -58,7 +63,7 @@ class OpenAiClientWrapper {
                 store: EMPTY_STRING,
                 items: [],
             };
-            OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(base64Image, toReturn);
+            OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(this.getProcessGroceryListCacheKey(base64Image), toReturn);
             return toReturn;
         }
 
@@ -78,8 +83,12 @@ class OpenAiClientWrapper {
             items,
         }
         console.log({toReturn, isStorePresent, items, store});
-        OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(base64Image, toReturn);
+        OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(this.getProcessGroceryListCacheKey(base64Image), toReturn);
         return toReturn;
+    }
+
+    private getProcessGroceryListCacheKey(base64Image: string) {
+        return crypto.createHash('sha256').update(base64Image).digest('hex');
     }
 }
 
