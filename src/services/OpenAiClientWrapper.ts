@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { EMPTY_NUMBER, EMPTY_STRING } from "../constants";
+import { DEFAULT_ITEM_NUMBER, DEFAULT_ITEM_UNIT, EMPTY_STRING } from "../constants";
 import { OPEN_AI_PROCESS_GROCERY_LISTCACHE } from "../cache";
 import crypto from 'crypto';
 
@@ -75,7 +75,7 @@ class OpenAiClientWrapper {
 
         const items =  split.map(item => {
             const splitItem = item.split(this.splitCharacter);
-            return [splitItem[0]?.trim() || EMPTY_STRING, parseInt(splitItem[1]) || EMPTY_NUMBER, splitItem[2]?.trim() || 'unit']
+            return [splitItem[0]?.trim() || EMPTY_STRING, parseInt(splitItem[1]) || DEFAULT_ITEM_NUMBER, splitItem[2]?.trim() || DEFAULT_ITEM_UNIT]
         }); 
 
         const toReturn = {
