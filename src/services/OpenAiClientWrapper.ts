@@ -83,14 +83,18 @@ class OpenAiClientWrapper {
             items,
         }
         console.log({toReturn, isStorePresent, items, store});
-        OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(this.getProcessGroceryListCacheKey(base64Image), toReturn);
-        console.log("returning after setting cache");
+        const cacheKey = this.getProcessGroceryListCacheKey(base64Image);
+        OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(cacheKey, toReturn);
+        console.log({cacheEntry: OPEN_AI_PROCESS_GROCERY_LISTCACHE.get(cacheKey)});
         
         return toReturn;
     }
 
     private getProcessGroceryListCacheKey(base64Image: string) {
-        return crypto.createHash('sha256').update(base64Image).digest('hex');
+        const key = crypto.createHash('sha256').update(base64Image).digest('hex');
+        console.log({cacheKey: key});
+        return key;
+        
     }
 }
 
