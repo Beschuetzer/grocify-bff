@@ -84,6 +84,8 @@ class OpenAiClientWrapper {
         }
         console.log({toReturn, isStorePresent, items, store});
         OPEN_AI_PROCESS_GROCERY_LISTCACHE.set(this.getProcessGroceryListCacheKey(base64Image), toReturn);
+        console.log("returning after setting cache");
+        
         return toReturn;
     }
 

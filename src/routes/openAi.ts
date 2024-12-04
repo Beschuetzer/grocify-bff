@@ -16,6 +16,7 @@ router.post(`${OPEN_AI_PATH}/processGroceryList`, async (req, res) => {
         const user = await getAndThenCacheUser(userId);
         await checkIsAuthorized(password, user?.password);
         const response = await OPEN_AI_CLIENT_WRAPPER.processGroceryList(image);
+        console.log({response});
         res.send(response)
     } catch (error) {
         handleError(res, error);
