@@ -91,6 +91,8 @@ class OpenAiClientWrapper {
     }
 
     private getProcessGroceryListCacheKey(base64Image: string) {
+        console.log({base64Image});
+        
         const key = crypto.createHash('sha256').update(base64Image).digest('hex');
         console.log({cacheKey: key});
         return key;
