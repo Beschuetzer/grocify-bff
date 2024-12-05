@@ -11,6 +11,9 @@ const router = express.Router({
   mergeParams: true,
 });
 
+/**
+*Don't remove this one unless the bff has been given a stand-alone service that runs at all times
+**/
 router.get('/ping', async (req, res) => {
   res.send({isAwake: true})
 })
