@@ -11,6 +11,10 @@ const router = express.Router({
   mergeParams: true,
 });
 
+router.get('/ping', async (req, res) => {
+  res.send({isAwake: true})
+})
+
 router.get('/mockCreation', async (req, res) => {
   const createdItem = new ItemSchema({
     addedDate: Date.now() - getRandomInt(1000000, 1000000000),
