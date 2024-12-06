@@ -289,7 +289,7 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
       items,
       stores,
       storeSpecificValues: storeSpecificValues.values,
-      lastPurchasedMap,
+      lastPurchasedMap: lastPurchasedMap?.values,
       settings,
     });
   } catch (error) {
