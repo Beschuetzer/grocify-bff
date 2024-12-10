@@ -53,20 +53,20 @@ class S3ClientWrapper {
   /**
    *Use this to delete all the objects for a userId
    **/
-  public async deleteObj(paths?: string[]) {
+  public async deleteObjs(objKeys?: string[]) {
     try {
-      if (!paths || paths.length === 0) return;
-      const pathsToDelete = paths.map(path => ({Key: path}));
+      if (!objKeys || objKeys.length === 0) return;
+      const objKeysToDelete = objKeys.map(key => ({Key: key}));
       const deleteCommand = new DeleteObjectsCommand({
         Bucket: this._s3BucketName,
-        Delete: { Objects: pathsToDelete },
+        Delete: { Objects: objKeysToDelete },
       });
 
       await this._client.send(deleteCommand);
     } catch (caught) {
       if (caught instanceof Error) {
         console.error(
-          `Failed to remove object at '${paths}'. ${caught.name}: ${caught.message}`
+          `Failed to remove object at '${objKeys}'. ${caught.name}: ${caught.message}`
         );
       }
     }

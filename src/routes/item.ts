@@ -125,7 +125,7 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
       _id: { $in: ids?.filter(Boolean) },
     });
 
-    const removeImagePromise = S3_CLIENT_WRAPPER.deleteObj(imagePaths);
+    const removeImagePromise = S3_CLIENT_WRAPPER.deleteObjs(imagePaths);
     const promises = [removeImagePromise] as Promise<any>[];
     if (deletedItems.deletedCount > 0) {
       if (keys && keys.length > 0) {

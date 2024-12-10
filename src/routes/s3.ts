@@ -28,6 +28,20 @@ router.post(`${S3_PATH}/signedUrl`, async (req, res) => {
   }
 });
 
+router.delete(`${S3_PATH}`, async (req, res) => {
+  try {
+    const { userId, password, objKeys } = req.body || {};
+    console.log({userId, password, objKeys});
+    
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+    await S3_CLIENT_WRAPPER.deleteObjs(objKeys)
+    res.send(true);
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
 export type GetPublicS3UrlInput = {
     userId: string;
     filename: string;
