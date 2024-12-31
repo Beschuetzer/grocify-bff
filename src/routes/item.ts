@@ -64,6 +64,11 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const sanitizedItem = sanitizeKey(itemWithUserId);
+    const currentItem = await ItemSchema.findById(sanitizedItem._id);
+    console.log({currentItem});
+    if (!!currentItem?.userId && currentItem.userId.toString() !== userId) {
+      throw new Error("You do not have permission to change this item.")
+    }
     const saveItemPromise = ItemSchema.findByIdAndUpdate(
       sanitizedItem._id,
       sanitizedItem,
@@ -79,7 +84,7 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     return res.send(item);
   } catch (error) {
     console.log({ error });
-    return res.status(500).send(null);
+    handleError(res,error, 500);
   }
 });
 
