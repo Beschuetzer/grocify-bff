@@ -128,6 +128,7 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const deletedItems = await ItemSchema.deleteMany({
       _id: { $in: ids?.filter(Boolean) },
+      userId: userId
     });
 
     const removeImagePromise = S3_CLIENT_WRAPPER.deleteObjs(imagePaths);
