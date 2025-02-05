@@ -65,9 +65,9 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const sanitizedItem = sanitizeKey(itemWithUserId);
     const currentItem = await ItemSchema.findById(sanitizedItem._id);
-    console.log({currentItem});
+    console.log({ currentItem });
     if (!!currentItem?.userId && currentItem.userId.toString() !== userId) {
-      throw new Error("You do not have permission to change this item.")
+      throw new Error('You do not have permission to change this item.');
     }
     const saveItemPromise = ItemSchema.findByIdAndUpdate(
       sanitizedItem._id,
@@ -84,7 +84,7 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     return res.send(item);
   } catch (error) {
     console.log({ error });
-    handleError(res,error, 500);
+    handleError(res, error, 500);
   }
 });
 
@@ -128,7 +128,7 @@ router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const deletedItems = await ItemSchema.deleteMany({
       _id: { $in: ids?.filter(Boolean) },
-      userId: userId
+      userId: userId,
     });
 
     const removeImagePromise = S3_CLIENT_WRAPPER.deleteObjs(imagePaths);
