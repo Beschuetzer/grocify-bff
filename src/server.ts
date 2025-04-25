@@ -1,5 +1,6 @@
 import express from 'express';
 import { config } from './config';
+import os from 'os';
 import mongoose from 'mongoose';
 import itemRoutes from './routes/item';
 import lastPurchasedRoutes from './routes/lastPurchasedMap';
@@ -30,6 +31,24 @@ app.use(storeRoutes);
 app.use(testRoutes);
 app.use(userRoutes);
 
-app.listen(config.server.port, () => {
-  console.log(`App running on port ${config.server.port}`);
+const PORT = config.server.port;
+
+const interfaces = os.networkInterfaces();
+const addresses: string[] = [];
+for (const iface of Object.values(interfaces)) {
+  iface?.forEach((net) => {
+    if (net.family === 'IPv4' && !net.internal) {
+      addresses.push(net.address);
+    }
+  });
+}
+
+app.listen(PORT, () => {
+  console.log(`App running on port ${PORT}`);
+  if (addresses.length) {
+    console.log('Server available at:');
+    addresses.forEach((ip) => console.log(`http://${ip}:${PORT}`));
+  } else {
+    console.log('No external IPv4 address found.');
+  }
 });

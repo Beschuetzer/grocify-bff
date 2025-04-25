@@ -11,7 +11,6 @@ const router = express.Router({
 router.post(`${S3_PATH}/signedUrl`, async (req, res) => {
   try {
     const { userId, password, filename } = req.body || {};
-    console.log({userId, password, filename});
     
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
@@ -31,7 +30,6 @@ router.post(`${S3_PATH}/signedUrl`, async (req, res) => {
 router.delete(`${S3_PATH}`, async (req, res) => {
   try {
     const { userId, password, objKeys } = req.body || {};
-    console.log({userId, password, objKeys});
     
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
