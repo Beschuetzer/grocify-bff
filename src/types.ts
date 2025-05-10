@@ -149,6 +149,7 @@ export type SaveStoreRequest = {
 export type SaveLastPurchasedMapRequest = {
   lastPurchasedMap: LastPurchasedMap;
 } & AccountCredentials;
+export type UpdateInventoryLocationRequest = SaveInventoryLocationRequest
 //#endregion
 
 //#region Store

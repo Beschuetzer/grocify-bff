@@ -6,8 +6,14 @@ import {
 } from '../helpers';
 import { INVENTORY_PATH } from './constants';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
-import { SaveInventoryLocationRequest } from '../types';
-import { InventorySchema } from '../schema/inventory';
+import {
+  SaveInventoryLocationRequest,
+  UpdateInventoryLocationRequest,
+} from '../types';
+import {
+  inventoryLocationsFieldName,
+  InventorySchema,
+} from '../schema/inventory';
 
 const router = express.Router({
   mergeParams: true,
@@ -58,22 +64,43 @@ router.post(
 );
 
 /**
- * For the case when the inventory location is already in the db and we want to add a new item to it.
+ * For the case when we need to update an existing inventory location in the db.
  **/
-router.post(
-  `${INVENTORY_PATH}/location/:id`,
+router.put(
+  `${INVENTORY_PATH}/location`,
   async (req: Request, res: Response) => {
     try {
       const { location, userId, password } =
-        req.body as SaveInventoryLocationRequest;
-      console.log({
-        location,
-      });
+        req.body as UpdateInventoryLocationRequest;
+      if (!location) {
+        throw new Error('No location given.');
+      } else if (!location.name) {
+        throw new Error('No location name given.');
+      } else if (!location._id) {
+        throw new Error('No location id given.');
+      }
+
+      console.log({ location, userId, password });
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
-      //need to update the inventory location in the db
 
-      return res.send();
+      // Build dynamic update object skipping _id
+      const updateFields: any = {};
+      Object.keys(location).forEach((key) => {
+        if (key !== '_id') {
+          updateFields[`${inventoryLocationsFieldName}.$.${key}`] = (
+            location as any
+          )[key];
+        }
+      });
+
+      const updatedInventory = await InventorySchema.findOneAndUpdate(
+        { userId, [`${inventoryLocationsFieldName}._id`]: location._id },
+        { $set: updateFields },
+        { new: true, upsert: true }
+      );
+
+      return res.send(updatedInventory);
     } catch (error) {
       handleError(res, error, 500);
     }
