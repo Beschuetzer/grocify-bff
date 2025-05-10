@@ -126,11 +126,14 @@ export type DeleteManyRequest = {
    **/
   keys?: string[];
   /**
-  *This is the url to the image in the cloud
-  **/
+   *This is the url to the image in the cloud
+   **/
   imagePaths?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
+export type SaveInventoryLocationRequest = {
+  location: InventoryLocation;
+} & AccountCredentials;
 export type SaveItemRequest = {
   item: Item;
   storeSpecificValuesMap: StoreSpecificValuesMap;
@@ -168,4 +171,31 @@ export type GpsCoordinate = {
   lat: string;
   lon: string;
 };
+//#endregion
+
+//#region Inventory
+export type Inventory = {
+  items: InventoryItems<InventoryItem>;
+  locations: InventoryLocation[];
+  currentLocationId: Id['_id'] | undefined | null;
+};
+
+export type InventoryItems<T> = {
+  [locationId: string]: InventoryLocationItem<T>;
+};
+
+export type InventoryLocationItem<T> = {
+  [itemId: string]: T;
+};
+
+export type InventoryItem = {
+  expirationDates: number[];
+};
+
+export type InventoryLocation = {
+  description?: string;
+  gpsCoordinates?: GpsCoordinate;
+  name: string;
+} & Id;
+
 //#endregion
