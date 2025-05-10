@@ -15,6 +15,7 @@ import {
   Item,
   LastPurchasedMap,
   NewPassword,
+  SaveAllRequest,
   Store,
   StoreSpecificValuesMap,
   UserAccount,
@@ -307,7 +308,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       stores: storesList,
       storeSpecificValues,
       userId,
-    } = req.body;
+    } = req.body as SaveAllRequest;
     console.log({
       itemsList,
       keysToDeleteFromStoreSpecificValuesMap,
@@ -323,8 +324,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
 
     //creates documents for saving
-    let items = [];
-    let stores = [];
+    let items = [] as any[];
+    let stores = [] as any[];
 
     if (itemsList?.data?.length > 0) {
       items = await Promise.all(

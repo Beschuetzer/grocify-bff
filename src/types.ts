@@ -54,9 +54,21 @@ export type ItemBase = {
 } & Id &
   AddedDate;
 
+export type List<T> = {
+  data: T[];
+  sortOrderValue: SortOrderValue;
+  filters: ListFilterFilters<T>;
+};
+export type ListFilterFilters<T> = Partial<Record<keyof T, string>>;
+
 export type OriginalKeyProp = {
   originalKey: Key;
 };
+
+export type SortOrders = {
+  [key: string]: SortOrderValue;
+};
+export type SortOrderValue = { sortBy: string; sortOrder: string };
 
 /**
  *This represents something that can be added to any store
@@ -131,6 +143,14 @@ export type DeleteManyRequest = {
   imagePaths?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
+export type SaveAllRequest = AccountCredentials &
+  InventoryLocation & {
+    items: List<Item>;
+    keysToDeleteFromStoreSpecificValuesMap: string[];
+    lastPurchasedMap: LastPurchasedMap;
+    stores: List<Store> & { currentStoreId: string };
+    storeSpecificValues: StoreSpecificValuesMap;
+  };
 export type SaveInventoryLocationRequest = {
   location: InventoryLocation;
 } & AccountCredentials;
@@ -149,7 +169,7 @@ export type SaveStoreRequest = {
 export type SaveLastPurchasedMapRequest = {
   lastPurchasedMap: LastPurchasedMap;
 } & AccountCredentials;
-export type UpdateInventoryLocationRequest = SaveInventoryLocationRequest
+export type UpdateInventoryLocationRequest = SaveInventoryLocationRequest;
 //#endregion
 
 //#region Store
