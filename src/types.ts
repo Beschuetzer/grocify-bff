@@ -143,14 +143,14 @@ export type DeleteManyRequest = {
   imagePaths?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
-export type SaveAllRequest = AccountCredentials &
-  InventoryLocation & {
-    items: List<Item>;
-    keysToDeleteFromStoreSpecificValuesMap: string[];
-    lastPurchasedMap: LastPurchasedMap;
-    stores: List<Store> & { currentStoreId: string };
-    storeSpecificValues: StoreSpecificValuesMap;
-  };
+export type SaveAllRequest = AccountCredentials & {
+  inventory: Inventory;
+  items: List<Item>;
+  keysToDeleteFromStoreSpecificValuesMap: string[];
+  lastPurchasedMap: LastPurchasedMap;
+  stores: List<Store> & { currentStoreId: string };
+  storeSpecificValues: StoreSpecificValuesMap;
+};
 export type SaveInventoryLocationRequest = {
   location: InventoryLocation;
 } & AccountCredentials;

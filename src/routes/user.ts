@@ -34,6 +34,7 @@ import { getUpdateObjectForValuesDocument } from '../helpers/getUpdateObjectForV
 import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from '../constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
 import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
+import { InventorySchema } from '../schema/inventory';
 
 const router = express.Router({
   mergeParams: true,
@@ -269,13 +270,15 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
 
     const itemsPromise = ItemSchema.find({ userId });
     const settingsPromise = SettingsSchema.findOne({ userId });
+    const inventoryPromise = InventorySchema.findOne({ userId });
     const storesPromise = StoreSchema.find({ userId });
     const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({
       userId,
     });
     const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({ userId });
-    const [items, stores, storeSpecificValues, lastPurchasedMap, settings] =
+    const [inventory, items, stores, storeSpecificValues, lastPurchasedMap, settings] =
       await Promise.all([
+        inventoryPromise,
         itemsPromise,
         storesPromise,
         storeSpecificValuesPromise,
@@ -287,6 +290,7 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
       throw new Error('Unable to load storeSpecificValues properly');
     }
     res.send({
+      inventory,
       items,
       stores,
       storeSpecificValues: storeSpecificValues.values,
@@ -302,6 +306,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
   try {
     const {
       items: itemsList,
+      inventory,
       keysToDeleteFromStoreSpecificValuesMap,
       lastPurchasedMap,
       password,
@@ -310,13 +315,7 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       userId,
     } = req.body as SaveAllRequest;
     console.log({
-      itemsList,
-      keysToDeleteFromStoreSpecificValuesMap,
-      storesList,
-      storeSpecificValues,
-      lastPurchasedMap,
-      userId,
-      password,
+      inventory,
     });
     if (!userId) throw new Error('No userId given');
     if (!password) throw new Error('No password given');
@@ -372,6 +371,15 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       { upsert: true, new: true }
     );
 
+    const inventoryPromise = await InventorySchema.findOneAndUpdate(
+      { userId: userId.toString() },
+      {
+        ...inventory,
+        userId,
+      },
+      { upsert: true, new: true }
+    );
+
     const storeSpecificValuesPromise =
       Object.keys(storeSpecificValues || {}).length > 0
         ? StoreSpecificValuesSchema.findOneAndUpdate(
@@ -409,12 +417,14 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
         ? StoreSchema.bulkSave(stores)
         : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
     const [
+      inventoryResult,
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
       settingsResult,
     ] = await Promise.all([
+      inventoryPromise,
       itemsBulkSavePromise,
       lastPurchasedMapPromise,
       storesBulkSavePromise,
@@ -422,15 +432,16 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       settingsPromise,
     ]);
     const endBulkSave = performance.now();
-    console.log({
-      timeToSave: endBulkSave - startBulkSave,
-      itemsResult,
-      lastPurchasedMapResult,
-      storesResult,
-      storeSpecificValuesResult,
-      settingsResult,
-    });
+    // console.log({
+    //   timeToSave: endBulkSave - startBulkSave,
+    //   itemsResult,
+    //   lastPurchasedMapResult,
+    //   storesResult,
+    //   storeSpecificValuesResult,
+    //   settingsResult,
+    // });
     res.send({
+      inventoryResult,
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
