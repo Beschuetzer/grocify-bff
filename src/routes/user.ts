@@ -92,8 +92,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
       userId,
     });
     const deletedStoresPromise = StoreSchema.deleteMany({ userId });
-    const deletedSettingsPromise =
-      SettingsSchema.deleteOne({ userId });
+    const deletedSettingsPromise = SettingsSchema.deleteOne({ userId });
     const deletedStoreSpecificItemsPromise =
       StoreSpecificValuesSchema.deleteOne({ userId });
     const deleteS3ObjectsPromise = S3_CLIENT_WRAPPER.deleteUserObjs(userId);
@@ -203,43 +202,48 @@ router.get(
   }
 );
 
-router.post(`${USER_PATH}/changePassword`, async (req: Request, res: Response) => {
-  const { _id, password, newPassword } = req.body as UserAccount &
-    NewPassword;
-    console.log({_id, password, newPassword});
+router.post(
+  `${USER_PATH}/changePassword`,
+  async (req: Request, res: Response) => {
+    const { _id, password, newPassword } = req.body as UserAccount &
+      NewPassword;
+    console.log({ _id, password, newPassword });
 
-  try {
-    const user = await getAndThenCacheUser(_id);
-    await checkIsAuthorized(password, user?.password);
-    
-    if (!newPassword) {
-      throw new Error("No new password given");
-    }
-    hashPassword(newPassword, async (err, hash) => {
-      try {
-        if (err || !hash) {
-          throw new Error(`Unable to hash the new password for user with id of '${_id}'.`)
-        }
+    try {
+      const user = await getAndThenCacheUser(_id);
+      await checkIsAuthorized(password, user?.password);
 
-        const newUser =  {
-          _id,
-          email: user.email,
-          password: hash,
-        } as UserDocument;
-        const updatedUser = await UserSchema.updateOne(
-          { _id },
-          newUser,
-        );
-        USERS_CACHE.set(_id, newUser);
-        res.send({success: !!updatedUser.acknowledged && updatedUser.modifiedCount > 0});
-      } catch (error) {
-        handleError(res, error);
+      if (!newPassword) {
+        throw new Error('No new password given');
       }
-    });
-  } catch (error) {
-    handleError(res, error);
+      hashPassword(newPassword, async (err, hash) => {
+        try {
+          if (err || !hash) {
+            throw new Error(
+              `Unable to hash the new password for user with id of '${_id}'.`
+            );
+          }
+
+          const newUser = {
+            _id,
+            email: user.email,
+            password: hash,
+          } as UserDocument;
+          const updatedUser = await UserSchema.updateOne({ _id }, newUser);
+          USERS_CACHE.set(_id, newUser);
+          res.send({
+            success:
+              !!updatedUser.acknowledged && updatedUser.modifiedCount > 0,
+          });
+        } catch (error) {
+          handleError(res, error);
+        }
+      });
+    } catch (error) {
+      handleError(res, error);
+    }
   }
-});
+);
 
 router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
   const { email, password } = req.body as Omit<UserAccount, '_id'>;
@@ -276,15 +280,21 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
       userId,
     });
     const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({ userId });
-    const [inventory, items, stores, storeSpecificValues, lastPurchasedMap, settings] =
-      await Promise.all([
-        inventoryPromise,
-        itemsPromise,
-        storesPromise,
-        storeSpecificValuesPromise,
-        lastPurchasedMapPromise,
-        settingsPromise,
-      ]);
+    const [
+      inventory,
+      items,
+      stores,
+      storeSpecificValues,
+      lastPurchasedMap,
+      settings,
+    ] = await Promise.all([
+      inventoryPromise,
+      itemsPromise,
+      storesPromise,
+      storeSpecificValuesPromise,
+      lastPurchasedMapPromise,
+      settingsPromise,
+    ]);
 
     if (!storeSpecificValues?.values) {
       throw new Error('Unable to load storeSpecificValues properly');
