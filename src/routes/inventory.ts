@@ -7,6 +7,7 @@ import {
 import { INVENTORY_PATH } from './constants';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
+  InventoryLocation,
   SaveInventoryLocationRequest,
   UpdateInventoryLocationRequest,
 } from '../types';
@@ -33,30 +34,21 @@ router.get(`${INVENTORY_PATH}`, async (req: Request, res: Response) => {
  * For the case when we need to add a new inventory location to the db.
  **/
 router.post(
-  `${INVENTORY_PATH}/location`,
+  `${INVENTORY_PATH}/locations`,
   async (req: Request, res: Response) => {
     try {
-      const { location, userId, password } =
+      const { locations, userId, password } =
         req.body as SaveInventoryLocationRequest;
-      if (!location) {
-        throw new Error('No location given.');
-      } else if (!location.name) {
-        throw new Error('No location name given.');
-      } else if (!location._id) {
-        throw new Error('No location id given.');
-      }
 
-      console.log({ location, userId, password });
+      validateLocations(locations);
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
-
-      const updatedLocation = await InventorySchema.findOneAndUpdate(
+      await InventorySchema.findOneAndUpdate(
         { userId }, // Query to match existing document
-        { $addToSet: { locations: location } }, // Adds location only if it doesn't exist
+        { $addToSet: { locations: { $each: locations } } }, // Adds each location only if it doesn't exist
         { new: true, upsert: true } // Return the new doc and upsert if not found
       );
-
-      return res.send(updatedLocation);
+      return res.send(true);
     } catch (error) {
       handleError(res, error, 500);
     }
@@ -67,40 +59,41 @@ router.post(
  * For the case when we need to update an existing inventory location in the db.
  **/
 router.put(
-  `${INVENTORY_PATH}/location`,
+  `${INVENTORY_PATH}/locations`,
   async (req: Request, res: Response) => {
     try {
-      const { location, userId, password } =
+      const { locations, userId, password } =
         req.body as UpdateInventoryLocationRequest;
-      if (!location) {
-        throw new Error('No location given.');
-      } else if (!location.name) {
-        throw new Error('No location name given.');
-      } else if (!location._id) {
-        throw new Error('No location id given.');
-      }
 
-      console.log({ location, userId, password });
+      validateLocations(locations);
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
 
-      // Build dynamic update object skipping _id
-      const updateFields: any = {};
-      Object.keys(location).forEach((key) => {
-        if (key !== '_id') {
-          updateFields[`${inventoryLocationsFieldName}.$.${key}`] = (
-            location as any
-          )[key];
-        }
+      // Build an array of update operations for each location
+      const bulkOps = locations.map((location) => {
+        // Build dynamic update object skipping _id
+        const updateFields: any = {};
+        Object.keys(location).forEach((key) => {
+          if (key !== '_id') {
+            updateFields[`${inventoryLocationsFieldName}.$.${key}`] = (
+              location as any
+            )[key];
+          }
+        });
+        return {
+          updateOne: {
+            filter: {
+              userId,
+              [`${inventoryLocationsFieldName}._id`]: location._id,
+            },
+            update: { $set: updateFields },
+            upsert: true,
+          },
+        };
       });
 
-      const updatedInventory = await InventorySchema.findOneAndUpdate(
-        { userId, [`${inventoryLocationsFieldName}._id`]: location._id },
-        { $set: updateFields },
-        { new: true, upsert: true }
-      );
-
-      return res.send(updatedInventory);
+      const bulkResult = await InventorySchema.bulkWrite(bulkOps);
+      return res.send(bulkResult);
     } catch (error) {
       handleError(res, error, 500);
     }
@@ -108,3 +101,16 @@ router.put(
 );
 
 export default router;
+
+function validateLocations(locations: InventoryLocation[]) {
+  if (!locations || locations.length === 0) {
+    throw new Error('No locations given.');
+  }
+  for (const loc of locations) {
+    if (!loc.name) {
+      throw new Error('All locations must have a name.');
+    } else if (!loc._id) {
+      throw new Error('All locations must have an id.');
+    }
+  }
+}

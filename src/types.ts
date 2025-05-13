@@ -152,7 +152,7 @@ export type SaveAllRequest = AccountCredentials & {
   storeSpecificValues: StoreSpecificValuesMap;
 };
 export type SaveInventoryLocationRequest = {
-  location: InventoryLocation;
+  locations: InventoryLocation[];
 } & AccountCredentials;
 export type SaveItemRequest = {
   item: Item;
