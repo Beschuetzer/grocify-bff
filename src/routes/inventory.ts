@@ -109,17 +109,28 @@ router.delete(
       const { locations, userId, password } =
         req.body as DeleteInventoryLocationRequest;
 
-      validateLocations(locations, [
-        DEFAULT_LOCATION_VALIDATORS[0],
-      ]);
+      validateLocations(locations, [DEFAULT_LOCATION_VALIDATORS[0]]);
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
       const locationIds = locations.map((loc) => loc._id).filter(Boolean);
-      const response = await InventorySchema.findOneAndUpdate(
+
+      const unsetObj: { [key: string]: '' } = {};
+      locationIds.forEach((id) => {
+        unsetObj[`items.${id}`] = '';
+      });
+
+      const removeItemsEntriesPromise = await InventorySchema.findOneAndUpdate(
         { userId },
-        { $pull: { locations: { _id: { $in: locationIds } } } },
-        { new: true }
+        { $unset: unsetObj }
       );
+
+      const removeLocationsPromise = InventorySchema.findOneAndUpdate(
+        { userId },
+        { $pull: { locations: { _id: { $in: locationIds } } } }
+      );
+
+      const [removeLocationsResult, removeItemsEntriesResult] =
+        await Promise.all([removeLocationsPromise, removeItemsEntriesPromise]);
 
       return res.send(true);
     } catch (error) {
@@ -140,10 +151,10 @@ function validateLocations(
   for (const loc of locations) {
     if (!loc) continue;
     for (const validator of validators) {
-        const { name, errorMessage, validator: validate } = validator;
-        if (!validate(loc[name])) {
-            throw new Error(errorMessage);
-        }
+      const { name, errorMessage, validator: validate } = validator;
+      if (!validate(loc[name])) {
+        throw new Error(errorMessage);
+      }
     }
   }
 }
