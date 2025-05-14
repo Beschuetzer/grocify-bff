@@ -127,6 +127,7 @@ export type AccountCredentials = {
   password?: string;
   userId?: string;
 };
+export type DeleteInventoryLocationRequest = SaveInventoryLocationRequest;
 
 /**
  *The index for a given key should be the same index for that given id

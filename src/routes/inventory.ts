@@ -7,6 +7,7 @@ import {
 import { INVENTORY_PATH } from './constants';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
+  DeleteInventoryLocationRequest,
   InventoryLocation,
   SaveInventoryLocationRequest,
   UpdateInventoryLocationRequest,
@@ -15,6 +16,7 @@ import {
   inventoryLocationsFieldName,
   InventorySchema,
 } from '../schema/inventory';
+import { DEFAULT_LOCATION_VALIDATORS } from '../validation/inventoryLocation';
 
 const router = express.Router({
   mergeParams: true,
@@ -100,17 +102,48 @@ router.put(
   }
 );
 
+router.delete(
+  `${INVENTORY_PATH}/locations`,
+  async (req: Request, res: Response) => {
+    try {
+      const { locations, userId, password } =
+        req.body as DeleteInventoryLocationRequest;
+
+      validateLocations(locations, [
+        DEFAULT_LOCATION_VALIDATORS[0],
+      ]);
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+      const locationIds = locations.map((loc) => loc._id).filter(Boolean);
+      const response = await InventorySchema.findOneAndUpdate(
+        { userId },
+        { $pull: { locations: { _id: { $in: locationIds } } } },
+        { new: true }
+      );
+
+      return res.send(true);
+    } catch (error) {
+      handleError(res, error, 500);
+    }
+  }
+);
+
 export default router;
 
-function validateLocations(locations: InventoryLocation[]) {
+function validateLocations(
+  locations: InventoryLocation[],
+  validators = DEFAULT_LOCATION_VALIDATORS
+) {
   if (!locations || locations.length === 0) {
     throw new Error('No locations given.');
   }
   for (const loc of locations) {
-    if (!loc.name) {
-      throw new Error('All locations must have a name.');
-    } else if (!loc._id) {
-      throw new Error('All locations must have an id.');
+    if (!loc) continue;
+    for (const validator of validators) {
+        const { name, errorMessage, validator: validate } = validator;
+        if (!validate(loc[name])) {
+            throw new Error(errorMessage);
+        }
     }
   }
 }
