@@ -8,7 +8,7 @@ import { INVENTORY_PATH } from './constants';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
   DeleteInventoryLocationRequest,
-  InventoryLocation,
+  SaveInventoryItemsRequest,
   SaveInventoryLocationRequest,
   UpdateInventoryLocationRequest,
 } from '../types';
@@ -33,7 +33,71 @@ router.get(`${INVENTORY_PATH}`, async (req: Request, res: Response) => {
 });
 
 /**
- * For the case when we need to add a new inventory location to the db.
+ * For the case when we need to add inventory location items to the db.
+ **/
+router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
+  try {
+    const { inventoryItems, userId, password } =
+      req.body as SaveInventoryItemsRequest;
+
+    validateInventory(inventoryItems, [
+      {
+        key: 'locationId',
+        errorMessage: 'All items must have a location id.',
+        validator: (value) => value != null,
+      },
+      {
+        key: 'itemId',
+        errorMessage: 'All items must have an item id.',
+        validator: (value) => value != null,
+      },
+      {
+        key: 'item.expirationDates',
+        errorMessage:
+          'All items must have at least one expiration date (as a number) that is after now.',
+        validator: (values: number[]) => {
+          const now = Date.now();
+          console.log({ values, now });
+          for (const value of values) {
+            if (typeof value !== 'number' || value < now) {
+              return false; // Expiration date is in the past
+            }
+          }
+          return values.length > 0;
+        },
+      },
+    ]);
+    const user = await getAndThenCacheUser(userId);
+    await checkIsAuthorized(password, user?.password);
+
+    // Build bulk operations for each inventory item
+    const bulkOps = inventoryItems.map((item) => {
+      return {
+        updateOne: {
+          filter: { userId },
+          update: {
+            $addToSet: {
+              [`items.${item.locationId}.${item.itemId}.expirationDates`]: {
+                $each: item.item.expirationDates,
+              },
+            },
+          },
+          upsert: true,
+        },
+      };
+    });
+
+    // Execute all update operations in one batch
+    await InventorySchema.bulkWrite(bulkOps);
+
+    return res.send(bulkOps);
+  } catch (error) {
+    handleError(res, error, 500);
+  }
+});
+
+/**
+ * For the case when we need to add inventory locations to the db.
  **/
 router.post(
   `${INVENTORY_PATH}/locations`,
@@ -42,7 +106,7 @@ router.post(
       const { locations, userId, password } =
         req.body as SaveInventoryLocationRequest;
 
-      validateLocations(locations);
+      validateInventory(locations);
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
       await InventorySchema.findOneAndUpdate(
@@ -58,7 +122,7 @@ router.post(
 );
 
 /**
- * For the case when we need to update an existing inventory location in the db.
+ * For the case when we need to update existing inventory locations in the db.
  **/
 router.put(
   `${INVENTORY_PATH}/locations`,
@@ -67,7 +131,7 @@ router.put(
       const { locations, userId, password } =
         req.body as UpdateInventoryLocationRequest;
 
-      validateLocations(locations);
+      validateInventory(locations);
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
 
@@ -109,7 +173,7 @@ router.delete(
       const { locations, userId, password } =
         req.body as DeleteInventoryLocationRequest;
 
-      validateLocations(locations, [DEFAULT_LOCATION_VALIDATORS[0]]);
+      validateInventory(locations, [DEFAULT_LOCATION_VALIDATORS[0]]);
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
       const locationIds = locations.map((loc) => loc._id).filter(Boolean);
@@ -140,18 +204,23 @@ router.delete(
 
 export default router;
 
-function validateLocations(
-  locations: InventoryLocation[],
+function getNestedValue(obj: any, key: string): any {
+  return key.split('.').reduce((acc, cur) => (acc ? acc[cur] : undefined), obj);
+}
+
+function validateInventory(
+  objectsToValidate: object[],
   validators = DEFAULT_LOCATION_VALIDATORS
 ) {
-  if (!locations || locations.length === 0) {
-    throw new Error('No locations given.');
+  if (!objectsToValidate || objectsToValidate.length === 0) {
+    throw new Error('No items given to validate in validateInventory.');
   }
-  for (const loc of locations) {
-    if (!loc) continue;
+  for (const obj of objectsToValidate) {
+    if (!obj) continue;
     for (const validator of validators) {
-      const { name, errorMessage, validator: validate } = validator;
-      if (!validate(loc[name])) {
+      const { key, errorMessage, validator: validate } = validator;
+      const value = getNestedValue(obj, key);
+      if (!validate(value)) {
         throw new Error(errorMessage);
       }
     }

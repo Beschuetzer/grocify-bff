@@ -152,6 +152,17 @@ export type SaveAllRequest = AccountCredentials & {
   stores: List<Store> & { currentStoreId: string };
   storeSpecificValues: StoreSpecificValuesMap;
 };
+export type SaveInventoryItemsRequest = {
+  inventoryItems: {
+    /**
+     * * The ID of the location where the item is being inserted.
+     * If not provided, the item will be inserted into the current location.
+     **/
+    locationId?: string;
+    item: InventoryItem;
+    itemId: string;
+  }[];
+} & AccountCredentials;
 export type SaveInventoryLocationRequest = {
   locations: InventoryLocation[];
 } & AccountCredentials;

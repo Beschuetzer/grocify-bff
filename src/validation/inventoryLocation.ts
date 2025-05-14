@@ -2,17 +2,17 @@ import { InventoryLocation } from '../types';
 
 export const DEFAULT_LOCATION_VALIDATORS: {
   errorMessage: string;
-  name: keyof InventoryLocation;
+  key: string;
   validator: (value: any) => boolean;
 }[] = [
   {
     validator: (value) => value != null,
-    name: '_id',
+    key: '_id',
     errorMessage: 'All locations must have an id.',
   },
   {
     validator: (value) => value != null,
-    name: 'name',
+    key: 'name',
     errorMessage: 'All locations must have a name.',
   },
 ];
