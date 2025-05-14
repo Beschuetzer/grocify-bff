@@ -119,7 +119,7 @@ router.delete(
         unsetObj[`items.${id}`] = '';
       });
 
-      const removeItemsEntriesPromise = await InventorySchema.findOneAndUpdate(
+      const removeItemsEntriesPromise = InventorySchema.findOneAndUpdate(
         { userId },
         { $unset: unsetObj }
       );
@@ -129,8 +129,7 @@ router.delete(
         { $pull: { locations: { _id: { $in: locationIds } } } }
       );
 
-      const [removeLocationsResult, removeItemsEntriesResult] =
-        await Promise.all([removeLocationsPromise, removeItemsEntriesPromise]);
+      await Promise.all([removeLocationsPromise, removeItemsEntriesPromise]);
 
       return res.send(true);
     } catch (error) {
