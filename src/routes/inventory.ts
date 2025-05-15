@@ -226,11 +226,11 @@ router.delete(
             update: [
               {
                 $set: {
-                  // For the given item, compute the new expirationDates object.
+                  // Recompute the expirationDates object for the item.
                   [`${fieldPath}.expirationDates`]: {
                     $arrayToObject: {
                       $filter: {
-                        // Map over the current expirationDates (or {} if none).
+                        // Convert expirationDates object to an array and process each entry.
                         input: {
                           $map: {
                             input: {
@@ -241,16 +241,30 @@ router.delete(
                             as: 'entry',
                             in: {
                               k: '$$entry.k',
-                              // Subtract the corresponding decrement value.
-                              // We use $ifNull together with $literal(decrementValues)
-                              // to ensure that if no decrement is provided for this key, 0 is subtracted.
                               v: {
-                                $subtract: [
-                                  '$$entry.v',
-                                  {
-                                    $ifNull: [
+                                $cond: {
+                                  // If the current key is present in decrementValues…
+                                  if: {
+                                    $in: [
+                                      '$$entry.k',
                                       {
-                                        // Look up the value in the literal decrementValues object.
+                                        $map: {
+                                          input: {
+                                            $objectToArray: {
+                                              $literal: decrementValues,
+                                            },
+                                          },
+                                          as: 'd',
+                                          in: '$$d.k',
+                                        },
+                                      },
+                                    ],
+                                  },
+                                  // ... subtract the corresponding decrement value.
+                                  then: {
+                                    $subtract: [
+                                      '$$entry.v',
+                                      {
                                         $arrayElemAt: [
                                           {
                                             $map: {
@@ -281,10 +295,11 @@ router.delete(
                                           },
                                         ],
                                       },
-                                      0,
                                     ],
                                   },
-                                ],
+                                  // Otherwise, leave the value unchanged.
+                                  else: '$$entry.v',
+                                },
                               },
                             },
                           },
