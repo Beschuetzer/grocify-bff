@@ -232,8 +232,10 @@ export type InventoryLocationItem<T> = {
 };
 
 export type InventoryItem = {
-  expirationDates: number[];
+  expirationDates: InventoryItemExpirationDates;
 };
+
+export type InventoryItemExpirationDates = { [key: string]: number };
 
 export type InventoryLocation = {
   description?: string;

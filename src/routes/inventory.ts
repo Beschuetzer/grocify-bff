@@ -9,6 +9,7 @@ import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
   DeleteInventoryItemsRequest,
   DeleteInventoryLocationRequest,
+  InventoryItemExpirationDates,
   SaveInventoryItemsRequest,
   SaveInventoryLocationRequest,
   UpdateInventoryLocationRequest,
@@ -56,14 +57,14 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
         key: 'item.expirationDates',
         errorMessage:
           'All items must have at least one expiration date (as a number) that is after now.',
-        validator: (values: number[]) => {
+        validator: (values: InventoryItemExpirationDates) => {
           const now = Date.now();
-          for (const value of values) {
-            if (typeof value !== 'number' || value < now) {
+          for (const [time, quantity] of Object.entries(values)) {
+            if (Number(time) < now) {
               return false; // Expiration date is in the past
             }
           }
-          return values.length > 0;
+          return Object.entries(values || {}).length > 0;
         },
       },
     ]);
@@ -72,16 +73,27 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
 
     // Build bulk operations for each inventory item
     const bulkOps = inventoryItems.map((item) => {
+      const fieldPath = `items.${item.locationId}.${item.itemId}`;
+      // Build an update object that increments each key in expirationDates.
+      const incObj: { [key: string]: number } = {};
+      for (const expKey in item.item.expirationDates) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            item.item.expirationDates,
+            expKey
+          )
+        ) {
+          // Compute the full path for this expiration date field.
+          const fullPath = `${fieldPath}.expirationDates.${expKey}`;
+          // The value to increment by.
+          incObj[fullPath] = item.item.expirationDates[expKey];
+        }
+      }
+
       return {
         updateOne: {
           filter: { userId },
-          update: {
-            $push: {
-              [`items.${item.locationId}.${item.itemId}.expirationDates`]: {
-                $each: item.item.expirationDates,
-              },
-            },
-          },
+          update: { $inc: incObj },
           upsert: true,
         },
       };
@@ -188,14 +200,14 @@ router.delete(
           key: 'expirationDates',
           errorMessage:
             'All items must have at least one expiration date (as a number) that is after now.',
-          validator: (values: number[]) => {
+          validator: (values: InventoryItemExpirationDates) => {
             const now = Date.now();
-            for (const value of values) {
-              if (typeof value !== 'number' || value < now) {
+            for (const [time, quantity] of Object.entries(values)) {
+              if (Number(time) < now) {
                 return false; // Expiration date is in the past
               }
             }
-            return values.length > 0;
+            return Object.entries(values || {}).length > 0;
           },
         },
       ]);
@@ -204,42 +216,84 @@ router.delete(
 
       const bulkOps = inventoryItems.map((item) => {
         const fieldPath = `items.${item.locationId}.${item.itemId}`;
+        // The input decrement object – keys map to the amount to subtract.
+        const decrementValues = item.expirationDates; // e.g. { "abc": 2, "def": 3 }
+
         return {
           updateOne: {
             filter: { userId },
+            // Use an update pipeline to compute the new expirationDates
             update: [
               {
-                // Use $set with $filter to remove the specified expirationDates
                 $set: {
+                  // For the given item, compute the new expirationDates object.
                   [`${fieldPath}.expirationDates`]: {
-                    $filter: {
-                      input: `$${fieldPath}.expirationDates`,
-                      as: 'expDate',
-                      cond: {
-                        $not: { $in: ['$$expDate', item.expirationDates] },
-                      },
-                    },
-                  },
-                },
-              },
-              {
-                // Conditionally remove the item field if expirationDates becomes empty
-                $set: {
-                  [fieldPath]: {
-                    $cond: [
-                      {
-                        $eq: [
-                          {
-                            $size: {
-                              $ifNull: [`$${fieldPath}.expirationDates`, []],
+                    $arrayToObject: {
+                      $filter: {
+                        // Map over the current expirationDates (or {} if none).
+                        input: {
+                          $map: {
+                            input: {
+                              $objectToArray: {
+                                $ifNull: [`$${fieldPath}.expirationDates`, {}],
+                              },
+                            },
+                            as: 'entry',
+                            in: {
+                              k: '$$entry.k',
+                              // Subtract the corresponding decrement value.
+                              // We use $ifNull together with $literal(decrementValues)
+                              // to ensure that if no decrement is provided for this key, 0 is subtracted.
+                              v: {
+                                $subtract: [
+                                  '$$entry.v',
+                                  {
+                                    $ifNull: [
+                                      {
+                                        // Look up the value in the literal decrementValues object.
+                                        $arrayElemAt: [
+                                          {
+                                            $map: {
+                                              input: {
+                                                $objectToArray: {
+                                                  $literal: decrementValues,
+                                                },
+                                              },
+                                              as: 'd',
+                                              in: '$$d.v',
+                                            },
+                                          },
+                                          {
+                                            $indexOfArray: [
+                                              {
+                                                $map: {
+                                                  input: {
+                                                    $objectToArray: {
+                                                      $literal: decrementValues,
+                                                    },
+                                                  },
+                                                  as: 'd',
+                                                  in: '$$d.k',
+                                                },
+                                              },
+                                              '$$entry.k',
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      0,
+                                    ],
+                                  },
+                                ],
+                              },
                             },
                           },
-                          0,
-                        ],
+                        },
+                        as: 'entry',
+                        // Only keep entries whose new value is greater than 0.
+                        cond: { $gt: ['$$entry.v', 0] },
                       },
-                      '$$REMOVE',
-                      `$${fieldPath}`,
-                    ],
+                    },
                   },
                 },
               },
