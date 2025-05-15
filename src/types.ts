@@ -127,6 +127,14 @@ export type AccountCredentials = {
   password?: string;
   userId?: string;
 };
+
+export type DeleteInventoryItemsRequest = {
+  inventoryItems: (Required<
+    Pick<InventoryItemsInput, 'locationId' | 'itemId'>
+  > & {
+    expirationDates: number[];
+  })[];
+} & AccountCredentials;
 export type DeleteInventoryLocationRequest = SaveInventoryLocationRequest;
 
 /**
@@ -153,15 +161,7 @@ export type SaveAllRequest = AccountCredentials & {
   storeSpecificValues: StoreSpecificValuesMap;
 };
 export type SaveInventoryItemsRequest = {
-  inventoryItems: {
-    /**
-     * * The ID of the location where the item is being inserted.
-     * If not provided, the item will be inserted into the current location.
-     **/
-    locationId?: string;
-    item: InventoryItem;
-    itemId: string;
-  }[];
+  inventoryItems: InventoryItemsInput[];
 } & AccountCredentials;
 export type SaveInventoryLocationRequest = {
   locations: InventoryLocation[];
@@ -215,6 +215,16 @@ export type Inventory = {
 
 export type InventoryItems<T> = {
   [locationId: string]: InventoryLocationItem<T>;
+};
+
+export type InventoryItemsInput = {
+  /**
+   * * The ID of the location where the item is being inserted.
+   * If not provided, the item will be inserted into the current location.
+   **/
+  locationId?: string;
+  item: InventoryItem;
+  itemId: string;
 };
 
 export type InventoryLocationItem<T> = {

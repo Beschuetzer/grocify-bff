@@ -7,6 +7,7 @@ import {
 import { INVENTORY_PATH } from './constants';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
+  DeleteInventoryItemsRequest,
   DeleteInventoryLocationRequest,
   SaveInventoryItemsRequest,
   SaveInventoryLocationRequest,
@@ -57,7 +58,6 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
           'All items must have at least one expiration date (as a number) that is after now.',
         validator: (values: number[]) => {
           const now = Date.now();
-          console.log({ values, now });
           for (const value of values) {
             if (typeof value !== 'number' || value < now) {
               return false; // Expiration date is in the past
@@ -76,7 +76,7 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
         updateOne: {
           filter: { userId },
           update: {
-            $addToSet: {
+            $push: {
               [`items.${item.locationId}.${item.itemId}.expirationDates`]: {
                 $each: item.item.expirationDates,
               },
@@ -88,9 +88,9 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
     });
 
     // Execute all update operations in one batch
-    await InventorySchema.bulkWrite(bulkOps);
+    const bulkResult = await InventorySchema.bulkWrite(bulkOps);
 
-    return res.send(bulkOps);
+    return res.send(bulkResult);
   } catch (error) {
     handleError(res, error, 500);
   }
@@ -159,6 +159,98 @@ router.put(
       });
 
       const bulkResult = await InventorySchema.bulkWrite(bulkOps);
+      return res.send(bulkResult);
+    } catch (error) {
+      handleError(res, error, 500);
+    }
+  }
+);
+
+router.delete(
+  `${INVENTORY_PATH}/items`,
+  async (req: Request, res: Response) => {
+    try {
+      const { inventoryItems, userId, password } =
+        req.body as DeleteInventoryItemsRequest;
+
+      validateInventory(inventoryItems, [
+        {
+          key: 'locationId',
+          errorMessage: 'All items must have a location id.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'itemId',
+          errorMessage: 'All items must have an item id.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'expirationDates',
+          errorMessage:
+            'All items must have at least one expiration date (as a number) that is after now.',
+          validator: (values: number[]) => {
+            const now = Date.now();
+            for (const value of values) {
+              if (typeof value !== 'number' || value < now) {
+                return false; // Expiration date is in the past
+              }
+            }
+            return values.length > 0;
+          },
+        },
+      ]);
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      const bulkOps = inventoryItems.map((item) => {
+        const fieldPath = `items.${item.locationId}.${item.itemId}`;
+        return {
+          updateOne: {
+            filter: { userId },
+            update: [
+              {
+                // Use $set with $filter to remove the specified expirationDates
+                $set: {
+                  [`${fieldPath}.expirationDates`]: {
+                    $filter: {
+                      input: `$${fieldPath}.expirationDates`,
+                      as: 'expDate',
+                      cond: {
+                        $not: { $in: ['$$expDate', item.expirationDates] },
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                // Conditionally remove the item field if expirationDates becomes empty
+                $set: {
+                  [fieldPath]: {
+                    $cond: [
+                      {
+                        $eq: [
+                          {
+                            $size: {
+                              $ifNull: [`$${fieldPath}.expirationDates`, []],
+                            },
+                          },
+                          0,
+                        ],
+                      },
+                      '$$REMOVE',
+                      `$${fieldPath}`,
+                    ],
+                  },
+                },
+              },
+            ],
+            upsert: true,
+          },
+        };
+      });
+
+      const bulkResult = await InventorySchema.bulkWrite(bulkOps);
+
       return res.send(bulkResult);
     } catch (error) {
       handleError(res, error, 500);
