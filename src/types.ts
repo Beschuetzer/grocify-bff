@@ -152,6 +152,9 @@ export type DeleteManyRequest = {
   imagePaths?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
+export type MoveInventoryItemsRequest = {
+  itemsToMove: MoveInventoryItemRequest[];
+} & AccountCredentials;
 export type SaveAllRequest = AccountCredentials & {
   inventory: Inventory;
   items: List<Item>;
@@ -242,5 +245,11 @@ export type InventoryLocation = {
   gpsCoordinates?: GpsCoordinate;
   name: string;
 } & Id;
+
+export type MoveInventoryItemRequest = {
+  itemId: string;
+  originLocationId: string;
+  targetLocationId: string;
+};
 
 //#endregion

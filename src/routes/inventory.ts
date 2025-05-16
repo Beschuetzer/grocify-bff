@@ -10,6 +10,7 @@ import {
   DeleteInventoryItemsRequest,
   DeleteInventoryLocationRequest,
   InventoryItemExpirationDates,
+  MoveInventoryItemsRequest,
   SaveInventoryItemsRequest,
   SaveInventoryLocationRequest,
   UpdateInventoryLocationRequest,
@@ -107,6 +108,68 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
     handleError(res, error, 500);
   }
 });
+
+/**
+ * For the case when we need to add inventory location items to the db.
+ **/
+router.post(
+  `${INVENTORY_PATH}/items/move`,
+  async (req: Request, res: Response) => {
+    try {
+      const { itemsToMove, userId, password } =
+        req.body as MoveInventoryItemsRequest;
+
+      console.log({ inventoryItems: itemsToMove });
+
+      validateInventory(itemsToMove, [
+        {
+          key: 'originLocationId',
+          errorMessage: 'All items must have a originLocationId.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'targetLocationId',
+          errorMessage: 'All items must have a targetLocationId.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'itemId',
+          errorMessage: 'All items must have an itemId.',
+          validator: (value) => value != null,
+        },
+      ]);
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      // Build bulk operations for moving items.
+      // For each item, we move the subdocument (the entire inventory item)
+      // from the origin location to the target location.
+      const bulkOps = itemsToMove.map((item) => {
+        const originFieldPath = `items.${item.originLocationId}.${item.itemId}`;
+        const targetFieldPath = `items.${item.targetLocationId}.${item.itemId}`;
+        return {
+          updateOne: {
+            filter: { userId },
+            update: [
+              // Stage 1: Copy the entire subdocument from origin to target.
+              { $set: { [targetFieldPath]: `$${originFieldPath}` } },
+              // Stage 2: Remove the subdocument from the origin location.
+              { $unset: originFieldPath },
+            ],
+            upsert: true,
+          },
+        };
+      });
+
+      // Execute all update operations in one batch
+      const bulkResult = await InventorySchema.bulkWrite(bulkOps);
+
+      return res.send(bulkResult);
+    } catch (error) {
+      handleError(res, error, 500);
+    }
+  }
+);
 
 /**
  * For the case when we need to add inventory locations to the db.
