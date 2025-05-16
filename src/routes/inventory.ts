@@ -206,9 +206,6 @@ router.post(
               if (typeof time !== 'string' && typeof time !== 'number') {
                 return false; // Expiration date is not a string or number
               }
-              if (Number(time) < Date.now()) {
-                return false; // Expiration date is in the past
-              }
               if (quantity < 0) {
                 return false; // Quantity is negative
               }
@@ -236,6 +233,7 @@ router.post(
           const storedExp =
             getNestedValue(inventory.toObject(), originFieldPath) || {};
           const decrementValues = item.expirationDates;
+          console.log({ item, decrementValues, storedExp });
           for (const key in decrementValues) {
             if (Object.prototype.hasOwnProperty.call(decrementValues, key)) {
               if (storedExp[key] == null) {
