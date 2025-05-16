@@ -155,6 +155,11 @@ export type DeleteValuesDocumentRequest = AccountCredentials;
 export type MoveInventoryItemsRequest = {
   itemsToMove: MoveInventoryItemRequest[];
 } & AccountCredentials;
+export type MoveInventoryItemExpirationDatesRequest = {
+  itemsToMove: (MoveInventoryItemRequest & {
+    expirationDates: InventoryItemExpirationDates;
+  })[];
+} & AccountCredentials;
 export type SaveAllRequest = AccountCredentials & {
   inventory: Inventory;
   items: List<Item>;

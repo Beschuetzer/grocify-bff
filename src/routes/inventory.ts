@@ -10,6 +10,7 @@ import {
   DeleteInventoryItemsRequest,
   DeleteInventoryLocationRequest,
   InventoryItemExpirationDates,
+  MoveInventoryItemExpirationDatesRequest,
   MoveInventoryItemsRequest,
   SaveInventoryItemsRequest,
   SaveInventoryLocationRequest,
@@ -76,7 +77,7 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
     const bulkOps = inventoryItems.map((item) => {
       const fieldPath = `items.${item.locationId}.${item.itemId}`;
       // Build an update object that increments each key in expirationDates.
-      const incObj: { [key: string]: number } = {};
+      const incObj: InventoryItemExpirationDates = {};
       for (const expKey in item.item.expirationDates) {
         if (
           Object.prototype.hasOwnProperty.call(
@@ -110,7 +111,7 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
 });
 
 /**
- * For the case when we need to add inventory location items to the db.
+ * For the case when we need to move inventory location items.
  **/
 router.post(
   `${INVENTORY_PATH}/items/move`,
@@ -118,8 +119,6 @@ router.post(
     try {
       const { itemsToMove, userId, password } =
         req.body as MoveInventoryItemsRequest;
-
-      console.log({ inventoryItems: itemsToMove });
 
       validateInventory(itemsToMove, [
         {
@@ -163,6 +162,308 @@ router.post(
 
       // Execute all update operations in one batch
       const bulkResult = await InventorySchema.bulkWrite(bulkOps);
+
+      return res.send(bulkResult);
+    } catch (error) {
+      handleError(res, error, 500);
+    }
+  }
+);
+
+/**
+ * For the case when we need to move inventory items expiration dates.
+ **/
+router.post(
+  `${INVENTORY_PATH}/items/move/expiration`,
+  async (req: Request, res: Response) => {
+    try {
+      const { itemsToMove, userId, password } =
+        req.body as MoveInventoryItemExpirationDatesRequest;
+
+      validateInventory(itemsToMove, [
+        {
+          key: 'originLocationId',
+          errorMessage: 'All items must have a originLocationId.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'targetLocationId',
+          errorMessage: 'All items must have a targetLocationId.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'itemId',
+          errorMessage: 'All items must have an itemId.',
+          validator: (value) => value != null,
+        },
+        {
+          key: 'expirationDates',
+          errorMessage:
+            'All expirationDates keys must be timestamps for a future time.  Values must be a positive number.',
+          validator: (value: InventoryItemExpirationDates) => {
+            if (!value) return false; // No expiration dates provided
+            for (const [time, quantity] of Object.entries(value)) {
+              if (typeof time !== 'string' && typeof time !== 'number') {
+                return false; // Expiration date is not a string or number
+              }
+              if (Number(time) < Date.now()) {
+                return false; // Expiration date is in the past
+              }
+              if (quantity < 0) {
+                return false; // Quantity is negative
+              }
+            }
+            return true;
+          },
+        },
+      ]);
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      // Run all operations within a transaction.
+      let bulkResult: any;
+      const session = await InventorySchema.startSession();
+      await session.withTransaction(async () => {
+        // Pre-check: fetch inventory and ensure each origin has sufficient quantity.
+        const inventory = await InventorySchema.findOne({ userId }).session(
+          session
+        );
+        if (!inventory) {
+          throw new Error(`Inventory not found for user ${userId}`);
+        }
+        for (const item of itemsToMove) {
+          const originFieldPath = `items.${item.originLocationId}.${item.itemId}.expirationDates`;
+          const storedExp =
+            getNestedValue(inventory.toObject(), originFieldPath) || {};
+          const decrementValues = item.expirationDates;
+          for (const key in decrementValues) {
+            if (Object.prototype.hasOwnProperty.call(decrementValues, key)) {
+              if (storedExp[key] == null) {
+                throw new Error(
+                  `Key ${key} not found in origin ${item.originLocationId} for item ${item.itemId}`
+                );
+              }
+              if (storedExp[key] < decrementValues[key]) {
+                throw new Error(
+                  `Insufficient quantity for key ${key} in origin ${item.originLocationId} for item ${item.itemId}. Available: ${storedExp[key]}, required: ${decrementValues[key]}`
+                );
+              }
+            }
+          }
+        }
+
+        // Build bulkOps to update origin and target using update pipelines.
+        const bulkOps = itemsToMove.map((item) => {
+          const originFieldPath = `items.${item.originLocationId}.${item.itemId}.expirationDates`;
+          const targetFieldPath = `items.${item.targetLocationId}.${item.itemId}.expirationDates`;
+          const decrementValues = item.expirationDates;
+
+          return {
+            updateOne: {
+              filter: { userId },
+              update: [
+                {
+                  $set: {
+                    // Update origin: subtract input values from matching keys and remove keys <= 0.
+                    [originFieldPath]: {
+                      $arrayToObject: {
+                        $filter: {
+                          input: {
+                            $map: {
+                              input: {
+                                $objectToArray: {
+                                  $ifNull: [`$${originFieldPath}`, {}],
+                                },
+                              },
+                              as: 'entry',
+                              in: {
+                                k: '$$entry.k',
+                                v: {
+                                  $cond: [
+                                    {
+                                      $in: [
+                                        '$$entry.k',
+                                        {
+                                          $map: {
+                                            input: {
+                                              $objectToArray: {
+                                                $literal: decrementValues,
+                                              },
+                                            },
+                                            as: 'd',
+                                            in: '$$d.k',
+                                          },
+                                        },
+                                      ],
+                                    },
+                                    {
+                                      $subtract: [
+                                        '$$entry.v',
+                                        {
+                                          $arrayElemAt: [
+                                            {
+                                              $map: {
+                                                input: {
+                                                  $objectToArray: {
+                                                    $literal: decrementValues,
+                                                  },
+                                                },
+                                                as: 'd',
+                                                in: '$$d.v',
+                                              },
+                                            },
+                                            {
+                                              $indexOfArray: [
+                                                {
+                                                  $map: {
+                                                    input: {
+                                                      $objectToArray: {
+                                                        $literal:
+                                                          decrementValues,
+                                                      },
+                                                    },
+                                                    as: 'd',
+                                                    in: '$$d.k',
+                                                  },
+                                                },
+                                                '$$entry.k',
+                                              ],
+                                            },
+                                          ],
+                                        },
+                                      ],
+                                    },
+                                    '$$entry.v',
+                                  ],
+                                },
+                              },
+                            },
+                          },
+                          as: 'entry',
+                          cond: { $gt: ['$$entry.v', 0] },
+                        },
+                      },
+                    },
+                    // Update target ONLY if origin contained at least one matching key.
+                    [targetFieldPath]: {
+                      $cond: {
+                        if: {
+                          $gt: [
+                            {
+                              $size: {
+                                $setIntersection: [
+                                  {
+                                    $map: {
+                                      input: {
+                                        $objectToArray: {
+                                          $ifNull: [`$${originFieldPath}`, {}],
+                                        },
+                                      },
+                                      as: 'entry',
+                                      in: '$$entry.k',
+                                    },
+                                  },
+                                  {
+                                    $map: {
+                                      input: {
+                                        $objectToArray: {
+                                          $literal: decrementValues,
+                                        },
+                                      },
+                                      as: 'd',
+                                      in: '$$d.k',
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            0,
+                          ],
+                        },
+                        then: {
+                          $arrayToObject: {
+                            $concatArrays: [
+                              {
+                                $map: {
+                                  input: {
+                                    $objectToArray: {
+                                      $literal: decrementValues,
+                                    },
+                                  },
+                                  as: 'd',
+                                  in: {
+                                    k: '$$d.k',
+                                    v: {
+                                      $add: [
+                                        {
+                                          $ifNull: [
+                                            {
+                                              $getField: {
+                                                field: '$$d.k',
+                                                input: {
+                                                  $ifNull: [
+                                                    `$${targetFieldPath}`,
+                                                    {},
+                                                  ],
+                                                },
+                                              },
+                                            },
+                                            0,
+                                          ],
+                                        },
+                                        '$$d.v',
+                                      ],
+                                    },
+                                  },
+                                },
+                              },
+                              {
+                                $filter: {
+                                  input: {
+                                    $objectToArray: {
+                                      $ifNull: [`$${targetFieldPath}`, {}],
+                                    },
+                                  },
+                                  as: 'entry',
+                                  cond: {
+                                    $not: {
+                                      $in: [
+                                        '$$entry.k',
+                                        {
+                                          $map: {
+                                            input: {
+                                              $objectToArray: {
+                                                $literal: decrementValues,
+                                              },
+                                            },
+                                            as: 'd',
+                                            in: '$$d.k',
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        },
+                        else: '$$REMOVE',
+                      },
+                    },
+                  },
+                },
+              ],
+              upsert: true,
+            },
+          };
+        });
+
+        // Execute bulkWrite within the session.
+        bulkResult = await InventorySchema.bulkWrite(bulkOps, { session });
+      });
+
+      await session.commitTransaction();
 
       return res.send(bulkResult);
     } catch (error) {
