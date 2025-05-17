@@ -54,9 +54,21 @@ export type ItemBase = {
 } & Id &
   AddedDate;
 
+export type List<T> = {
+  data: T[];
+  sortOrderValue: SortOrderValue;
+  filters: ListFilterFilters<T>;
+};
+export type ListFilterFilters<T> = Partial<Record<keyof T, string>>;
+
 export type OriginalKeyProp = {
   originalKey: Key;
 };
+
+export type SortOrders = {
+  [key: string]: SortOrderValue;
+};
+export type SortOrderValue = { sortBy: string; sortOrder: string };
 
 /**
  *This represents something that can be added to any store
@@ -116,6 +128,15 @@ export type AccountCredentials = {
   userId?: string;
 };
 
+export type DeleteInventoryItemsRequest = {
+  inventoryItems: (Required<
+    Pick<InventoryItemsInput, 'locationId' | 'itemId'>
+  > & {
+    expirationDates: number[];
+  })[];
+} & AccountCredentials;
+export type DeleteInventoryLocationRequest = SaveInventoryLocationRequest;
+
 /**
  *The index for a given key should be the same index for that given id
  **/
@@ -126,11 +147,33 @@ export type DeleteManyRequest = {
    **/
   keys?: string[];
   /**
-  *This is the url to the image in the cloud
-  **/
+   *This is the url to the image in the cloud
+   **/
   imagePaths?: string[];
 } & AccountCredentials;
 export type DeleteValuesDocumentRequest = AccountCredentials;
+export type MoveInventoryItemsRequest = {
+  itemsToMove: MoveInventoryItemRequest[];
+} & AccountCredentials;
+export type MoveInventoryItemExpirationDatesRequest = {
+  itemsToMove: (MoveInventoryItemRequest & {
+    expirationDates: InventoryItemExpirationDates;
+  })[];
+} & AccountCredentials;
+export type SaveAllRequest = AccountCredentials & {
+  inventory: Inventory;
+  items: List<Item>;
+  keysToDeleteFromStoreSpecificValuesMap: string[];
+  lastPurchasedMap: LastPurchasedMap;
+  stores: List<Store> & { currentStoreId: string };
+  storeSpecificValues: StoreSpecificValuesMap;
+};
+export type SaveInventoryItemsRequest = {
+  inventoryItems: InventoryItemsInput[];
+} & AccountCredentials;
+export type SaveInventoryLocationRequest = {
+  locations: InventoryLocation[];
+} & AccountCredentials;
 export type SaveItemRequest = {
   item: Item;
   storeSpecificValuesMap: StoreSpecificValuesMap;
@@ -146,6 +189,7 @@ export type SaveStoreRequest = {
 export type SaveLastPurchasedMapRequest = {
   lastPurchasedMap: LastPurchasedMap;
 } & AccountCredentials;
+export type UpdateInventoryLocationRequest = SaveInventoryLocationRequest;
 //#endregion
 
 //#region Store
@@ -168,4 +212,49 @@ export type GpsCoordinate = {
   lat: string;
   lon: string;
 };
+//#endregion
+
+//#region Inventory
+export type Inventory = {
+  items: InventoryItems<InventoryItem>;
+  locations: InventoryLocation[];
+  currentLocationId: Id['_id'] | undefined | null;
+};
+
+export type InventoryItems<T> = {
+  [locationId: string]: InventoryLocationItem<T>;
+};
+
+export type InventoryItemsInput = {
+  /**
+   * * The ID of the location where the item is being inserted.
+   * If not provided, the item will be inserted into the current location.
+   **/
+  locationId?: string;
+  item: InventoryItem;
+  itemId: string;
+};
+
+export type InventoryLocationItem<T> = {
+  [itemId: string]: T;
+};
+
+export type InventoryItem = {
+  expirationDates: InventoryItemExpirationDates;
+};
+
+export type InventoryItemExpirationDates = { [key: string]: number };
+
+export type InventoryLocation = {
+  description?: string;
+  gpsCoordinates?: GpsCoordinate;
+  name: string;
+} & Id;
+
+export type MoveInventoryItemRequest = {
+  itemId: string;
+  originLocationId: string;
+  targetLocationId: string;
+};
+
 //#endregion

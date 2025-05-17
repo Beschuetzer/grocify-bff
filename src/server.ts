@@ -9,6 +9,7 @@ import s3Routes from './routes/s3';
 import storeRoutes from './routes/store';
 import testRoutes from './routes/testing';
 import userRoutes from './routes/user';
+import inventoryRoutes from './routes/inventory';
 
 const app = express();
 const dbName = 'grocify';
@@ -24,6 +25,7 @@ app.use(express.json({ limit: '50mb' }));
 
 //routes
 app.use(itemRoutes);
+app.use(inventoryRoutes);
 app.use(lastPurchasedRoutes);
 app.use(openAiRoutes);
 app.use(s3Routes);

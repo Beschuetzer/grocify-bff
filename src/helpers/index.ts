@@ -20,6 +20,7 @@ import { StoreSchema } from '../schema/store';
 import { LastPurchasedMapSchema } from '../schema/lastPurchasedMap';
 import { getUpdateObjectForValuesDocument } from './getUpdateObjectForValuesDocument';
 import { getUnsetObj } from './getUnsetObj';
+import { InventorySchema } from '../schema/inventory';
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -77,6 +78,15 @@ export function getErrorMessage(msg: string) {
       message: msg,
     },
   } as ErrorMessage;
+}
+
+export async function getInventoryOrThrow(userId: string) {
+  const inventory = await InventorySchema.findById(userId);
+
+  if (!inventory) {
+    throw getErrorMessage(`No inventory store for userId '${userId}' found.`);
+  }
+  return inventory;
 }
 
 export async function getItemOrThrow(id: string) {

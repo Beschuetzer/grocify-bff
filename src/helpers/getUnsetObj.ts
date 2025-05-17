@@ -3,12 +3,12 @@ import { storeSpecificValuesSchemaValueFieldName } from '../schema/storeSpecific
 /**
  *Takes a list of ids and returns an object used to remove the fields for those ids in the StoreSpecificValuesSchema
  **/
-export function getUnsetObj(keys: string[]) {
+export function getUnsetObj(keys: string[], fieldName = storeSpecificValuesSchemaValueFieldName) {
   if (!keys || keys.length <= 0) return {};
   const toReturn = {} as any;
   for (const key of keys) {
     if (!key) continue;
-    toReturn[`${storeSpecificValuesSchemaValueFieldName}.${key}`] = 1;
+    toReturn[`${fieldName}.${key}`] = 1;
   }
   return toReturn;
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 //#region Routes
+export const INVENTORY_PATH = '/inventory';
 export const ITEM_PATH = '/item';
 export const LAST_PURCHASED = '/lastPurchasedMap';
 export const OPEN_AI_PATH = '/openAi';

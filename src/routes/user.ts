@@ -15,6 +15,7 @@ import {
   Item,
   LastPurchasedMap,
   NewPassword,
+  SaveAllRequest,
   Store,
   StoreSpecificValuesMap,
   UserAccount,
@@ -33,6 +34,7 @@ import { getUpdateObjectForValuesDocument } from '../helpers/getUpdateObjectForV
 import { BULK_WRITE_RESULT_DEFAULT, EMPTY_STRING } from '../constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
 import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
+import { InventorySchema } from '../schema/inventory';
 
 const router = express.Router({
   mergeParams: true,
@@ -90,8 +92,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
       userId,
     });
     const deletedStoresPromise = StoreSchema.deleteMany({ userId });
-    const deletedSettingsPromise =
-      SettingsSchema.deleteOne({ userId });
+    const deletedSettingsPromise = SettingsSchema.deleteOne({ userId });
     const deletedStoreSpecificItemsPromise =
       StoreSpecificValuesSchema.deleteOne({ userId });
     const deleteS3ObjectsPromise = S3_CLIENT_WRAPPER.deleteUserObjs(userId);
@@ -201,43 +202,48 @@ router.get(
   }
 );
 
-router.post(`${USER_PATH}/changePassword`, async (req: Request, res: Response) => {
-  const { _id, password, newPassword } = req.body as UserAccount &
-    NewPassword;
-    console.log({_id, password, newPassword});
+router.post(
+  `${USER_PATH}/changePassword`,
+  async (req: Request, res: Response) => {
+    const { _id, password, newPassword } = req.body as UserAccount &
+      NewPassword;
+    console.log({ _id, password, newPassword });
 
-  try {
-    const user = await getAndThenCacheUser(_id);
-    await checkIsAuthorized(password, user?.password);
-    
-    if (!newPassword) {
-      throw new Error("No new password given");
-    }
-    hashPassword(newPassword, async (err, hash) => {
-      try {
-        if (err || !hash) {
-          throw new Error(`Unable to hash the new password for user with id of '${_id}'.`)
-        }
+    try {
+      const user = await getAndThenCacheUser(_id);
+      await checkIsAuthorized(password, user?.password);
 
-        const newUser =  {
-          _id,
-          email: user.email,
-          password: hash,
-        } as UserDocument;
-        const updatedUser = await UserSchema.updateOne(
-          { _id },
-          newUser,
-        );
-        USERS_CACHE.set(_id, newUser);
-        res.send({success: !!updatedUser.acknowledged && updatedUser.modifiedCount > 0});
-      } catch (error) {
-        handleError(res, error);
+      if (!newPassword) {
+        throw new Error('No new password given');
       }
-    });
-  } catch (error) {
-    handleError(res, error);
+      hashPassword(newPassword, async (err, hash) => {
+        try {
+          if (err || !hash) {
+            throw new Error(
+              `Unable to hash the new password for user with id of '${_id}'.`
+            );
+          }
+
+          const newUser = {
+            _id,
+            email: user.email,
+            password: hash,
+          } as UserDocument;
+          const updatedUser = await UserSchema.updateOne({ _id }, newUser);
+          USERS_CACHE.set(_id, newUser);
+          res.send({
+            success:
+              !!updatedUser.acknowledged && updatedUser.modifiedCount > 0,
+          });
+        } catch (error) {
+          handleError(res, error);
+        }
+      });
+    } catch (error) {
+      handleError(res, error);
+    }
   }
-});
+);
 
 router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
   const { email, password } = req.body as Omit<UserAccount, '_id'>;
@@ -268,24 +274,33 @@ router.post(`${USER_PATH}/loadAll`, async (req: Request, res: Response) => {
 
     const itemsPromise = ItemSchema.find({ userId });
     const settingsPromise = SettingsSchema.findOne({ userId });
+    const inventoryPromise = InventorySchema.findOne({ userId });
     const storesPromise = StoreSchema.find({ userId });
     const storeSpecificValuesPromise = StoreSpecificValuesSchema.findOne({
       userId,
     });
     const lastPurchasedMapPromise = LastPurchasedMapSchema.findOne({ userId });
-    const [items, stores, storeSpecificValues, lastPurchasedMap, settings] =
-      await Promise.all([
-        itemsPromise,
-        storesPromise,
-        storeSpecificValuesPromise,
-        lastPurchasedMapPromise,
-        settingsPromise,
-      ]);
+    const [
+      inventory,
+      items,
+      stores,
+      storeSpecificValues,
+      lastPurchasedMap,
+      settings,
+    ] = await Promise.all([
+      inventoryPromise,
+      itemsPromise,
+      storesPromise,
+      storeSpecificValuesPromise,
+      lastPurchasedMapPromise,
+      settingsPromise,
+    ]);
 
     if (!storeSpecificValues?.values) {
       throw new Error('Unable to load storeSpecificValues properly');
     }
     res.send({
+      inventory,
       items,
       stores,
       storeSpecificValues: storeSpecificValues.values,
@@ -301,21 +316,16 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
   try {
     const {
       items: itemsList,
+      inventory,
       keysToDeleteFromStoreSpecificValuesMap,
       lastPurchasedMap,
       password,
       stores: storesList,
       storeSpecificValues,
       userId,
-    } = req.body;
+    } = req.body as SaveAllRequest;
     console.log({
-      itemsList,
-      keysToDeleteFromStoreSpecificValuesMap,
-      storesList,
-      storeSpecificValues,
-      lastPurchasedMap,
-      userId,
-      password,
+      inventory,
     });
     if (!userId) throw new Error('No userId given');
     if (!password) throw new Error('No password given');
@@ -323,8 +333,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
 
     //creates documents for saving
-    let items = [];
-    let stores = [];
+    let items = [] as any[];
+    let stores = [] as any[];
 
     if (itemsList?.data?.length > 0) {
       items = await Promise.all(
@@ -371,6 +381,15 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       { upsert: true, new: true }
     );
 
+    const inventoryPromise = await InventorySchema.findOneAndUpdate(
+      { userId: userId.toString() },
+      {
+        ...inventory,
+        userId,
+      },
+      { upsert: true, new: true }
+    );
+
     const storeSpecificValuesPromise =
       Object.keys(storeSpecificValues || {}).length > 0
         ? StoreSpecificValuesSchema.findOneAndUpdate(
@@ -408,12 +427,14 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
         ? StoreSchema.bulkSave(stores)
         : Promise.resolve(BULK_WRITE_RESULT_DEFAULT);
     const [
+      inventoryResult,
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
       storeSpecificValuesResult,
       settingsResult,
     ] = await Promise.all([
+      inventoryPromise,
       itemsBulkSavePromise,
       lastPurchasedMapPromise,
       storesBulkSavePromise,
@@ -421,15 +442,16 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       settingsPromise,
     ]);
     const endBulkSave = performance.now();
-    console.log({
-      timeToSave: endBulkSave - startBulkSave,
-      itemsResult,
-      lastPurchasedMapResult,
-      storesResult,
-      storeSpecificValuesResult,
-      settingsResult,
-    });
+    // console.log({
+    //   timeToSave: endBulkSave - startBulkSave,
+    //   itemsResult,
+    //   lastPurchasedMapResult,
+    //   storesResult,
+    //   storeSpecificValuesResult,
+    //   settingsResult,
+    // });
     res.send({
+      inventoryResult,
       itemsResult,
       lastPurchasedMapResult,
       storesResult,
