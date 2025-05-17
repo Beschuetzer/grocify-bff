@@ -58,14 +58,8 @@ router.post(`${INVENTORY_PATH}/items`, async (req: Request, res: Response) => {
       {
         key: 'item.expirationDates',
         errorMessage:
-          'All items must have at least one expiration date (as a number) that is after now.',
+          'All items must have at least one expiration date.',
         validator: (values: InventoryItemExpirationDates) => {
-          const now = Date.now();
-          for (const [time, quantity] of Object.entries(values)) {
-            if (Number(time) < now) {
-              return false; // Expiration date is in the past
-            }
-          }
           return Object.entries(values || {}).length > 0;
         },
       },
@@ -199,7 +193,7 @@ router.post(
         {
           key: 'expirationDates',
           errorMessage:
-            'All expirationDates keys must be timestamps for a future time.  Values must be a positive number.',
+            'All expirationDates keys must be timestamps.  Values must be a positive number.',
           validator: (value: InventoryItemExpirationDates) => {
             if (!value) return false; // No expiration dates provided
             for (const [time, quantity] of Object.entries(value)) {
@@ -233,7 +227,6 @@ router.post(
           const storedExp =
             getNestedValue(inventory.toObject(), originFieldPath) || {};
           const decrementValues = item.expirationDates;
-          console.log({ item, decrementValues, storedExp });
           for (const key in decrementValues) {
             if (Object.prototype.hasOwnProperty.call(decrementValues, key)) {
               if (storedExp[key] == null) {
@@ -561,14 +554,8 @@ router.delete(
         {
           key: 'expirationDates',
           errorMessage:
-            'All items must have at least one expiration date (as a number) that is after now.',
+            'All items must have at least one expiration date.',
           validator: (values: InventoryItemExpirationDates) => {
-            const now = Date.now();
-            for (const [time, quantity] of Object.entries(values)) {
-              if (Number(time) < now) {
-                return false; // Expiration date is in the past
-              }
-            }
             return Object.entries(values || {}).length > 0;
           },
         },
