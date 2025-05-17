@@ -10,6 +10,7 @@ import storeRoutes from './routes/store';
 import testRoutes from './routes/testing';
 import userRoutes from './routes/user';
 import inventoryRoutes from './routes/inventory';
+import { getErrorMessage } from './helpers';
 
 const app = express();
 const dbName = 'grocify';
@@ -32,6 +33,11 @@ app.use(s3Routes);
 app.use(storeRoutes);
 app.use(testRoutes);
 app.use(userRoutes);
+
+//catch all other routes and return a 404
+app.use((req, res, next) => {
+  res.status(404).json(getErrorMessage(`'${req.originalUrl}' not found`));
+});
 
 const PORT = config.server.port;
 
