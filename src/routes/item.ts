@@ -51,6 +51,7 @@ router.get(
  *If the originalKey is given, that key will be removed from the {@link StoreSpecificValuesMap}.
  **/
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
+  const session = await ItemSchema.startSession();
   try {
     const { item, storeSpecificValuesMap, userId, password, originalKey } =
       req.body as SaveItemRequest;
@@ -66,25 +67,37 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     await checkIsAuthorized(password, user?.password);
     const sanitizedItem = sanitizeKey(itemWithUserId);
     const currentItem = await ItemSchema.findById(sanitizedItem._id);
-    console.log({ currentItem });
     if (!!currentItem?.userId && currentItem.userId.toString() !== userId) {
       throw new Error('You do not have permission to change this item.');
     }
+
+    // Start a transaction.
+    session.startTransaction();
+
     const saveItemPromise = ItemSchema.findByIdAndUpdate(
       sanitizedItem._id,
       sanitizedItem,
-      { upsert: true }
+      { upsert: true, session }
     );
     const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(
       sanitizedItem._id,
       user._id,
       storeSpecificValuesMap,
-      getKeyToUse(originalKey)
+      getKeyToUse(originalKey),
+      session
     );
+
     await Promise.all([saveItemPromise, handleStoreSpecificValuesMapPromise]);
+
+    // Commit the transaction.
+    await session.commitTransaction();
+    session.endSession();
+
     return res.send(item);
   } catch (error) {
-    console.log({ error });
+    // Abort the transaction in case of an error.
+    await session.abortTransaction();
+    session.endSession();
     handleError(res, error, 500);
   }
 });

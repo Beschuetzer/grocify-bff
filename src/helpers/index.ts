@@ -21,6 +21,7 @@ import { LastPurchasedMapSchema } from '../schema/lastPurchasedMap';
 import { getUpdateObjectForValuesDocument } from './getUpdateObjectForValuesDocument';
 import { getUnsetObj } from './getUnsetObj';
 import { InventorySchema } from '../schema/inventory';
+import { ClientSession } from 'mongoose';
 
 /**
  * Generate a random number between min (inclusive) and max (inclusive)
@@ -179,7 +180,8 @@ export async function handleStoreSpecificValuesMap(
   itemId: string,
   userId: string,
   storeSpecificValuesToAdd?: StoreSpecificValuesMap,
-  originalKey?: string
+  originalKey?: string,
+  session?: ClientSession
 ) {
   console.log({ itemId, userId, storeSpecificValuesToAdd });
   const keys = Object.keys(storeSpecificValuesToAdd || {});
@@ -201,7 +203,7 @@ export async function handleStoreSpecificValuesMap(
   const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
     { userId: userId.toString() },
     objToUse,
-    { upsert: true }
+    { upsert: true, session }
   );
   console.log({ updated, updateObj, objToUse });
   return updated;
