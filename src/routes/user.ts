@@ -87,6 +87,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
 
+    const deletedInventoryPromise = InventorySchema.deleteOne({ userId });
     const deletedItemsPromise = ItemSchema.deleteMany({ userId });
     const deletedLastPurchasedMapPromise = LastPurchasedMapSchema.deleteMany({
       userId,
@@ -98,6 +99,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
     const deleteS3ObjectsPromise = S3_CLIENT_WRAPPER.deleteUserObjs(userId);
 
     const [
+      deletedInventory,
       deletedItems,
       deletedLastPurchasedMap,
       deletedSettings,
@@ -105,6 +107,7 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
       deletedStoreSpecificItems,
       deletedS3Objects,
     ] = await Promise.all([
+      deletedInventoryPromise,
       deletedItemsPromise,
       deletedLastPurchasedMapPromise,
       deletedSettingsPromise,
@@ -120,12 +123,14 @@ router.delete(`${USER_PATH}`, async (req: Request, res: Response) => {
 
     USERS_CACHE.delete(userId);
     res.send({
-      deletedUser,
+      deletedInventory,
       deletedItems,
       deletedLastPurchasedMap,
+      deletedS3Objects,
+      deletedSettings,
       deletedStores,
       deletedStoreSpecificItems,
-      deletedS3Objects,
+      deletedUser,
     });
   } catch (error) {
     handleError(res, error);
