@@ -18,6 +18,7 @@ import {
 import { ITEM_PATH, USER_PATH } from './constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
 import { S3_CLIENT_WRAPPER } from '../services/S3ClientWrapper';
+import { InventorySchema } from '../schema/inventory';
 
 const router = express.Router({
   mergeParams: true,
@@ -119,36 +120,87 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 });
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
+  const session = await InventorySchema.startSession();
   try {
     const { ids, userId, password, keys, imagePaths } =
       req.body as DeleteManyRequest;
-    console.log({ ids, userId, password, keys, imagePaths });
 
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
+
+    // Start a transaction.
+    session.startTransaction();
+
+    // Delete the items from the ItemSchema collection.
     const deletedItems = await ItemSchema.deleteMany({
       _id: { $in: ids?.filter(Boolean) },
       userId: userId,
-    });
+    }).session(session);
 
-    const removeImagePromise = S3_CLIENT_WRAPPER.deleteObjs(imagePaths);
-    const promises = [removeImagePromise] as Promise<any>[];
-    if (deletedItems.deletedCount > 0) {
-      if (keys && keys.length > 0) {
-        const unsetObject = getUnsetObj(keys);
-        const removeStoreSpecificValuesPromise =
-          StoreSpecificValuesSchema.updateOne(
-            { userId },
+    // Build a bulk operation to update the InventorySchema document.
+    const bulkOps = [
+      {
+        updateOne: {
+          filter: { userId },
+          update: [
             {
-              $unset: unsetObject,
-            }
-          );
-        promises.push(removeStoreSpecificValuesPromise);
-      }
+              $set: {
+                items: {
+                  $arrayToObject: {
+                    $map: {
+                      input: { $objectToArray: '$items' },
+                      as: 'location',
+                      in: {
+                        k: '$$location.k',
+                        v: {
+                          $arrayToObject: {
+                            $filter: {
+                              input: { $objectToArray: '$$location.v' },
+                              as: 'itemEntry',
+                              cond: {
+                                $not: {
+                                  $in: ['$$itemEntry.k', ids.filter(Boolean)],
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    await InventorySchema.bulkWrite(bulkOps, { session });
+
+    // If there are store specific values to remove, update that document.
+    if (deletedItems.deletedCount > 0 && keys && keys.length > 0) {
+      const unsetObject = getUnsetObj(keys);
+      await StoreSpecificValuesSchema.updateOne(
+        { userId },
+        {
+          $unset: unsetObject,
+        },
+        { session }
+      );
     }
-    await Promise.all(promises);
+
+    // Commit the transaction.
+    await session.commitTransaction();
+    session.endSession();
+
+    // Now, call S3 deletion outside the transaction.
+    await S3_CLIENT_WRAPPER.deleteObjs(imagePaths);
+
     res.send(deletedItems);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     handleError(res, error);
   }
 });
