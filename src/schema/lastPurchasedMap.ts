@@ -11,6 +11,9 @@ const valueFieldIndex = 1;
 export const lastPurchasedMapSchemaValueFieldName = Object.keys(
   lastPurchasedMapSchema.paths
 )[valueFieldIndex];
+
+lastPurchasedMapSchema.index({ userId: 1 });
+
 export const LastPurchasedMapSchema = mongoose.model(
   'LastPurchasedMap',
   lastPurchasedMapSchema

@@ -11,6 +11,9 @@ const valueFieldIndex = 1;
 export const storeSpecificValuesSchemaValueFieldName = Object.keys(
   storeSpecificValuesSchema.paths
 )[valueFieldIndex];
+
+storeSpecificValuesSchema.index({ userId: 1 });
+
 export const StoreSpecificValuesSchema = mongoose.model(
   'StoreSpecificValues',
   storeSpecificValuesSchema

@@ -15,4 +15,6 @@ const settingsSchema = new mongoose.Schema({
   }
 });
 
+settingsSchema.index({ userId: 1 });
+
 export const SettingsSchema = mongoose.model('Settings', settingsSchema);
