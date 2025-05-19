@@ -51,7 +51,6 @@ router.get(
  *If the originalKey is given, that key will be removed from the {@link StoreSpecificValuesMap}.
  **/
 router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
-  const session = await ItemSchema.startSession();
   try {
     const { item, storeSpecificValuesMap, userId, password, originalKey } =
       req.body as SaveItemRequest;
@@ -70,34 +69,20 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
     if (!!currentItem?.userId && currentItem.userId.toString() !== userId) {
       throw new Error('You do not have permission to change this item.');
     }
-
-    // Start a transaction.
-    session.startTransaction();
-
     const saveItemPromise = ItemSchema.findByIdAndUpdate(
       sanitizedItem._id,
       sanitizedItem,
-      { upsert: true, session }
+      { upsert: true }
     );
     const handleStoreSpecificValuesMapPromise = handleStoreSpecificValuesMap(
       sanitizedItem._id,
       user._id,
       storeSpecificValuesMap,
-      getKeyToUse(originalKey),
-      session
+      getKeyToUse(originalKey)
     );
-
     await Promise.all([saveItemPromise, handleStoreSpecificValuesMapPromise]);
-
-    // Commit the transaction.
-    await session.commitTransaction();
-    session.endSession();
-
     return res.send(item);
   } catch (error) {
-    // Abort the transaction in case of an error.
-    await session.abortTransaction();
-    session.endSession();
     handleError(res, error, 500);
   }
 });
