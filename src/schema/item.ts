@@ -6,6 +6,10 @@ const itemSchema = new mongoose.Schema({
    **/
   _id: String,
   addedDate: Number,
+  cookingInstructions: {
+    steps: [String],
+    images: [String],
+  },
   /**
    *This is in milliseconds
    **/

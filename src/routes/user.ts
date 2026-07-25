@@ -335,6 +335,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
     if (!userId) throw new Error('No userId given');
     if (!password) throw new Error('No password given');
     const user = await UserSchema.findById(userId);
+    console.log({user});
+    
     await checkIsAuthorized(password, user?.password);
 
     //creates documents for saving
@@ -422,7 +424,6 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
           )
         : Promise.resolve({});
 
-    const startBulkSave = performance.now();
     const itemsBulkSavePromise =
       items.length > 0
         ? ItemSchema.bulkSave(items)
@@ -446,15 +447,13 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       storeSpecificValuesPromise,
       settingsPromise,
     ]);
-    const endBulkSave = performance.now();
-    // console.log({
-    //   timeToSave: endBulkSave - startBulkSave,
-    //   itemsResult,
-    //   lastPurchasedMapResult,
-    //   storesResult,
-    //   storeSpecificValuesResult,
-    //   settingsResult,
-    // });
+    console.log({
+      itemsResult,
+      lastPurchasedMapResult,
+      storesResult,
+      storeSpecificValuesResult,
+      settingsResult,
+    });
     res.send({
       inventoryResult,
       itemsResult,
@@ -464,6 +463,8 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       settingsResult,
     });
   } catch (error) {
+    console.log({ error });
+    
     handleError(res, error);
   }
 });
