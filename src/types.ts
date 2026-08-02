@@ -202,6 +202,13 @@ export type AddressGeneric<T> = {
   state: T;
   zipCode: T;
 };
+export type Route = {
+  locations: string[];
+  name: string;
+  storeId: string;
+  userId: string;
+  userIdsWithAccess: string[];
+} & Omit<Required<Key>, 'upc'>;
 export type Store = {
   gpsCoordinates?: GpsCoordinate;
   calculatedDistance?: number;
