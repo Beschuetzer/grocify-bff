@@ -7,7 +7,7 @@ import {
   sanitizeKey,
 } from '../helpers';
 import { STORE_PATH, USER_PATH } from './constants';
-import { DeleteManyRequest, SaveStoreRequest, Store } from '../types';
+import { DeleteManyRequest, SaveStoreRequest, SaveStoreRoutesRequest, Store } from '../types';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
   StoreSchema,
@@ -126,6 +126,30 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
     return res.status(500).send(false);
   }
 });
+
+router.post(
+  `${STORE_PATH}/routes`,
+  async (req: Request, res: Response) => {
+    try {
+      const { storeId, routes, userId, password } =
+        req.body as SaveStoreRoutesRequest;
+      console.log(''.padEnd(100, '-'));
+      console.log({ method: 'POST', path: `${STORE_PATH}/routes`, userId, storeId, routes });
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      const updatedStore = await StoreSchema.findByIdAndUpdate(
+        storeId,
+        { routes },
+        { new: true }
+      );
+      return res.send(updatedStore?.routes ?? routes);
+    } catch (error) {
+      console.log({ error });
+      return res.status(500).send(false);
+    }
+  }
+);
 
 router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
   try {

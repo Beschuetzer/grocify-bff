@@ -183,6 +183,10 @@ export type SaveManyItemsRequest = {
   items: Item[];
   storeSpecificValuesMap: StoreSpecificValuesMap;
 } & AccountCredentials;
+export type SaveStoreRoutesRequest = {
+  storeId: string;
+  routes: Route[];
+} & AccountCredentials;
 export type SaveStoreRequest = {
   store: Store;
 } & AccountCredentials;

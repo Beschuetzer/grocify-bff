@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { string } from 'zod';
+
 
 const storeSchema = new mongoose.Schema({
   /**
@@ -15,6 +15,7 @@ const storeSchema = new mongoose.Schema({
   zipCode: String,
   gpsCoordinates: { type: Schema.Types.Mixed },
   name: String,
+  routes: { type: Schema.Types.Mixed },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
