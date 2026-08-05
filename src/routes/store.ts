@@ -127,6 +127,22 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
   }
 });
 
+router.get(
+  `${STORE_PATH}/routes/:id`,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      const store = await StoreSchema.findById(id, { routes: 1, _id: 0 });
+      if (!store) {
+        return handleError(res, new Error(`No store with id of '${id}' found.`));
+      }
+      res.send((store as any).routes ?? []);
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
+);
+
 router.post(
   `${STORE_PATH}/routes`,
   async (req: Request, res: Response) => {
