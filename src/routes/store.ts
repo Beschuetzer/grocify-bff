@@ -138,9 +138,27 @@ router.post(
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
 
+      const incomingIds = routes.map((r) => (r as any).id ?? r._id);
       const updatedStore = await StoreSchema.findByIdAndUpdate(
         storeId,
-        { routes },
+        [
+          {
+            $set: {
+              routes: {
+                $concatArrays: [
+                  {
+                    $filter: {
+                      input: { $ifNull: ['$routes', []] },
+                      as: 'existing',
+                      cond: { $not: { $in: ['$$existing.id', incomingIds] } },
+                    },
+                  },
+                  routes,
+                ],
+              },
+            },
+          },
+        ],
         { new: true }
       );
       return res.send(updatedStore?.routes ?? routes);
