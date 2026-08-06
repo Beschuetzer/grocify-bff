@@ -7,7 +7,7 @@ import {
   sanitizeKey,
 } from '../helpers';
 import { STORE_PATH, USER_PATH } from './constants';
-import { DeleteManyRequest, SaveStoreRequest, SaveStoreRoutesRequest, Store } from '../types';
+import { DeleteManyRequest, DeleteStoreRoutesRequest, SaveStoreRequest, SaveStoreRoutesRequest, Store } from '../types';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
   StoreSchema,
@@ -178,6 +178,42 @@ router.post(
         { new: true }
       );
       return res.send(updatedStore?.routes ?? routes);
+    } catch (error) {
+      console.log({ error });
+      return res.status(500).send(false);
+    }
+  }
+);
+
+router.delete(
+  `${STORE_PATH}/routes`,
+  async (req: Request, res: Response) => {
+    try {
+      const { storeId, ids, userId, password } =
+        req.body as DeleteStoreRoutesRequest;
+      console.log(''.padEnd(100, '-'));
+      console.log({ method: 'DELETE', path: `${STORE_PATH}/routes`, userId, storeId, ids });
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      const updatedStore = await StoreSchema.findByIdAndUpdate(
+        storeId,
+        [
+          {
+            $set: {
+              routes: {
+                $filter: {
+                  input: { $ifNull: ['$routes', []] },
+                  as: 'existing',
+                  cond: { $not: { $in: ['$$existing.id', ids] } },
+                },
+              },
+            },
+          },
+        ],
+        { new: true }
+      );
+      return res.send(updatedStore?.routes ?? []);
     } catch (error) {
       console.log({ error });
       return res.status(500).send(false);
