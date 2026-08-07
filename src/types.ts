@@ -183,6 +183,14 @@ export type SaveManyItemsRequest = {
   items: Item[];
   storeSpecificValuesMap: StoreSpecificValuesMap;
 } & AccountCredentials;
+export type DeleteStoreRoutesRequest = {
+  storeId: string;
+  ids: string[];
+} & AccountCredentials;
+export type SaveStoreRoutesRequest = {
+  storeId: string;
+  routes: Route[];
+} & AccountCredentials;
 export type SaveStoreRequest = {
   store: Store;
 } & AccountCredentials;
@@ -202,6 +210,13 @@ export type AddressGeneric<T> = {
   state: T;
   zipCode: T;
 };
+export type Route = {
+  locations: string[];
+  name: string;
+  storeId: string;
+  userId: string;
+  userIdsWithAccess: string[];
+} & Omit<Required<Key>, 'upc'>;
 export type Store = {
   gpsCoordinates?: GpsCoordinate;
   calculatedDistance?: number;

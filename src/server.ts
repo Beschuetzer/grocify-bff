@@ -2,6 +2,8 @@ import express from 'express';
 import { config } from './config';
 import os from 'os';
 import mongoose from 'mongoose';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import itemRoutes from './routes/item';
 import lastPurchasedRoutes from './routes/lastPurchasedMap';
 import openAiRoutes from './routes/openAi';
@@ -11,10 +13,15 @@ import testRoutes from './routes/testing';
 import userRoutes from './routes/user';
 import inventoryRoutes from './routes/inventory';
 import { getErrorMessage } from './helpers';
+import { USER_PATH } from './routes/constants';
 
 const app = express();
 const dbName = 'grocify';
-const mongoDbURL = `mongodb+srv://admin:${process.env.mongoDBPassword}@cluster0.3trbv.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+const mongoDBPassword = process.env.mongoDBPassword;
+if (!mongoDBPassword) {
+  throw new Error('Missing required "mongoDBPassword" environment variable.');
+}
+const mongoDbURL = `mongodb+srv://admin:${mongoDBPassword}@cluster0.3trbv.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 mongoose
   .connect(mongoDbURL)
@@ -22,7 +29,17 @@ mongoose
   .catch((error) => console.log(error.message));
 
 //express config
+app.use(helmet());
 app.use(express.json({ limit: '50mb' }));
+
+//rate limiting for auth-sensitive routes to slow down brute-force/credential-stuffing attempts
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(`${USER_PATH}`, authRateLimiter);
 
 //routes
 app.use(itemRoutes);

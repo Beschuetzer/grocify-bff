@@ -242,6 +242,15 @@ export function sanitize(str?: string) {
   return str?.replace(/\./g, '').trim();
 }
 
+/**
+ *Escapes RegExp special characters so user-controlled input can be safely used inside a `RegExp`/`$regex` query
+ *without allowing regex/NoSQL injection or ReDoS.
+ **/
+export function escapeRegExp(str?: string) {
+  if (!str) return '';
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export function validateMatchesSchema<T>(schema: ZodEffects<any>, item: T) {
   const { success, error } = schema.safeParse(item);
 

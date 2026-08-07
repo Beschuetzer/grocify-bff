@@ -7,7 +7,7 @@ import {
   sanitizeKey,
 } from '../helpers';
 import { STORE_PATH, USER_PATH } from './constants';
-import { DeleteManyRequest, SaveStoreRequest, Store } from '../types';
+import { DeleteManyRequest, DeleteStoreRoutesRequest, SaveStoreRequest, SaveStoreRoutesRequest, Store } from '../types';
 import { checkIsAuthorized } from '../middlware/isAuthenticated';
 import {
   StoreSchema,
@@ -47,8 +47,6 @@ router.get(
 router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
   try {
     const { store, userId, password } = req.body as SaveStoreRequest;
-    console.log(''.padEnd(100, '-'));
-    console.log({ method: 'POST', userId, password, store });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
 
@@ -127,10 +125,103 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
   }
 });
 
+router.get(
+  `${STORE_PATH}/routes/:id`,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      const store = await StoreSchema.findById(id, { routes: 1, _id: 0 });
+      if (!store) {
+        return handleError(res, new Error(`No store with id of '${id}' found.`));
+      }
+      res.send((store as any).routes ?? []);
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
+);
+
+router.post(
+  `${STORE_PATH}/routes`,
+  async (req: Request, res: Response) => {
+    try {
+      const { storeId, routes, userId, password } =
+        req.body as SaveStoreRoutesRequest;
+      console.log(''.padEnd(100, '-'));
+      console.log({ method: 'POST', path: `${STORE_PATH}/routes`, userId, storeId, routes });
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      const incomingIds = routes.map((r) => (r as any).id ?? r._id);
+      const updatedStore = await StoreSchema.findByIdAndUpdate(
+        storeId,
+        [
+          {
+            $set: {
+              routes: {
+                $concatArrays: [
+                  {
+                    $filter: {
+                      input: { $ifNull: ['$routes', []] },
+                      as: 'existing',
+                      cond: { $not: { $in: ['$$existing.id', incomingIds] } },
+                    },
+                  },
+                  routes,
+                ],
+              },
+            },
+          },
+        ],
+        { new: true }
+      );
+      return res.send(updatedStore?.routes ?? routes);
+    } catch (error) {
+      console.log({ error });
+      return res.status(500).send(false);
+    }
+  }
+);
+
+router.delete(
+  `${STORE_PATH}/routes`,
+  async (req: Request, res: Response) => {
+    try {
+      const { storeId, ids, userId, password } =
+        req.body as DeleteStoreRoutesRequest;
+      console.log(''.padEnd(100, '-'));
+      console.log({ method: 'DELETE', path: `${STORE_PATH}/routes`, userId, storeId, ids });
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+
+      const updatedStore = await StoreSchema.findByIdAndUpdate(
+        storeId,
+        [
+          {
+            $set: {
+              routes: {
+                $filter: {
+                  input: { $ifNull: ['$routes', []] },
+                  as: 'existing',
+                  cond: { $not: { $in: ['$$existing.id', ids] } },
+                },
+              },
+            },
+          },
+        ],
+        { new: true }
+      );
+      return res.send(updatedStore?.routes ?? []);
+    } catch (error) {
+      console.log({ error });
+      return res.status(500).send(false);
+    }
+  }
+);
+
 router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
   try {
     const { ids, userId, password } = req.body as DeleteManyRequest;
-    console.log({ ids, userId, password });
 
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
