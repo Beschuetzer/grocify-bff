@@ -32,7 +32,6 @@ router.post(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
   try {
     const { lastPurchasedMap, userId, password } =
       req.body as SaveLastPurchasedMapRequest;
-    console.log({ method: 'POST', userId, password, lastPurchasedMap });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     const updateObj = getUpdateObjectForValuesDocument<
@@ -54,7 +53,6 @@ router.post(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
 router.delete(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
   try {
     const { userId, password } = req.body as DeleteValuesDocumentRequest;
-    console.log({ userId, password });
 
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);

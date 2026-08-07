@@ -47,8 +47,6 @@ router.get(
 router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
   try {
     const { store, userId, password } = req.body as SaveStoreRequest;
-    console.log(''.padEnd(100, '-'));
-    console.log({ method: 'POST', userId, password, store });
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
 
@@ -224,7 +222,6 @@ router.delete(
 router.delete(`${STORE_PATH}`, async (req: Request, res: Response) => {
   try {
     const { ids, userId, password } = req.body as DeleteManyRequest;
-    console.log({ ids, userId, password });
 
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);

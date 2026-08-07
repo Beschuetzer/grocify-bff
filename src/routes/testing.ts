@@ -18,6 +18,18 @@ router.get('/ping', async (req, res) => {
   res.send({isAwake: true})
 })
 
+/**
+ *The routes below expose internal hashing/benchmarking utilities and test data creation.
+ *They must never be reachable in production.
+ **/
+router.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(404).json({ errorResponse: { message: `'${req.originalUrl}' not found` } });
+    return;
+  }
+  next();
+});
+
 router.get('/mockCreation', async (req, res) => {
   const createdItem = new ItemSchema({
     addedDate: Date.now() - getRandomInt(1000000, 1000000000),
@@ -41,7 +53,6 @@ router.get('/mockCreation', async (req, res) => {
 
 router.post('/password', async (req, res) => {
   const { username, password } = req.body;
-  console.log({ username, password });
   const start = performance.now();
   hashPassword(password, function (err, hash) {
     const end = performance.now();
@@ -51,14 +62,12 @@ router.post('/password', async (req, res) => {
       return;
     }
 
-    console.log({ diff, hash });
     res.send({ diff, hash });
   });
 });
 
 router.post('/passwordCompare', async (req, res) => {
   const { hash, password } = req.body;
-  console.log({ hash, password });
   const start = performance.now();
   comparePasswords(password, hash, function (err, result) {
     const end = performance.now();
@@ -68,7 +77,6 @@ router.post('/passwordCompare', async (req, res) => {
       return;
     }
 
-    console.log({ diff, result });
     res.send({ diff, result });
   });
 });

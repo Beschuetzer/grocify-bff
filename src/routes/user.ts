@@ -5,6 +5,7 @@ import {
   getAndThenCacheUser,
   getErrorMessage,
   validateMatchesSchema,
+  escapeRegExp,
 } from '../helpers';
 import { UserSchema } from '../schema/user';
 import { REGISTERED_USERS_CACHE as USERS_CACHE } from '../cache';
@@ -198,7 +199,7 @@ router.get(
     const trimmedEmail = email.trim();
     try {
       const user = await UserSchema.findOne({
-        email: { $regex: new RegExp(trimmedEmail, 'i') },
+        email: { $regex: new RegExp(`^${escapeRegExp(trimmedEmail)}$`, 'i') },
       });
       res.send(!user);
     } catch (error) {
@@ -212,7 +213,6 @@ router.post(
   async (req: Request, res: Response) => {
     const { _id, password, newPassword } = req.body as UserAccount &
       NewPassword;
-    console.log({ _id, password, newPassword });
 
     try {
       const user = await getAndThenCacheUser(_id);
@@ -252,15 +252,13 @@ router.post(
 
 router.post(`${USER_PATH}/login`, async (req: Request, res: Response) => {
   const { email, password } = req.body as Omit<UserAccount, '_id'>;
-  console.log({ email, password, body: req.body });
   try {
     if (!email) throw new Error('No email given');
     if (!password) throw new Error('No password given');
     const trimmedEmail = email.trim();
     const user = await UserSchema.findOne({
-      email: { $regex: new RegExp(trimmedEmail, 'i') },
+      email: { $regex: new RegExp(`^${escapeRegExp(trimmedEmail)}$`, 'i') },
     });
-    console.log({ user });
 
     await checkIsAuthorized(password, user?.password);
     res.send(user);
@@ -329,14 +327,10 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       storeSpecificValues,
       userId,
     } = req.body as SaveAllRequest;
-    console.log({
-      inventory,
-    });
     if (!userId) throw new Error('No userId given');
     if (!password) throw new Error('No password given');
     const user = await UserSchema.findById(userId);
-    console.log({user});
-    
+
     await checkIsAuthorized(password, user?.password);
 
     //creates documents for saving
