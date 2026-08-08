@@ -16,10 +16,7 @@ import { getErrorMessage } from './helpers';
 import { USER_PATH } from './routes/constants';
 
 const app = express();
-//Heroku (and most PaaS providers) sit behind a reverse proxy, which sets the
-//`X-Forwarded-For` header. Express must be told to trust it, otherwise
-//express-rate-limit throws a ValidationError on every request it handles.
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1);
 const dbName = 'grocify';
 const mongoDBPassword = process.env.mongoDBPassword;
 if (!mongoDBPassword) {
@@ -36,16 +33,17 @@ mongoose
 app.use(helmet());
 app.use(express.json({ limit: '50mb' }));
 
-//rate limiting for auth-sensitive routes to slow down brute-force/credential-stuffing attempts
-const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(`${USER_PATH}`, authRateLimiter);
+// //rate limiting for auth-sensitive routes to slow down brute-force/credential-stuffing attempts
+// const authRateLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   limit: 20,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+// });
+// app.use(`${USER_PATH}`, authRateLimiter);
 
 //routes
+app.use(userRoutes);
 app.use(itemRoutes);
 app.use(inventoryRoutes);
 app.use(lastPurchasedRoutes);

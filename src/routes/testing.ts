@@ -23,7 +23,7 @@ router.get('/ping', async (req, res) => {
  *They must never be reachable in production.
  **/
 router.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.ENV === 'production') {
     res.status(404).json({ errorResponse: { message: `'${req.originalUrl}' not found` } });
     return;
   }
