@@ -16,6 +16,10 @@ import { getErrorMessage } from './helpers';
 import { USER_PATH } from './routes/constants';
 
 const app = express();
+//Heroku (and most PaaS providers) sit behind a reverse proxy, which sets the
+//`X-Forwarded-For` header. Express must be told to trust it, otherwise
+//express-rate-limit throws a ValidationError on every request it handles.
+app.set('trust proxy', 1);
 const dbName = 'grocify';
 const mongoDBPassword = process.env.mongoDBPassword;
 if (!mongoDBPassword) {
