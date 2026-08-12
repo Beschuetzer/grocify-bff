@@ -183,7 +183,6 @@ export async function handleStoreSpecificValuesMap(
   originalKey?: string,
   session?: ClientSession
 ) {
-  console.log({ itemId, userId, storeSpecificValuesToAdd });
   const keys = Object.keys(storeSpecificValuesToAdd || {});
   if (keys.length <= 0) {
     return;
@@ -205,7 +204,6 @@ export async function handleStoreSpecificValuesMap(
     objToUse,
     { upsert: true, session }
   );
-  console.log({ updated, updateObj, objToUse });
   return updated;
 }
 

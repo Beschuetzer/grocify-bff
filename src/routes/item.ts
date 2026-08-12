@@ -54,13 +54,6 @@ router.post(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   try {
     const { item, storeSpecificValuesMap, userId, password, originalKey } =
       req.body as SaveItemRequest;
-    console.log({
-      method: 'POST',
-      userId,
-      password,
-      item,
-      storeSpecificValuesMap,
-    });
     const itemWithUserId = { ...item, userId };
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
@@ -91,22 +84,12 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
   const { items, storeSpecificValuesMap, userId, password } =
     req.body as SaveManyItemsRequest;
 
-  console.log({
-    method: 'POST',
-    userId,
-    password,
-    items,
-    storeSpecificValuesMap,
-  });
-
   try {
     const user = await getAndThenCacheUser(userId);
     await checkIsAuthorized(password, user?.password);
     // const createdItem = new ItemSchema({ ...item, userId });
     // createdItem._id = item._id;
     const savedItems = await ItemSchema.insertMany(items, { ordered: false });
-
-    console.log({ savedItems });
 
     //todo: how to handleStoreSpecificValuesMap with many?
     // if (!savedItem?._id) throw new Error('Unable to obtain an id for the item');

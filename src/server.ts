@@ -27,11 +27,41 @@ const mongoDbURL = `mongodb+srv://admin:${mongoDBPassword}@cluster0.3trbv.mongod
 mongoose
   .connect(mongoDbURL)
   .then(() => console.log(`Connected to ${dbName} collection in MongoDB!`))
-  .catch((error) => console.log(error.message));
+  .catch(() => console.log(`Unable to connect to ${dbName} collection.`));
 
 //express config
 app.use(helmet());
 app.use(express.json({ limit: '50mb' }));
+
+app.use((req, res, next) => {
+  let responseSummary: unknown = '[no body]';
+  let responseBody: unknown;
+  const originalSend = res.send.bind(res);
+  const originalJson = res.json.bind(res);
+
+  res.send = ((body?: unknown) => {
+    responseBody = body;
+    responseSummary = summarizeResponseValue(body);
+    return originalSend(body);
+  }) as typeof res.send;
+  res.json = ((body?: unknown) => {
+    responseBody = body;
+    responseSummary = summarizeResponseValue(body);
+    return originalJson(body);
+  }) as typeof res.json;
+
+  res.on('finish', () => {
+    const logFullResponses = process.env.LOG_FULL_RESPONSES === 'true';
+    console.log('[route]', {
+      method: req.method,
+      route: req.route?.path || 'unmatched',
+      statusCode: res.statusCode,
+      body: logFullResponses ? sanitizeResponseForLogging(req.body) : summarizeRequestBody(req.body),
+      returned: logFullResponses ? sanitizeResponseForLogging(responseBody) : responseSummary,
+    });
+  });
+  next();
+});
 
 // //rate limiting for auth-sensitive routes to slow down brute-force/credential-stuffing attempts
 // const authRateLimiter = rateLimit({
@@ -52,6 +82,23 @@ app.use(s3Routes);
 app.use(storeRoutes);
 app.use(testRoutes);
 app.use(userRoutes);
+
+app.use((error: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const errorName = error instanceof Error ? error.name : 'UnknownError';
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.error('[route error]', {
+    method: req.method,
+    route: req.route?.path || 'unmatched',
+    errorName,
+    errorMessage: getSafeErrorMessage(errorMessage),
+  });
+
+  if (res.headersSent) {
+    next(error);
+    return;
+  }
+  res.status(500).send(false);
+});
 
 //catch all other routes and return a 404
 app.use((req, res, next) => {
@@ -74,8 +121,76 @@ app.listen(PORT, () => {
   console.log(`App running on port ${PORT}`);
   if (addresses.length) {
     console.log('Server available at:');
-    addresses.forEach((ip) => console.log(`http://${ip}:${PORT}`));
+    console.log(`Listening on port ${PORT}.`);
   } else {
     console.log('No external IPv4 address found.');
   }
 });
+
+function summarizeRequestBody(body: unknown) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return summarizeRequestValue(body);
+  }
+
+  return Object.fromEntries(
+    Object.entries(body).map(([key, value]) => [
+      key,
+      isSensitiveBodyKey(key) ? '[redacted]' : summarizeRequestValue(value),
+    ])
+  );
+}
+
+function summarizeRequestValue(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return `[string: ${value.length} characters]`;
+  }
+  if (Array.isArray(value)) {
+    return `[array: ${value.length} items]`;
+  }
+  if (value && typeof value === 'object') {
+    return `[object: ${Object.keys(value).length} fields]`;
+  }
+  return value;
+}
+
+function summarizeResponseValue(value: unknown) {
+  if (value === undefined || value === null) {
+    return '[no body]';
+  }
+  return summarizeRequestValue(value);
+}
+
+function sanitizeResponseForLogging(value: unknown, key?: string): unknown {
+  if (key && isSensitiveResponseKey(key)) {
+    return '[redacted]';
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeResponseForLogging(item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([childKey, childValue]) => [
+        childKey,
+        sanitizeResponseForLogging(childValue, childKey),
+      ])
+    );
+  }
+  return value;
+}
+
+function isSensitiveBodyKey(key: string) {
+  return /password|token|secret|authorization|cookie|email|image|key|route|store|item|inventory|location|value|body/i.test(
+    key
+  );
+}
+
+function isSensitiveResponseKey(key: string) {
+  return /password|token|secret|authorization|cookie/i.test(key);
+}
+
+function getSafeErrorMessage(message: string) {
+  return message
+    .replace(/(password|token|secret|authorization|cookie)=?[^\s,}]+/gi, '$1=[redacted]')
+    .replace(/[0-9a-f]{24}/gi, '[id]')
+    .replace(/[0-9a-f-]{20,}/gi, '[id]');
+}

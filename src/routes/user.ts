@@ -146,7 +146,6 @@ router.delete(
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
       const deletedItems = await ItemSchema.deleteMany({ userId });
-      console.log({ deletedItems });
       res.send(deletedItems);
     } catch (error) {
       handleError(res, error);
@@ -441,13 +440,6 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       storeSpecificValuesPromise,
       settingsPromise,
     ]);
-    console.log({
-      itemsResult,
-      lastPurchasedMapResult,
-      storesResult,
-      storeSpecificValuesResult,
-      settingsResult,
-    });
     res.send({
       inventoryResult,
       itemsResult,
@@ -457,8 +449,6 @@ router.post(`${USER_PATH}/saveAll`, async (req: Request, res: Response) => {
       settingsResult,
     });
   } catch (error) {
-    console.log({ error });
-    
     handleError(res, error);
   }
 });

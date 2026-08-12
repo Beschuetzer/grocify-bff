@@ -35,7 +35,6 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      console.log({ userId });
       const items = await getUserStores(userId);
       res.send(items);
     } catch (error) {
@@ -91,7 +90,6 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
             ) {
               const keyToUse = `${storeSpecificValuesSchemaValueFieldName}.${key}.${storeSpecificValueName}.${sanitizedStore.addressLineOne}`;
               const valueToUse = storeValue;
-              console.log(`Setting ${keyToUse} to ${valueToUse}`);
               updateObj[keyToUse] = valueToUse;
 
               if (
@@ -99,9 +97,6 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
                   storeSpecificValuesSchemaValueFieldName
                 ]?.[key]?.[storeSpecificValueName]
               ) {
-                console.log(
-                  `Adding ${key}.${storeSpecificValueName}.${storeName} to the unsetKeys`
-                );
                 unsetKeys.push(`${key}.${storeSpecificValueName}.${storeName}`);
               }
             }
@@ -120,7 +115,6 @@ router.post(`${STORE_PATH}`, async (req: Request, res: Response) => {
     }
     return res.send(store);
   } catch (error) {
-    console.log({ error });
     return res.status(500).send(false);
   }
 });
@@ -147,8 +141,6 @@ router.post(
     try {
       const { storeId, routes, userId, password } =
         req.body as SaveStoreRoutesRequest;
-      console.log(''.padEnd(100, '-'));
-      console.log({ method: 'POST', path: `${STORE_PATH}/routes`, userId, storeId, routes });
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
 
@@ -177,7 +169,6 @@ router.post(
       );
       return res.send(updatedStore?.routes ?? routes);
     } catch (error) {
-      console.log({ error });
       return res.status(500).send(false);
     }
   }
@@ -189,8 +180,6 @@ router.delete(
     try {
       const { storeId, ids, userId, password } =
         req.body as DeleteStoreRoutesRequest;
-      console.log(''.padEnd(100, '-'));
-      console.log({ method: 'DELETE', path: `${STORE_PATH}/routes`, userId, storeId, ids });
       const user = await getAndThenCacheUser(userId);
       await checkIsAuthorized(password, user?.password);
 
@@ -213,7 +202,6 @@ router.delete(
       );
       return res.send(updatedStore?.routes ?? []);
     } catch (error) {
-      console.log({ error });
       return res.status(500).send(false);
     }
   }

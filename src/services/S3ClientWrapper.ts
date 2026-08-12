@@ -65,9 +65,7 @@ class S3ClientWrapper {
       await this._client.send(deleteCommand);
     } catch (caught) {
       if (caught instanceof Error) {
-        console.error(
-          `Failed to remove object at '${objKeys}'. ${caught.name}: ${caught.message}`
-        );
+        console.error(`Failed to remove S3 objects: ${caught.name}`);
       }
     }
   }
@@ -104,9 +102,7 @@ class S3ClientWrapper {
       await this._client.send(deleteCommand);
     } catch (caught) {
       if (caught instanceof Error) {
-        console.error(
-          `Failed to remove objects for ${userId}. ${caught.name}: ${caught.message}`
-        );
+        console.error(`Failed to remove S3 objects for a user: ${caught.name}`);
       }
     }
   }

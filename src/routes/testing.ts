@@ -83,8 +83,6 @@ router.post('/passwordCompare', async (req, res) => {
 
 router.get('/compareObjectCheck/:numProps', async (req, res) => {
   const { numProps } = req.params;
-  console.log({ numProps });
-
   // Create a large object
   const largeObject = createLargeObject(numProps);
 

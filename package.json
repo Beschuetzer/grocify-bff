@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "node build/server.js",
-    "start:dev": "npx esrun src/server.ts",
+    "start:dev": "cross-env LOG_FULL_RESPONSES=true npx esrun src/server.ts",
     "start:dev-auto": "nodemon --watch src --ext ts,js --exec \"esrun\" src/server.ts",
     "lint": "prettier --write .",
     "postinstall": "tsc"
@@ -37,6 +37,7 @@
     "@types/jest": "^29.5.12",
     "@types/mongoose": "^5.11.97",
     "babel-jest": "^29.7.0",
+    "cross-env": "^10.1.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.3.3",

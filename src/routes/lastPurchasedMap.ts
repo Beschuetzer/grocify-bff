@@ -38,7 +38,6 @@ router.post(`${LAST_PURCHASED}`, async (req: Request, res: Response) => {
       LastPurchasedMap,
       LastPurchasedMap[string]
     >(lastPurchasedMap);
-    console.log({ updateObj });
     const result = await LastPurchasedMapSchema.findOneAndUpdate(
       { userId },
       updateObj,
