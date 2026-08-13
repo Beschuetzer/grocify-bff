@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { EMPTY_STRING } from '../constants';
 import {
   getAndThenCacheUser,
   getItemOrThrow,
@@ -14,6 +15,7 @@ import {
   DeleteManyRequest,
   SaveItemRequest,
   SaveManyItemsRequest,
+  SaveStoreSpecificValuesRequest,
 } from '../types';
 import { ITEM_PATH, USER_PATH } from './constants';
 import { getUnsetObj } from '../helpers/getUnsetObj';
@@ -99,6 +101,29 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
     handleError(res, error);
   }
 });
+
+/**
+ *Updates only the storeSpecificValues document for the user rather than saving/updating any items.
+ **/
+router.post(
+  `${ITEM_PATH}/storeSpecificValues`,
+  async (req: Request, res: Response) => {
+    try {
+      const { storeSpecificValuesMap, userId, password } =
+        req.body as SaveStoreSpecificValuesRequest;
+      const user = await getAndThenCacheUser(userId);
+      await checkIsAuthorized(password, user?.password);
+      const updated = await handleStoreSpecificValuesMap(
+        EMPTY_STRING,
+        user._id,
+        storeSpecificValuesMap
+      );
+      res.send(updated);
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
+);
 
 router.delete(`${ITEM_PATH}`, async (req: Request, res: Response) => {
   const session = await InventorySchema.startSession();

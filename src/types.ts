@@ -183,6 +183,9 @@ export type SaveManyItemsRequest = {
   items: Item[];
   storeSpecificValuesMap: StoreSpecificValuesMap;
 } & AccountCredentials;
+export type SaveStoreSpecificValuesRequest = {
+  storeSpecificValuesMap: StoreSpecificValuesMap;
+} & AccountCredentials;
 export type DeleteStoreRoutesRequest = {
   storeId: string;
   ids: string[];
