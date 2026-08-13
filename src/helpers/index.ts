@@ -174,14 +174,17 @@ export function handleError(res: Response, error: unknown, statusCode = 500) {
 }
 
 /**
- *Saves the storesSpecific values either as a new document or updates the current document if found
+ *Saves the storesSpecific values either as a new document or updates the current document if found.
+ *When `removeFalsyValues` is true, any leaf value that is falsy (e.g. `''`, `0`, `false`, `null`) is
+ *`$unset` instead of persisted, so empty/cleared fields don't linger in the document.
  **/
 export async function handleStoreSpecificValuesMap(
   itemId: string,
   userId: string,
   storeSpecificValuesToAdd?: StoreSpecificValuesMap,
   originalKey?: string,
-  session?: ClientSession
+  session?: ClientSession,
+  removeFalsyValues = false
 ) {
   const keys = Object.keys(storeSpecificValuesToAdd || {});
   if (keys.length <= 0) {
@@ -192,11 +195,25 @@ export async function handleStoreSpecificValuesMap(
     StoreSpecificValuesMap,
     StoreSpecificValuesMap[string]
   >(storeSpecificValuesToAdd);
-  let objToUse = { ...updateObj };
+
+  let objToUse: { [key: string]: unknown; $unset?: { [key: string]: 1 } };
+  if (removeFalsyValues) {
+    const { setObj, unsetObj } = splitIntoSetAndUnsetObjs(updateObj);
+    objToUse = {
+      ...setObj,
+      ...(Object.keys(unsetObj).length > 0 ? { $unset: unsetObj } : {}),
+    };
+  } else {
+    objToUse = { ...updateObj };
+  }
+
   if (originalKey) {
     objToUse = {
       ...objToUse,
-      $unset: getUnsetObj([originalKey]),
+      $unset: {
+        ...objToUse?.$unset,
+        ...getUnsetObj([originalKey]),
+      },
     };
   }
   const updated = await StoreSpecificValuesSchema.findOneAndUpdate(
@@ -205,6 +222,27 @@ export async function handleStoreSpecificValuesMap(
     { upsert: true, session }
   );
   return updated;
+}
+
+/**
+ *Splits a flattened dot-path update object (as returned by {@link getUpdateObjectForValuesDocument}) into
+ *fields to `$set` (truthy values) and fields to `$unset` (falsy values).
+ **/
+function splitIntoSetAndUnsetObjs(
+  updateObj: { [key: string]: unknown } | never[]
+) {
+  const setObj: { [key: string]: unknown } = {};
+  const unsetObj: { [key: string]: 1 } = {};
+
+  for (const [path, value] of Object.entries(updateObj)) {
+    if (value) {
+      setObj[path] = value;
+    } else {
+      unsetObj[path] = 1;
+    }
+  }
+
+  return { setObj, unsetObj };
 }
 
 export function hashPassword(

@@ -104,6 +104,7 @@ router.post(`${ITEM_PATH}/many`, async (req: Request, res: Response) => {
 
 /**
  *Updates only the storeSpecificValues document for the user rather than saving/updating any items.
+ *Falsy values (e.g. `''`, `0`, `false`) are removed instead of persisted so cleared fields don't linger.
  **/
 router.post(
   `${ITEM_PATH}/storeSpecificValues`,
@@ -116,7 +117,10 @@ router.post(
       const updated = await handleStoreSpecificValuesMap(
         EMPTY_STRING,
         user._id,
-        storeSpecificValuesMap
+        storeSpecificValuesMap,
+        undefined,
+        undefined,
+        true
       );
       res.send(updated);
     } catch (error) {
