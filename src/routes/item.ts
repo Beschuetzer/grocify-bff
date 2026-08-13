@@ -122,7 +122,7 @@ router.post(
         undefined,
         true
       );
-      res.send(updated);
+      res.send(true);
     } catch (error) {
       handleError(res, error);
     }
